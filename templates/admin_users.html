@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Nutzerverwaltung — {{ entity.name if entity else 'Admin' }}{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 900px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
+  .entity-label { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 10px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .role-chip { display: inline-flex; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .role-admin { background: #0e3060; color: #80b8ff; }
+  .role-user  { background: var(--surface2); color: var(--muted); }
+  @media (prefers-color-scheme: dark) { .role-admin { background: rgba(46,123,170,.3); color: #80b8ff; } }
+  .actions { display: flex; gap: 6px; }
+  .empty { padding: 40px; text-align: center; color: var(--faint); }
+  .muted { color: var(--muted); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Nutzerverwaltung</div>
+    <a href="{{ url_for('admin_user_new') }}" class="btn btn-primary">+ Nutzer hinzufügen</a>
+  </div>
+  <div class="entity-label">Entity: <strong>{{ entity.name if entity else '—' }}</strong></div>
+
+  {% if users %}
+  <table>
+    <thead><tr><th>Name</th><th>Benutzername</th><th>Rolle</th><th></th></tr></thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.name }}</td>
+        <td class="muted">{{ u.username }}</td>
+        <td><span class="role-chip role-{{ u.role }}">{{ role_labels.get(u.role, u.role) }}</span></td>
+        <td>
+          {% if u.role != 'admin' or users|selectattr('role','equalto','admin')|list|length > 1 %}
+          <div class="actions">
+            <form method="post" action="{{ url_for('admin_user_delete', uid=u.id) }}"
+                  onsubmit="return confirm('Nutzer entfernen?')">
+              <button type="submit" class="btn btn-danger btn-sm">Entfernen</button>
+            </form>
+          </div>
+          {% else %}
+          <span style="font-size:11px;color:var(--faint)">Letzter Admin</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">Noch keine Nutzer in dieser Entity.</div>
+  {% endif %}
+
+  <div style="margin-top:32px;display:flex;gap:12px">
+    <a href="{{ url_for('signal_list') }}" class="btn btn-secondary">Signale verwalten</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Zum Dashboard</a>
+  </div>
+</div>
+{% endblock %}

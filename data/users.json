@@ -1,0 +1,26 @@
+[
+  {
+    "id": "user-0000-0000-0000-superadmin01",
+    "username": "superadmin",
+    "pass_hash": "4a7372bd055b0d93fbd42915bd03a7d6a58c81f9e0be5ac9fe8f57c2b5c359b5",
+    "role": "superadmin",
+    "entity_id": null,
+    "name": "Super Admin"
+  },
+  {
+    "id": "user-0000-0000-0000-admin000001",
+    "username": "admin",
+    "pass_hash": "04445e6487736590d1ef50186b414e737e0164683cbbec64e00e73c000fd3bef",
+    "role": "admin",
+    "entity_id": "entity-demo-0001",
+    "name": "Praxis Admin"
+  },
+  {
+    "id": "user-0000-0000-0000-nutzer00001",
+    "username": "nutzer",
+    "pass_hash": "d0bc04323836e132a62a020aa85c8d37ab1c3e531c35631a2d23bba80672ba39",
+    "role": "user",
+    "entity_id": "entity-demo-0001",
+    "name": "Max Mustermann"
+  }
+]

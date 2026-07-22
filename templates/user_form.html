@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Nutzer bearbeiten' if user else 'Nutzer anlegen' }} — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 560px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; margin-bottom: 28px; }
+  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; }
+  .field { margin-bottom: 20px; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .hint { font-size: 11px; color: var(--faint); margin-top: 4px; }
+  input[type="text"], input[type="password"], select { width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); outline: none; transition: border-color .15s; font-family: inherit; }
+  input:focus, select:focus { border-color: var(--navy); }
+  .form-actions { display: flex; gap: 10px; margin-top: 28px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-title">{{ 'Nutzer bearbeiten' if user else 'Nutzer anlegen' }}</div>
+  <div class="form-card">
+    <form method="post" action="{{ action }}">
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" value="{{ user.name if user else '' }}" placeholder="Vollständiger Name" autofocus>
+      </div>
+      <div class="field">
+        <label for="username">Benutzername *</label>
+        <input type="text" id="username" name="username" required value="{{ user.username if user else '' }}" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="password">Passwort {{ '' if user else '*' }}</label>
+        <input type="password" id="password" name="password" {{ 'required' if not user else '' }} autocomplete="new-password">
+        {% if user %}<div class="hint">Leer lassen um das Passwort nicht zu ändern.</div>{% endif %}
+      </div>
+
+      {% if show_all_roles %}
+      <div class="field">
+        <label for="role">Rolle *</label>
+        <select id="role" name="role" required>
+          {% for key, label in role_labels.items() %}
+          <option value="{{ key }}" {{ 'selected' if user and user.role == key else '' }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="entity_id">Entity</label>
+        <select id="entity_id" name="entity_id">
+          <option value="">— keine (Superadmin) —</option>
+          {% for e in entities %}
+          <option value="{{ e.id }}" {{ 'selected' if user and user.entity_id == e.id else '' }}>{{ e.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% else %}
+      {# Admin creates users: role and entity fixed, hidden #}
+      <input type="hidden" name="role" value="user">
+      {% if entities %}
+      <input type="hidden" name="entity_id" value="{{ entities[0].id }}">
+      {% endif %}
+      {% endif %}
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ 'Speichern' if user else 'Anlegen' }}</button>
+        <a href="{{ request.referrer or url_for('admin_dashboard') }}" class="btn btn-secondary">Abbrechen</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

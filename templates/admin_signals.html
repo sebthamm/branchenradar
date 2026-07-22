@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Signale — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 10px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .b { display: inline-flex; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+  .b-radar    { background:#E3F0FA; color:#1A5A8A; }
+  .b-develop  { background:#F0EBFA; color:#5A2E90; }
+  .b-announced{ background:#FEF3E2; color:#8A5000; }
+  .b-active   { background:#E8F5EE; color:#1A5C3D; }
+  .b-action   { background:#FCEAEF; color:#8A1A40; }
+  @media (prefers-color-scheme: dark) {
+    .b-radar    { background:rgba(46,123,170,.2); color:#7EC4E8; }
+    .b-develop  { background:rgba(107,68,168,.2); color:#C090F0; }
+    .b-announced{ background:rgba(196,120,14,.2); color:#F0A840; }
+    .b-active   { background:rgba(37,122,88,.2);  color:#5DD4A0; }
+    .b-action   { background:rgba(176,48,96,.2);  color:#F090B4; }
+  }
+  .actions { display: flex; gap: 6px; }
+  .signal-title { max-width: 340px; font-weight: 500; color: var(--text); }
+  .muted { color: var(--muted); }
+  .empty { padding: 40px; text-align: center; color: var(--faint); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Signale verwalten</div>
+    <a href="{{ url_for('signal_new') }}" class="btn btn-primary">+ Neues Signal</a>
+  </div>
+
+  {% if signals %}
+  <table>
+    <thead><tr><th>Titel</th><th>Status</th><th>Kategorie</th><th>Datum</th><th></th></tr></thead>
+    <tbody>
+      {% for s in signals %}
+      <tr>
+        <td class="signal-title">{{ s.title }}</td>
+        <td><span class="b b-{{ s.status }}">{{ status_labels.get(s.status, s.status) }}</span></td>
+        <td class="muted">{{ categories.get(s.category, s.category) }}</td>
+        <td class="muted" style="white-space:nowrap">{{ s.date }}</td>
+        <td>
+          <div class="actions">
+            <a href="{{ url_for('signal_edit', sig_id=s.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>
+            <form method="post" action="{{ url_for('signal_delete', sig_id=s.id) }}"
+                  onsubmit="return confirm('Signal wirklich löschen?')">
+              <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">Noch keine Signale. <a href="{{ url_for('signal_new') }}" style="color:var(--navy)">Erstes Signal anlegen →</a></div>
+  {% endif %}
+</div>
+{% endblock %}

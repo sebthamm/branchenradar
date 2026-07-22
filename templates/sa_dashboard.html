@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Superadmin — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
+  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--faint); font-weight: 600; margin: 32px 0 12px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 8px; }
+  th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 10px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .role-chip { display: inline-flex; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .role-superadmin { background: #2a1060; color: #c8a0ff; }
+  .role-admin      { background: #0e3060; color: #80b8ff; }
+  .role-user       { background: var(--surface2); color: var(--muted); }
+  @media (prefers-color-scheme: dark) {
+    .role-superadmin { background: rgba(107,68,168,.3); color: #c8a0ff; }
+    .role-admin      { background: rgba(46,123,170,.3); color: #80b8ff; }
+  }
+  .actions { display: flex; gap: 6px; }
+  .muted { color: var(--muted); }
+  @media (max-width: 700px) { .main { padding: 16px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Superadmin</div>
+  </div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:4px">Verwaltung aller Entities und Nutzer.</p>
+
+  <!-- Entities -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:32px;margin-bottom:12px">
+    <div class="section-title" style="margin:0">Entities</div>
+    <a href="{{ url_for('sa_entity_new') }}" class="btn btn-primary btn-sm">+ Neue Entity</a>
+  </div>
+  {% if entities %}
+  <table>
+    <thead><tr><th>Name</th><th>Erstellt</th><th>Nutzer</th><th></th></tr></thead>
+    <tbody>
+      {% for e in entities %}
+      <tr>
+        <td><strong>{{ e.name }}</strong></td>
+        <td class="muted">{{ e.created_at }}</td>
+        <td class="muted">{{ user_counts.get(e.id, 0) }}</td>
+        <td>
+          <div class="actions">
+            <form method="post" action="{{ url_for('sa_entity_delete', eid=e.id) }}"
+                  onsubmit="return confirm('Entity und alle Nutzer löschen?')">
+              <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="padding:24px;text-align:center;color:var(--faint);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+    Noch keine Entities. <a href="{{ url_for('sa_entity_new') }}" style="color:var(--navy)">Erste Entity anlegen →</a>
+  </div>
+  {% endif %}
+
+  <!-- All users -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:36px;margin-bottom:12px">
+    <div class="section-title" style="margin:0">Alle Nutzer</div>
+    <a href="{{ url_for('sa_user_new') }}" class="btn btn-primary btn-sm">+ Nutzer anlegen</a>
+  </div>
+  {% set sorted_users = users | sort(attribute='role') %}
+  {% if users %}
+  <table>
+    <thead><tr><th>Name</th><th>Benutzername</th><th>Rolle</th><th>Entity</th><th></th></tr></thead>
+    <tbody>
+      {% for u in users %}
+      {% set entity = entities | selectattr('id', 'equalto', u.entity_id) | first if u.entity_id else none %}
+      <tr>
+        <td>{{ u.name }}</td>
+        <td class="muted">{{ u.username }}</td>
+        <td><span class="role-chip role-{{ u.role }}">{{ role_labels.get(u.role, u.role) }}</span></td>
+        <td class="muted">{{ entity.name if entity else '—' }}</td>
+        <td>
+          <div class="actions">
+            <a href="{{ url_for('sa_user_edit', uid=u.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>
+            <form method="post" action="{{ url_for('sa_user_delete', uid=u.id) }}"
+                  onsubmit="return confirm('Nutzer löschen?')">
+              <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="padding:24px;text-align:center;color:var(--faint);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+    Keine Nutzer vorhanden.
+  </div>
+  {% endif %}
+
+  <div style="margin-top:36px;padding-top:24px;border-top:1px solid var(--border);display:flex;gap:12px">
+    <a href="{{ url_for('signal_list') }}" class="btn btn-secondary">Signale verwalten</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Zum Dashboard</a>
+  </div>
+</div>
+{% endblock %}

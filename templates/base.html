@@ -76,8 +76,14 @@
       <div class="brand-sub">Regulatorisches Monitoring · Zahnmedizin</div>
     </div>
     <div class="header-right">
-      {% if session.get('logged_in') %}
-        <a href="{{ url_for('admin') }}" class="header-link">Admin</a>
+      {% if session.get('user_id') %}
+        <span style="font-size:12px;color:rgba(255,255,255,.35)">{{ session.name }}</span>
+        {% if session.role == 'superadmin' %}
+          <a href="{{ url_for('sa_dashboard') }}" class="header-link">Superadmin</a>
+        {% elif session.role == 'admin' %}
+          <a href="{{ url_for('admin_dashboard') }}" class="header-link">Admin</a>
+        {% endif %}
+        <a href="{{ url_for('signal_list') }}" class="header-link">Signale</a>
         <a href="{{ url_for('logout') }}" class="header-link">Abmelden</a>
       {% else %}
         <a href="{{ url_for('login') }}" class="header-link">Login</a>
