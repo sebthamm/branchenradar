@@ -418,14 +418,16 @@ def forbidden(e):
 
 @app.route("/deploy", methods=["POST"])
 def deploy():
+    import signal as _signal
     token = request.args.get("token", "")
     if not DEPLOY_TOKEN or not hmac.compare_digest(token, DEPLOY_TOKEN):
         abort(403)
     repo = os.path.dirname(os.path.abspath(__file__))
     try:
         subprocess.run(["git", "pull", "--ff-only"], cwd=repo, check=True, capture_output=True)
-        subprocess.run(["sudo", "systemctl", "restart", "branchenradar"], check=True, capture_output=True)
-        return jsonify({"ok": True})
+        # Send SIGHUP to gunicorn master → graceful reload of all workers
+        os.kill(os.getppid(), _signal.SIGHUP)
+        return jsonify({"ok": True, "msg": "Pulled and reloading"})
     except subprocess.CalledProcessError as e:
         return jsonify({"ok": False, "msg": str(e)}), 500
 
