@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Praxis-Radar{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #F4F5F8;
+      --surface:  #FFFFFF;
+      --surface2: #EAECF2;
+      --border:   #D5D9E6;
+      --text:     #1B2540;
+      --muted:    #5A6480;
+      --faint:    #8590A8;
+      --navy:     #1B3050;
+      --s-radar:     #2E7BAA;
+      --s-develop:   #6B44A8;
+      --s-announced: #C4780E;
+      --s-active:    #257A58;
+      --s-action:    #B03060;
+      --radius: 6px;
+      --shadow: 0 1px 3px rgba(27,48,80,.07), 0 4px 12px rgba(27,48,80,.05);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:       #0F141D;
+        --surface:  #172030;
+        --surface2: #1D2840;
+        --border:   #2A3654;
+        --text:     #E0E6F0;
+        --muted:    #8896B2;
+        --faint:    #5C6E8A;
+        --shadow:   0 1px 4px rgba(0,0,0,.3), 0 6px 16px rgba(0,0,0,.2);
+      }
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+    /* Header */
+    .header { background: var(--navy); color: #fff; padding: 0 32px; }
+    .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 0; }
+    .brand-title { font-family: Georgia, serif; font-size: 20px; font-weight: normal; color: #fff; text-decoration: none; }
+    .brand-sub { font-size: 11px; color: rgba(255,255,255,.45); letter-spacing: .07em; text-transform: uppercase; margin-top: 1px; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .header-link { font-size: 12px; color: rgba(255,255,255,.55); text-decoration: none; }
+    .header-link:hover { color: #fff; }
+
+    /* Flash messages */
+    .flash-list { max-width: 1200px; margin: 12px auto 0; padding: 0 32px; list-style: none; }
+    .flash { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 8px; }
+    .flash.success { background: #e8f5ee; color: #1a5c3d; border: 1px solid #b2dfc6; }
+    .flash.error   { background: #fceaef; color: #8a1a40; border: 1px solid #f4b8cc; }
+    @media (prefers-color-scheme: dark) {
+      .flash.success { background: rgba(37,122,88,.15); color: #5dd4a0; border-color: rgba(37,122,88,.3); }
+      .flash.error   { background: rgba(176,48,96,.15); color: #f090b4; border-color: rgba(176,48,96,.3); }
+    }
+
+    /* Utility */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; text-decoration: none; transition: opacity .15s; }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: var(--navy); color: #fff; }
+    .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+    .btn-danger  { background: var(--s-action); color: #fff; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    @media (max-width: 700px) { .header, .header-inner { padding-left: 16px; padding-right: 16px; } }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <div>
+      <a href="{{ url_for('dashboard') }}" class="brand-title">Praxis-Radar</a>
+      <div class="brand-sub">Regulatorisches Monitoring · Zahnmedizin</div>
+    </div>
+    <div class="header-right">
+      {% if session.get('logged_in') %}
+        <a href="{{ url_for('admin') }}" class="header-link">Admin</a>
+        <a href="{{ url_for('logout') }}" class="header-link">Abmelden</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="header-link">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=True) %}
+  {% if messages %}
+    <ul class="flash-list">
+      {% for category, message in messages %}
+        <li class="flash {{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+</body>
+</html>

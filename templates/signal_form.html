@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Signal bearbeiten' if signal else 'Neues Signal' }} — Praxis-Radar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 760px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; margin-bottom: 28px; }
+  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; }
+  .field { margin-bottom: 20px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .hint { font-size: 11px; color: var(--faint); margin-top: 4px; }
+  input[type="text"], input[type="date"], input[type="url"], select, textarea {
+    width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius); font-size: 13px; color: var(--text); outline: none;
+    transition: border-color .15s; font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--navy); }
+  textarea { min-height: 90px; resize: vertical; line-height: 1.6; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .form-actions { display: flex; gap: 10px; margin-top: 28px; }
+  @media (max-width: 600px) { .main { padding: 16px; } .row-2 { grid-template-columns: 1fr; } .form-card { padding: 20px 16px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-title">{{ 'Signal bearbeiten' if signal else 'Neues Signal anlegen' }}</div>
+  <div class="form-card">
+    <form method="post" action="{{ action }}">
+
+      <div class="field">
+        <label for="title">Titel *</label>
+        <input type="text" id="title" name="title" required
+               value="{{ signal.title if signal else '' }}"
+               placeholder="Präzise Überschrift des Signals">
+      </div>
+
+      <div class="field">
+        <label for="summary">Zusammenfassung *</label>
+        <textarea id="summary" name="summary" required
+                  placeholder="2–3 Sätze: Was ist das Signal, was bedeutet es für Praxen?">{{ signal.summary if signal else '' }}</textarea>
+      </div>
+
+      <div class="field">
+        <label for="detail">Detailtext</label>
+        <textarea id="detail" name="detail" style="min-height:130px"
+                  placeholder="Ausführlichere Erläuterung, Handlungsempfehlung, Hintergründe…">{{ signal.detail if signal else '' }}</textarea>
+        <div class="hint">Wird beim Aufklappen der Karte angezeigt.</div>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="status">Status *</label>
+          <select id="status" name="status" required>
+            {% for key, label in status_labels.items() %}
+            <option value="{{ key }}" {{ 'selected' if signal and signal.status == key else '' }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="category">Kategorie *</label>
+          <select id="category" name="category" required>
+            {% for key, label in categories.items() %}
+            <option value="{{ key }}" {{ 'selected' if signal and signal.category == key else '' }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="source">Quelle (Name)</label>
+          <input type="text" id="source" name="source"
+                 value="{{ signal.source if signal else '' }}"
+                 placeholder="z.B. G-BA, gematik, BZÄK">
+        </div>
+        <div class="field">
+          <label for="source_url">Quelle (URL)</label>
+          <input type="url" id="source_url" name="source_url"
+                 value="{{ signal.source_url if signal else '' }}"
+                 placeholder="https://…">
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="date">Datum *</label>
+          <input type="date" id="date" name="date" required
+                 value="{{ signal.date if signal else '' }}">
+        </div>
+        <div class="field">
+          <label for="deadline">Frist (optional)</label>
+          <input type="text" id="deadline" name="deadline"
+                 value="{{ signal.deadline if signal else '' }}"
+                 placeholder="z.B. 30. Sep 2026">
+          <div class="hint">Wird als roter Chip auf der Karte angezeigt.</div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ 'Speichern' if signal else 'Anlegen' }}</button>
+        <a href="{{ url_for('admin') }}" class="btn btn-secondary">Abbrechen</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
