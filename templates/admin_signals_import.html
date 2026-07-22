@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Signale importieren — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 860px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; margin-bottom: 8px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px; }
+  .card-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 16px; }
+
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .hint { font-size: 11px; color: var(--faint); margin-top: 5px; line-height: 1.5; }
+  textarea { width: 100%; min-height: 180px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; font-family: "SF Mono", "Consolas", "Menlo", monospace; color: var(--text); outline: none; resize: vertical; line-height: 1.6; }
+  textarea:focus { border-color: var(--navy); }
+  input[type="file"] { font-size: 13px; color: var(--text); }
+
+  .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .divider span { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .08em; white-space: nowrap; }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+  /* Column reference table */
+  .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .ref-table th { background: var(--surface2); padding: 7px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
+  .ref-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .ref-table tr:last-child td { border-bottom: none; }
+  .ref-table td:first-child { font-family: "SF Mono", "Consolas", "Menlo", monospace; color: var(--navy); font-size: 11px; }
+  .ref-table td code { font-family: "SF Mono", "Consolas", "Menlo", monospace; font-size: 11px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; }
+  .req { color: var(--s-action); font-size: 10px; font-weight: 700; }
+
+  /* Template download */
+  .tmpl-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--navy); cursor: pointer; background: none; border: none; padding: 0; text-decoration: underline; }
+  @media (max-width: 700px) { .main { padding: 16px; } .card { padding: 20px 16px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-title">Signale importieren</div>
+  <div class="page-sub">Trage mehrere Signale auf einmal ein — per Copy-Paste aus Excel / Google Sheets oder per CSV-Upload.</div>
+
+  <div class="card">
+    <form method="post" action="{{ url_for('signal_import') }}" enctype="multipart/form-data">
+
+      <div class="card-title">Option 1 — Einfügen aus Excel / Google Sheets</div>
+      <label for="csv_text">Tabelle einfügen (Tab-getrennt, mit Kopfzeile)</label>
+      <textarea id="csv_text" name="csv_text"
+        placeholder="Titel	Status	Kategorie	Fachbereiche	Zusammenfassung	Detailtext	Quelle	Quelle-URL	Datum	Frist
+Neue TI-Pflicht für Zahnarztpraxen	Handlungsbedarf	Digital	sec-zahnarzt	Ab Q3 2026 müssen alle...			gematik	https://...	2026-07-01	30. Sep 2026"></textarea>
+      <div class="hint">Kopiere direkt aus einer Tabelle (Strg+C) und füge hier ein (Strg+V). Die erste Zeile muss Spaltenüberschriften enthalten.</div>
+
+      <div class="divider"><span>oder</span></div>
+
+      <div class="card-title">Option 2 — CSV-Datei hochladen</div>
+      <label for="file">CSV-Datei auswählen</label>
+      <input type="file" id="file" name="file" accept=".csv,.tsv,.txt">
+      <div class="hint">UTF-8-kodiert, Trennzeichen: Tab, Semikolon oder Komma. Erste Zeile = Kopfzeile.</div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Importieren</button>
+        <a href="{{ url_for('signal_list') }}" class="btn btn-secondary">Abbrechen</a>
+        <button type="button" class="tmpl-btn" onclick="downloadTemplate()">↓ Vorlage herunterladen</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Spaltenreferenz</div>
+    <table class="ref-table">
+      <thead><tr><th>Spaltenname</th><th>Pflicht</th><th>Beschreibung &amp; erlaubte Werte</th></tr></thead>
+      <tbody>
+        <tr><td>Titel</td><td><span class="req">✱</span></td><td>Überschrift des Signals</td></tr>
+        <tr><td>Status</td><td></td><td>
+          <code>Im Radar</code> · <code>In Entwicklung</code> · <code>Angekündigt</code> · <code>Verfügbar</code> · <code>Handlungsbedarf</code><br>
+          Standard: <code>Im Radar</code>
+        </td></tr>
+        <tr><td>Kategorie</td><td></td><td>
+          <code>Krankenkassen</code> · <code>Digital</code> · <code>Gesetze</code> · <code>Personal</code> · <code>Praxis</code><br>
+          Standard: <code>Praxis</code>
+        </td></tr>
+        <tr><td>Fachbereiche</td><td></td><td>
+          Kommagetrennt, Name oder ID:<br>
+          {% for sec in sections %}
+          <code>{{ sec.name }}</code>{% if not loop.last %} · {% endif %}
+          {% endfor %}
+        </td></tr>
+        <tr><td>Zusammenfassung</td><td></td><td>2–3 Sätze Beschreibung</td></tr>
+        <tr><td>Detailtext</td><td></td><td>Ausführliche Erläuterung (wird beim Aufklappen angezeigt)</td></tr>
+        <tr><td>Quelle</td><td></td><td>Name der Quelle, z.B. <code>G-BA</code>, <code>gematik</code></td></tr>
+        <tr><td>Quelle-URL</td><td></td><td>Link zur Quelle</td></tr>
+        <tr><td>Datum</td><td></td><td>Format: <code>JJJJ-MM-TT</code>, z.B. <code>2026-07-01</code></td></tr>
+        <tr><td>Frist</td><td></td><td>Freitext, z.B. <code>30. Sep 2026</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function downloadTemplate() {
+  const headers = ["Titel","Status","Kategorie","Fachbereiche","Zusammenfassung","Detailtext","Quelle","Quelle-URL","Datum","Frist"];
+  const example = ["Beispiel-Signal","Im Radar","Digital","Zahnmedizin","Kurze Beschreibung.","Ausführlicher Text.","gematik","https://gematik.de","2026-07-22",""];
+  const tsv = [headers.join("\t"), example.join("\t")].join("\n");
+  const blob = new Blob(["﻿" + tsv], {type: "text/tab-separated-values;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "signale-vorlage.tsv";
+  a.click();
+}
+</script>
+{% endblock %}

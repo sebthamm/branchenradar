@@ -2,15 +2,44 @@
 {% block title %}Signale — Branchenradar{% endblock %}
 {% block head %}
 <style>
-  .main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 60px; }
-  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
   .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
-  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 10px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
-  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--surface2); }
-  .b { display: inline-flex; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+  .page-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* Search bar */
+  .db-search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; max-width: 360px; margin-bottom: 16px; }
+  .db-search:focus-within { border-color: var(--navy); }
+  .db-search input { border: none; background: none; color: var(--text); font-size: 13px; width: 100%; outline: none; }
+  .db-search input::placeholder { color: var(--faint); }
+  .db-meta { font-size: 12px; color: var(--faint); margin-bottom: 12px; }
+
+  /* Table */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; min-width: 820px; }
+  thead th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 9px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { color: var(--text); }
+  thead th .sort-arrow { opacity: .3; margin-left: 3px; font-size: 9px; }
+  thead th.sort-asc .sort-arrow::after  { content: "▲"; opacity: 1; }
+  thead th.sort-desc .sort-arrow::after { content: "▼"; opacity: 1; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  tr.data-row:last-of-type td { border-bottom: 1px solid var(--border); }
+  tr.data-row:hover td { background: var(--surface2); cursor: pointer; }
+  tr.data-row.expanded td { background: var(--surface2); }
+  tr.detail-row td { padding: 0; border-bottom: 1px solid var(--border); }
+  tr.detail-row:last-child td { border-bottom: none; }
+
+  /* Detail panel */
+  .detail-panel { display: none; padding: 16px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+  .detail-panel.open { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; }
+  .dp-field label { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); font-weight: 600; display: block; margin-bottom: 3px; }
+  .dp-field p { font-size: 13px; color: var(--text); line-height: 1.6; white-space: pre-wrap; margin: 0; }
+  .dp-field p.empty { color: var(--faint); font-style: italic; }
+  .dp-full { grid-column: 1 / -1; }
+  .dp-actions { grid-column: 1 / -1; display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid var(--border); margin-top: 4px; }
+
+  /* Chips */
+  .b { display: inline-flex; padding: 2px 7px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
   .b-radar    { background:#E3F0FA; color:#1A5A8A; }
   .b-develop  { background:#F0EBFA; color:#5A2E90; }
   .b-announced{ background:#FEF3E2; color:#8A5000; }
@@ -23,44 +52,170 @@
     .b-active   { background:rgba(37,122,88,.2);  color:#5DD4A0; }
     .b-action   { background:rgba(176,48,96,.2);  color:#F090B4; }
   }
-  .actions { display: flex; gap: 6px; }
-  .signal-title { max-width: 340px; font-weight: 500; color: var(--text); }
+  .sec-tag { font-size: 11px; color: var(--muted); background: var(--surface2); border-radius: 3px; padding: 1px 6px; white-space: nowrap; }
+
   .muted { color: var(--muted); }
-  .empty { padding: 40px; text-align: center; color: var(--faint); }
+  .title-cell { max-width: 300px; font-weight: 500; }
+  .title-cell span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .chevron { font-size: 9px; color: var(--faint); transition: transform .2s; display: inline-block; }
+  tr.data-row.expanded .chevron { transform: rotate(180deg); }
+
+  .empty { padding: 48px; text-align: center; color: var(--faint); }
+  @media (max-width: 700px) { .main { padding: 16px; } .detail-panel.open { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
 {% block content %}
 <div class="main">
   <div class="page-head">
-    <div class="page-title">Signale verwalten</div>
-    <a href="{{ url_for('signal_new') }}" class="btn btn-primary">+ Neues Signal</a>
+    <div class="page-title">Signale <span style="font-size:14px;font-family:inherit;color:var(--faint);font-weight:normal">({{ signals | length }})</span></div>
+    <div class="page-actions">
+      <a href="{{ url_for('signal_import') }}" class="btn btn-secondary">↑ Importieren</a>
+      <a href="{{ url_for('signal_new') }}" class="btn btn-primary">+ Neues Signal</a>
+    </div>
+  </div>
+
+  <div class="db-search">
+    <span style="color:var(--faint)">⌕</span>
+    <input type="text" id="db-search" placeholder="Signale filtern…" oninput="dbSearch(this.value)" autocomplete="off">
   </div>
 
   {% if signals %}
-  <table>
-    <thead><tr><th>Titel</th><th>Status</th><th>Kategorie</th><th>Datum</th><th></th></tr></thead>
-    <tbody>
-      {% for s in signals %}
+  <div class="db-meta" id="db-meta">{{ signals | length }} Einträge</div>
+  <div class="tbl-wrap">
+  <table id="sig-table">
+    <thead>
       <tr>
-        <td class="signal-title">{{ s.title }}</td>
-        <td><span class="b b-{{ s.status }}">{{ status_labels.get(s.status, s.status) }}</span></td>
-        <td class="muted">{{ categories.get(s.category, s.category) }}</td>
-        <td class="muted" style="white-space:nowrap">{{ s.date }}</td>
-        <td>
-          <div class="actions">
-            <a href="{{ url_for('signal_edit', sig_id=s.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>
+        <th onclick="sortTable(0)" data-col="0">Titel <span class="sort-arrow"></span></th>
+        <th onclick="sortTable(1)" data-col="1">Status <span class="sort-arrow"></span></th>
+        <th onclick="sortTable(2)" data-col="2">Kategorie <span class="sort-arrow"></span></th>
+        <th onclick="sortTable(3)" data-col="3">Fachbereich <span class="sort-arrow"></span></th>
+        <th onclick="sortTable(4)" data-col="4">Quelle <span class="sort-arrow"></span></th>
+        <th onclick="sortTable(5)" data-col="5">Datum <span class="sort-arrow"></span></th>
+        <th onclick="sortTable(6)" data-col="6">Frist <span class="sort-arrow"></span></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="sig-tbody">
+    {% for s in signals %}
+    {% set row_id = loop.index %}
+    <tr class="data-row" onclick="toggleDetail({{ row_id }})"
+        data-text="{{ (s.title ~ ' ' ~ s.summary ~ ' ' ~ s.source ~ ' ' ~ s.category) | lower }}">
+      <td class="title-cell"><span>{{ s.title }}</span></td>
+      <td><span class="b b-{{ s.status }}">{{ status_labels.get(s.status, s.status) }}</span></td>
+      <td class="muted">{{ categories.get(s.category, s.category) }}</td>
+      <td>
+        {% set secs = s.get('section_ids', []) %}
+        {% if secs %}
+          {% for sid in secs[:2] %}
+            {% set sec = sec_map.get(sid) %}
+            {% if sec %}<span class="sec-tag">{{ sec.icon }} {{ sec.name }}</span> {% endif %}
+          {% endfor %}
+          {% if secs | length > 2 %}<span class="sec-tag">+{{ secs | length - 2 }}</span>{% endif %}
+        {% else %}<span class="muted">—</span>{% endif %}
+      </td>
+      <td class="muted">{{ s.source or '—' }}</td>
+      <td class="muted" style="white-space:nowrap">{{ s.date }}</td>
+      <td class="muted" style="white-space:nowrap">{{ s.deadline or '—' }}</td>
+      <td style="text-align:right"><span class="chevron">▼</span></td>
+    </tr>
+    <tr class="detail-row">
+      <td colspan="8">
+        <div class="detail-panel" id="detail-{{ row_id }}">
+          <div class="dp-field dp-full">
+            <label>Zusammenfassung</label>
+            <p {% if not s.summary %}class="empty"{% endif %}>{{ s.summary or 'Keine Zusammenfassung' }}</p>
+          </div>
+          {% if s.detail %}
+          <div class="dp-field dp-full">
+            <label>Detailtext</label>
+            <p>{{ s.detail }}</p>
+          </div>
+          {% endif %}
+          <div class="dp-field">
+            <label>Quelle</label>
+            <p>{% if s.source_url %}<a href="{{ s.source_url }}" target="_blank" rel="noopener" style="color:var(--navy)" onclick="event.stopPropagation()">{{ s.source or s.source_url }}</a>{% else %}{{ s.source or '—' }}{% endif %}</p>
+          </div>
+          <div class="dp-field">
+            <label>Fachbereiche</label>
+            <p>{% for sid in s.get('section_ids', []) %}{% set sec = sec_map.get(sid) %}{% if sec %}{{ sec.icon }} {{ sec.name }}{% if not loop.last %}, {% endif %}{% endif %}{% else %}—{% endfor %}</p>
+          </div>
+          <div class="dp-actions">
+            <a href="{{ url_for('signal_edit', sig_id=s.id) }}" class="btn btn-secondary btn-sm" onclick="event.stopPropagation()">Bearbeiten</a>
             <form method="post" action="{{ url_for('signal_delete', sig_id=s.id) }}"
-                  onsubmit="return confirm('Signal wirklich löschen?')">
+                  onsubmit="return confirm('Signal wirklich löschen?')" onclick="event.stopPropagation()">
               <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
             </form>
           </div>
-        </td>
-      </tr>
-      {% endfor %}
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
     </tbody>
   </table>
+  </div>
   {% else %}
   <div class="empty">Noch keine Signale. <a href="{{ url_for('signal_new') }}" style="color:var(--navy)">Erstes Signal anlegen →</a></div>
   {% endif %}
 </div>
+
+<script>
+function toggleDetail(id) {
+  const panel = document.getElementById('detail-' + id);
+  const row   = panel.closest('tr').previousElementSibling;
+  const isOpen = panel.classList.contains('open');
+  // close all
+  document.querySelectorAll('.detail-panel.open').forEach(p => {
+    p.classList.remove('open');
+    p.closest('tr').previousElementSibling.classList.remove('expanded');
+  });
+  if (!isOpen) {
+    panel.classList.add('open');
+    row.classList.add('expanded');
+  }
+}
+
+function dbSearch(q) {
+  q = q.toLowerCase().trim();
+  let visible = 0;
+  const rows = document.querySelectorAll('tr.data-row');
+  rows.forEach(row => {
+    const next = row.nextElementSibling;
+    const match = !q || row.dataset.text.includes(q);
+    row.style.display      = match ? '' : 'none';
+    next.style.display     = match ? '' : 'none';
+    if (match) visible++;
+  });
+  document.getElementById('db-meta').textContent = q
+    ? `${visible} von ${rows.length} Einträgen`
+    : `${rows.length} Einträge`;
+}
+
+// Simple column sort
+let _sortCol = 5, _sortDir = -1; // default: date desc
+function sortTable(col) {
+  const ths = document.querySelectorAll('thead th');
+  ths.forEach((th, i) => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (i === col) th.classList.add(_sortCol === col && _sortDir === 1 ? 'sort-desc' : 'sort-asc');
+  });
+  if (_sortCol === col) _sortDir *= -1; else { _sortCol = col; _sortDir = 1; }
+  if (_sortCol === col && _sortDir === -1) { ths[col].classList.remove('sort-asc'); ths[col].classList.add('sort-desc'); }
+
+  const tbody = document.getElementById('sig-tbody');
+  // Collect pairs [data-row, detail-row]
+  const pairs = [];
+  let child = tbody.firstElementChild;
+  while (child) {
+    const next = child.nextElementSibling;
+    pairs.push([child, next]);
+    child = next?.nextElementSibling;
+  }
+  pairs.sort((a, b) => {
+    const ta = a[0].children[col]?.textContent.trim().toLowerCase() || '';
+    const tb = b[0].children[col]?.textContent.trim().toLowerCase() || '';
+    return ta < tb ? -_sortDir : ta > tb ? _sortDir : 0;
+  });
+  pairs.forEach(([dr, dtr]) => { tbody.appendChild(dr); tbody.appendChild(dtr); });
+}
+</script>
 {% endblock %}

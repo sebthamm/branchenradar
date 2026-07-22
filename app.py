@@ -1,3 +1,5 @@
+import csv
+import io
 import json
 import os
 import uuid
@@ -370,8 +372,11 @@ def admin_user_delete(uid):
 def signal_list():
     signals = load_signals()
     signals.sort(key=lambda s: s.get("date", ""), reverse=True)
+    sections = load_sections()
+    sec_map  = {s["id"]: s for s in sections}
     return render_template("admin_signals.html",
-        signals=signals, categories=CATEGORIES, status_labels=STATUS_LABELS)
+        signals=signals, categories=CATEGORIES, status_labels=STATUS_LABELS,
+        sections=sections, sec_map=sec_map)
 
 @app.route("/admin/signals/new", methods=["GET", "POST"])
 @role_required("admin", "superadmin")
@@ -414,6 +419,133 @@ def signal_delete(sig_id):
     save_signals(signals)
     flash("Signal gelöscht.", "success")
     return redirect(url_for("signal_list"))
+
+@app.route("/admin/signals/import", methods=["GET", "POST"])
+@role_required("admin", "superadmin")
+def signal_import():
+    sections = load_sections()
+    if request.method == "POST":
+        raw = ""
+        f = request.files.get("file")
+        if f and f.filename:
+            raw = f.read().decode("utf-8-sig")
+        else:
+            raw = request.form.get("csv_text", "").strip()
+        if not raw:
+            flash("Keine Daten eingegeben.", "error")
+            return redirect(url_for("signal_import"))
+        imported, errors = _parse_signal_csv(raw, sections)
+        if imported:
+            existing = load_signals()
+            existing.extend(imported)
+            save_signals(existing)
+        msg_parts = []
+        if imported:
+            msg_parts.append(f"{len(imported)} Signal{'e' if len(imported)!=1 else ''} importiert")
+        if errors:
+            msg_parts.append(f"{len(errors)} Zeile{'n' if len(errors)!=1 else ''} übersprungen")
+        flash((" · ".join(msg_parts)) or "Nichts importiert.", "success" if imported else "error")
+        return redirect(url_for("signal_list"))
+    return render_template("admin_signals_import.html",
+        categories=CATEGORIES, status_labels=STATUS_LABELS, sections=sections)
+
+
+def _parse_signal_csv(raw, sections):
+    """Parse CSV or TSV text into signal dicts. Returns (imported, errors)."""
+    # Detect separator: tab wins if present on first line, then semicolon, then comma
+    first_line = raw.split("\n")[0]
+    if "\t" in first_line:
+        sep = "\t"
+    elif ";" in first_line:
+        sep = ";"
+    else:
+        sep = ","
+
+    # Build lookup maps
+    status_map = {
+        "radar": "radar", "im radar": "radar",
+        "develop": "develop", "in entwicklung": "develop", "entwicklung": "develop",
+        "announced": "announced", "angekündigt": "announced", "angekundigt": "announced",
+        "active": "active", "verfügbar": "active", "in kraft": "active", "verfugbar": "active",
+        "action": "action", "handlungsbedarf": "action",
+    }
+    cat_map = {
+        "krankenkassen": "krankenkassen", "krankenkassen & gkv": "krankenkassen", "gkv": "krankenkassen",
+        "digital": "digital", "digitalisierung": "digital", "digitalisierung & ti": "digital", "ti": "digital",
+        "gesetze": "gesetze", "regulatorien": "gesetze", "gesetze & regulatorien": "gesetze",
+        "personal": "personal", "tarife": "personal", "personal & tarife": "personal",
+        "praxis": "praxis", "praxismanagement": "praxis",
+    }
+    sec_by_name = {s["name"].lower(): s["id"] for s in sections}
+    sec_by_id   = {s["id"]: s["id"] for s in sections}
+
+    # Header aliases → field name
+    col_map = {
+        "titel": "title", "title": "title",
+        "zusammenfassung": "summary", "summary": "summary",
+        "detail": "detail", "detailtext": "detail",
+        "status": "status",
+        "kategorie": "category", "category": "category",
+        "fachbereich": "section_ids", "fachbereiche": "section_ids", "section_ids": "section_ids", "sektionen": "section_ids",
+        "quelle": "source", "source": "source",
+        "quelle-url": "source_url", "quellenurl": "source_url", "source_url": "source_url", "url": "source_url",
+        "datum": "date", "date": "date",
+        "frist": "deadline", "deadline": "deadline",
+    }
+
+    reader = csv.DictReader(io.StringIO(raw), delimiter=sep)
+    # Normalise header names
+    if reader.fieldnames is None:
+        return [], ["Keine Spaltenüberschriften erkannt"]
+    headers = {h: col_map.get(h.strip().lower().replace(" ", "-"), None) for h in reader.fieldnames}
+
+    imported, errors = [], []
+    for i, row in enumerate(reader, start=2):
+        mapped = {}
+        for raw_col, field in headers.items():
+            if field and raw_col in row:
+                mapped[field] = (row[raw_col] or "").strip()
+
+        title = mapped.get("title", "")
+        if not title:
+            errors.append(f"Zeile {i}: kein Titel")
+            continue
+
+        # Resolve status
+        raw_status = mapped.get("status", "radar").lower().strip()
+        status = status_map.get(raw_status, "radar")
+
+        # Resolve category
+        raw_cat = mapped.get("category", "").lower().strip()
+        category = cat_map.get(raw_cat, "praxis")
+
+        # Resolve section_ids
+        raw_secs = mapped.get("section_ids", "")
+        sec_ids = []
+        for part in raw_secs.replace(";", ",").split(","):
+            part = part.strip()
+            if not part:
+                continue
+            sid = sec_by_id.get(part) or sec_by_name.get(part.lower())
+            if sid:
+                sec_ids.append(sid)
+
+        sig = {
+            "id":         str(uuid.uuid4()),
+            "title":      title,
+            "summary":    mapped.get("summary", ""),
+            "detail":     mapped.get("detail", ""),
+            "status":     status,
+            "category":   category,
+            "source":     mapped.get("source", ""),
+            "source_url": mapped.get("source_url", ""),
+            "date":       mapped.get("date", datetime.now().strftime("%Y-%m-%d")),
+            "deadline":   mapped.get("deadline", ""),
+            "section_ids": sec_ids,
+            "created_at": datetime.now().isoformat(),
+        }
+        imported.append(sig)
+    return imported, errors
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
