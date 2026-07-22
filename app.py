@@ -424,7 +424,7 @@ def deploy():
     repo = os.path.dirname(os.path.abspath(__file__))
     try:
         subprocess.run(["git", "pull", "--ff-only"], cwd=repo, check=True, capture_output=True)
-        subprocess.run(["systemctl", "restart", "branchenradar"], check=True, capture_output=True)
+        subprocess.run(["sudo", "systemctl", "restart", "branchenradar"], check=True, capture_output=True)
         return jsonify({"ok": True})
     except subprocess.CalledProcessError as e:
         return jsonify({"ok": False, "msg": str(e)}), 500
