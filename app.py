@@ -22,6 +22,17 @@ SIGNALS_FILE  = os.path.join(DATA_DIR, "signals.json")
 USERS_FILE    = os.path.join(DATA_DIR, "users.json")
 ENTITIES_FILE = os.path.join(DATA_DIR, "entities.json")
 
+def _init_data():
+    """Copy seed files to data files on first run if data files don't exist."""
+    for name in ("signals", "users", "entities"):
+        target = os.path.join(DATA_DIR, f"{name}.json")
+        seed   = os.path.join(DATA_DIR, f"{name}.seed.json")
+        if not os.path.exists(target) and os.path.exists(seed):
+            import shutil
+            shutil.copy2(seed, target)
+
+_init_data()
+
 DEPLOY_TOKEN = os.environ.get("DEPLOY_TOKEN", "")
 
 STATUS_ORDER = ["action", "announced", "develop", "radar", "active"]
@@ -125,6 +136,7 @@ def logout():
 # ── Public dashboard ──────────────────────────────────────────────────────────
 
 @app.route("/")
+@login_required
 def dashboard():
     signals = load_signals()
     def sort_key(s):
