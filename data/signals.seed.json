@@ -1,218 +1,272 @@
-[
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000001",
-    "title": "TI 2.0 Pflichtumstieg: Konnektor-Support endet 30. September 2026",
-    "summary": "Alle Praxen müssen auf Telematikinfrastruktur 2.0 umgestellt haben. Ab 01.10. ist Abrechnung über KV ohne neuen Konnektor oder TI-as-a-Service nicht mehr möglich.",
-    "detail": "Praxen, die bis 30.09.2026 nicht umgestellt haben, können keine Abrechnungen über das KV-System einreichen. Die Umstellung erfordert einen neuen Konnektor (ca. 1.200–2.500 €) oder einen Wechsel auf eine TI-as-a-Service-Lösung. Fördermittel können über die KZV beantragt werden.\n\nEmpfohlene Maßnahme: Sofort IT-Dienstleister kontaktieren, Förderantrag stellen.",
-    "category": "digital",
-    "status": "action",
-    "source": "gematik GmbH",
-    "source_url": "https://www.gematik.de",
-    "date": "2026-07-15",
-    "deadline": "30. Sep 2026"
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000002",
-    "title": "Neue MFA-Gehaltstabelle ab 01. August 2026 — Anpassungspflicht",
-    "summary": "Neue Tarifvereinbarung für Medizinische Fachangestellte: +4,2 % bis +6,8 % je nach Qualifikationsstufe, rückwirkend zum 01.08.2026. Nachzahlung im September-Gehalt.",
-    "detail": "Arbeitgeber sind verpflichtet, die Löhne entsprechend anzupassen. Die rückwirkende Zahlung für August ist im September-Gehalt zu berücksichtigen. Die neue Tabelle ist über die Bundeszahnärztekammer und ver.di abrufbar.",
-    "category": "personal",
-    "status": "action",
-    "source": "BZÄK · ver.di",
-    "source_url": "https://www.bzaek.de",
-    "date": "2026-07-18",
-    "deadline": "01. Aug 2026"
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000003",
-    "title": "BEMA-Änderung: Neue PAR-Positionen ab Oktober 2026 — Software-Update nötig",
-    "summary": "G-BA beschloss neue Leistungspositionen für systematische Parodontitisbehandlung. Neue UPT-Codes treten 01.10.2026 in Kraft, erhöhte Dokumentationspflicht, Praxissoftware muss aktualisiert sein.",
-    "detail": "Die UPT wird ab Oktober in drei Sitzungsintervalle unterteilt und separat abrechenbar. Wichtig: der Parodontalstatus muss digital dokumentiert vorliegen. Anbieter wie Dampsoft, Evident, CGM haben Updates angekündigt — prüfen ob die eigene Software vorbereitet ist.",
-    "category": "krankenkassen",
-    "status": "action",
-    "source": "G-BA · KZBV",
-    "source_url": "https://www.g-ba.de",
-    "date": "2026-07-10",
-    "deadline": "01. Okt 2026"
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000004",
-    "title": "E-Rechnung: Pflicht für Privatpatienten-Rechnungen ab 01. Januar 2027",
-    "summary": "Wachstumschancengesetz verpflichtet zur E-Rechnung (XRechnung/ZUGFeRD) gegenüber PKV. Übergangsfrist bis 31.12.2026 — bis dahin sind PDF-Rechnungen noch akzeptiert.",
-    "detail": "Praxissoftware-Anbieter haben Updates angekündigt. Jetzt prüfen ob die eigene Software E-Rechnung unterstützt und ggf. Update einplanen.",
-    "category": "digital",
-    "status": "announced",
-    "source": "BMF · BZÄK",
-    "source_url": "https://www.bundesfinanzministerium.de",
-    "date": "2026-06-22",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000005",
-    "title": "EU AI Act: Hochrisiko-Anforderungen für Diagnose-KI gelten ab August 2026",
-    "summary": "KI-Systeme zur Diagnoseunterstützung (Röntgenauswertung, Befunderstellung) müssen von Anbietern bis August 2026 konform zertifiziert sein. Praxen müssen Nachweise einfordern.",
-    "detail": "Praxen selbst müssen nicht zertifiziert werden, aber Softwareanbieter für Diagnose-KI müssen Konformitätsnachweise vorlegen. Checkliste über BZÄK erhältlich.",
-    "category": "gesetze",
-    "status": "announced",
-    "source": "EU-Kommission",
-    "source_url": "https://digital-strategy.ec.europa.eu",
-    "date": "2026-07-05",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000006",
-    "title": "RKI überarbeitet Hygieneempfehlungen für Zahnarztpraxen — strengere Anforderungen",
-    "summary": "Neue RKI-Empfehlungen zur Infektionsprävention werden Ende 2026 veröffentlicht. Strengere Anforderungen an Aufbereitungsräume und Sterilisationsdokumentation, ab 2027 Prüfmaßstab für Gesundheitsamt-Begehungen.",
-    "detail": "Konsultation läuft bis September 2026. BZÄK beteiligt sich und informiert. Empfehlung: Hygieneplan und Aufbereitungsräume jetzt überprüfen und Mängel vorab beheben.",
-    "category": "praxis",
-    "status": "announced",
-    "source": "RKI · BZÄK",
-    "source_url": "https://www.rki.de",
-    "date": "2026-05-30",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000007",
-    "title": "GKV-Finanzstabilisierungsgesetz II: Neue Eigenanteil-Regelungen für Zahnersatz",
-    "summary": "BMG plant Änderungen bei Zahnersatz-Eigenanteilen. Anhebung der GKV-Zuschüsse bei gleichzeitiger Anpassung der Festzuschüsse. Gesetzentwurf für Q1 2027 erwartet.",
-    "detail": "Noch kein Gesetzentwurf vorliegend. Frühe Beobachtung empfohlen — Änderungen könnten Heil- und Kostenpläne und Patientenkommunikation betreffen.",
-    "category": "krankenkassen",
-    "status": "develop",
-    "source": "BMG · GKV-Spitzenverband",
-    "source_url": "https://www.bundesgesundheitsministerium.de",
-    "date": "2026-07-08",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000008",
-    "title": "Arbeitszeitgesetz-Reform: Flexiblere Wochenarbeitszeit für MFAs in Planung",
-    "summary": "BMAS-Referentenentwurf: Wochenhöchstarbeitszeit statt täglicher Höchstgrenzen. Für Zahnarztpraxen könnte das flexible Terminplanung und Notdienste vereinfachen. Umsetzung frühestens 2027.",
-    "detail": "Noch im frühen Gesetzgebungsverfahren, Bundesrat-Zustimmung ausstehend. Beobachtung empfohlen.",
-    "category": "personal",
-    "status": "develop",
-    "source": "BMAS",
-    "source_url": "https://www.bmas.de",
-    "date": "2026-06-18",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000009",
-    "title": "Patientenrechtegesetz-Novelle: Erweiterte Informationspflichten vor Behandlung",
-    "summary": "Bundesrat berät Novelle: erweiterte Aufklärungspflichten vor kostenintensiven Behandlungen, standardisierte digitale Einwilligungserklärung. Bei Verabschiedung frühestens Mitte 2027 in Kraft.",
-    "detail": "Zweite Bundesrat-Lesung für Herbst 2026 geplant. Praktisch relevant für Zahnersatz-Beratungsdokumentation.",
-    "category": "gesetze",
-    "status": "develop",
-    "source": "Bundesrat · BMG",
-    "source_url": "https://www.bundesrat.de",
-    "date": "2026-07-12",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000010",
-    "title": "Mindestlohnkommission: Erhöhung auf 15,00 € ab Januar 2027 empfohlen",
-    "summary": "Die Mindestlohnkommission empfiehlt eine Anhebung des allgemeinen Mindestlohns auf 15,00 € ab 01.01.2027. Für Zahnarztpraxen relevant bei Hilfskräften ohne Tarifbindung.",
-    "detail": "Betrifft insbesondere Reinigungskräfte und ungelernte Hilfskräfte in der Praxis. MFAs sind durch Tarifvertrag meist bereits über diesem Niveau.",
-    "category": "personal",
-    "status": "develop",
-    "source": "Mindestlohnkommission",
-    "source_url": "https://www.mindestlohn-kommission.de",
-    "date": "2026-06-25",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000011",
-    "title": "G-BA: Neue Früherkennungsrichtlinien Mundhöhlenkrebs — Stellungnahme bis 15. Aug",
-    "summary": "G-BA konsultiert neue Richtlinien für Mundhöhlenkarzinom-Früherkennung. Mögliche neue GKV-Leistungsposition für systematisches Screening. KZBV koordiniert gemeinsame Stellungnahme.",
-    "detail": "Stellungnahmen über G-BA-Portal möglich. KZBV koordiniert gemeinsame Stellungnahme der zahnärztlichen Körperschaften — Einzelpraxen können sich über ihre KZV einbringen.",
-    "category": "krankenkassen",
-    "status": "radar",
-    "source": "G-BA",
-    "source_url": "https://www.g-ba.de",
-    "date": "2026-07-20",
-    "deadline": "15. Aug 2026"
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000012",
-    "title": "EU überarbeitet Berufsanerkennungsrichtlinie für Zahnärzte — Konsultation bis Sep",
-    "summary": "EU-Kommission konsultiert Überarbeitung der automatischen Anerkennung von Zahnarztqualifikationen. Potenzielle Erleichterung der Niederlassung aus EU-Drittstaaten in Deutschland.",
-    "detail": "Öffentliche Konsultation auf Have-Your-Say-Plattform der EU-Kommission. BZÄK beteiligt sich. Mögliche Auswirkung auf Wettbewerb und Praxisbesetzung.",
-    "category": "gesetze",
-    "status": "radar",
-    "source": "EU-Kommission",
-    "source_url": "https://ec.europa.eu/info/law/better-regulation",
-    "date": "2026-07-01",
-    "deadline": "30. Sep 2026"
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000013",
-    "title": "KI-gestützte Kariesdiagnose: Erste CE-zertifizierte Systeme jetzt zugelassen",
-    "summary": "Dental-KI-Systeme haben CE-Zertifizierung nach MDR erhalten. Automatische Karies- und Periapex-Erkennung auf Röntgenbildern — noch keine GKV-Erstattung, aber als IGeL abrechenbar.",
-    "detail": "Noch frühe Marktphase. Mehrere Anbieter planen 2026/27 GKV-Anträge. Interessante Ergänzung für Qualitätssicherung — erste Praxen berichten von verbesserter Patientenkommunikation durch visualisierte Diagnosen.",
-    "category": "digital",
-    "status": "radar",
-    "source": "BfArM · Fachliteratur",
-    "source_url": "https://www.bfarm.de",
-    "date": "2026-07-01",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000014",
-    "title": "KZBV-Studie: Nachfolgeproblem bei Zahnarztpraxen verschärft sich bis 2030",
-    "summary": "Neue KZBV-Analyse zeigt: Bis 2030 suchen über 12.000 Praxisinhaber einen Nachfolger. Kassensitze in ländlichen Regionen besonders betroffen.",
-    "detail": "Politisch relevant: MVZ-Regulierung für Zahnärzte steht auf der Agenda mehrerer Bundestagsfraktionen. Mögliche Änderungen der Zulassungsverordnung könnten Praxisstruktur und Wettbewerb verändern.",
-    "category": "praxis",
-    "status": "radar",
-    "source": "KZBV",
-    "source_url": "https://www.kzbv.de",
-    "date": "2026-07-03",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000015",
-    "title": "ePA für alle: Elektronische Patientenakte seit 01. Juli 2026 verpflichtend",
-    "summary": "GKV-Versicherte erhalten automatisch eine ePA. Praxen sind verpflichtet, Befunde und Behandlungsdaten einzupflegen. Opt-out für Patienten möglich. Sanktionen bei Nichteinhaltung ab 2027.",
-    "detail": "Pflicht umfasst Befunde, Röntgenbilder, Medikationspläne. Honorarkürzungen bei Nichteinhaltung ab 2027 angekündigt. Patienten können Opt-out erklären — Dokumentation des Opt-outs empfohlen.",
-    "category": "digital",
-    "status": "active",
-    "source": "BMG · gematik",
-    "source_url": "https://www.gematik.de",
-    "date": "2026-07-01",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000016",
-    "title": "GOZ-Reform 2026: Erstmals seit 1988 neue Gebührenordnung in Kraft",
-    "summary": "Neue GOZ seit 01.05.2026. Punktwerte angehoben, neue Ziffern für digitale Abformungen und Implantate. Honorarsteigerungen im Schnitt 15–22 % für Privatpatienten. Software-Update erforderlich.",
-    "detail": "Heil- und Kostenpläne für Privatpatienten sind nach neuer GOZ auszustellen. Praxissoftware sollte bereits aktualisiert sein — falls nicht, sofort Update einleiten.",
-    "category": "krankenkassen",
-    "status": "active",
-    "source": "BZÄK · BMG",
-    "source_url": "https://www.bzaek.de",
-    "date": "2026-05-01",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000017",
-    "title": "EU MDR: Übergangsfrist für Klasse-I-Medizinprodukte abgelaufen",
-    "summary": "Alle Instrumente, Abdruckmaterialien und sonstigen Klasse-I-Produkte müssen vollständige MDR-Konformität aufweisen. Produkte ohne CE-Kennzeichnung nach MDR dürfen nicht mehr eingesetzt werden.",
-    "detail": "Lieferanten sollten aktuelle MDR-Konformitätserklärungen bereitstellen. Praxen sollten Produkte ohne MDR-Kennzeichnung aussortieren und Lieferanten nach Zertifikaten fragen.",
-    "category": "gesetze",
-    "status": "active",
-    "source": "BfArM · EU-Kommission",
-    "source_url": "https://www.bfarm.de",
-    "date": "2026-06-01",
-    "deadline": null
-  },
-  {
-    "id": "a1b2c3d4-0001-0001-0001-000000000018",
-    "title": "BSI-Anforderungen für KI-gestützte Diagnosesysteme verbindlich",
-    "summary": "BSI veröffentlichte verbindliche Sicherheitsanforderungen für KI-Systeme in Arztpraxen. Betrifft KI-Röntgenauswertung und automatisierte Befunderstellung. Übergangsfrist bis 31.12.2026.",
-    "detail": "Anforderungen umfassen: Zertifizierungspflicht der Anbieter, Dokumentationspflicht bei KI-Entscheidungen, Patientenaufklärungspflicht.",
-    "category": "gesetze",
-    "status": "active",
-    "source": "BSI",
-    "source_url": "https://www.bsi.bund.de",
-    "date": "2026-04-15",
-    "deadline": null
-  }
+﻿[
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000001",
+        "title":  "TI 2.0 Pflichtumstieg: Konnektor-Support endet 30. September 2026",
+        "summary":  "Alle Praxen mÃ¼ssen auf Telematikinfrastruktur 2.0 umgestellt haben. Ab 01.10. ist Abrechnung Ã¼ber KV ohne neuen Konnektor oder TI-as-a-Service nicht mehr mÃ¶glich.",
+        "detail":  "Praxen, die bis 30.09.2026 nicht umgestellt haben, kÃ¶nnen keine Abrechnungen Ã¼ber das KV-System einreichen. Die Umstellung erfordert einen neuen Konnektor (ca. 1.200â€“2.500 â‚¬) oder einen Wechsel auf eine TI-as-a-Service-LÃ¶sung. FÃ¶rdermittel kÃ¶nnen Ã¼ber die KZV beantragt werden.\n\nEmpfohlene MaÃŸnahme: Sofort IT-Dienstleister kontaktieren, FÃ¶rderantrag stellen.",
+        "category":  "digital",
+        "status":  "action",
+        "source":  "gematik GmbH",
+        "source_url":  "https://www.gematik.de",
+        "date":  "2026-07-15",
+        "deadline":  "30. Sep 2026",
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000002",
+        "title":  "Neue MFA-Gehaltstabelle ab 01. August 2026 â€” Anpassungspflicht",
+        "summary":  "Neue Tarifvereinbarung fÃ¼r Medizinische Fachangestellte: +4,2 % bis +6,8 % je nach Qualifikationsstufe, rÃ¼ckwirkend zum 01.08.2026. Nachzahlung im September-Gehalt.",
+        "detail":  "Arbeitgeber sind verpflichtet, die LÃ¶hne entsprechend anzupassen. Die rÃ¼ckwirkende Zahlung fÃ¼r August ist im September-Gehalt zu berÃ¼cksichtigen. Die neue Tabelle ist Ã¼ber die BundeszahnÃ¤rztekammer und ver.di abrufbar.",
+        "category":  "personal",
+        "status":  "action",
+        "source":  "BZÃ„K Â· ver.di",
+        "source_url":  "https://www.bzaek.de",
+        "date":  "2026-07-18",
+        "deadline":  "01. Aug 2026",
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000003",
+        "title":  "BEMA-Ã„nderung: Neue PAR-Positionen ab Oktober 2026 â€” Software-Update nÃ¶tig",
+        "summary":  "G-BA beschloss neue Leistungspositionen fÃ¼r systematische Parodontitisbehandlung. Neue UPT-Codes treten 01.10.2026 in Kraft, erhÃ¶hte Dokumentationspflicht, Praxissoftware muss aktualisiert sein.",
+        "detail":  "Die UPT wird ab Oktober in drei Sitzungsintervalle unterteilt und separat abrechenbar. Wichtig: der Parodontalstatus muss digital dokumentiert vorliegen. Anbieter wie Dampsoft, Evident, CGM haben Updates angekÃ¼ndigt â€” prÃ¼fen ob die eigene Software vorbereitet ist.",
+        "category":  "krankenkassen",
+        "status":  "action",
+        "source":  "G-BA Â· KZBV",
+        "source_url":  "https://www.g-ba.de",
+        "date":  "2026-07-10",
+        "deadline":  "01. Okt 2026",
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000004",
+        "title":  "E-Rechnung: Pflicht fÃ¼r Privatpatienten-Rechnungen ab 01. Januar 2027",
+        "summary":  "Wachstumschancengesetz verpflichtet zur E-Rechnung (XRechnung/ZUGFeRD) gegenÃ¼ber PKV. Ãœbergangsfrist bis 31.12.2026 â€” bis dahin sind PDF-Rechnungen noch akzeptiert.",
+        "detail":  "Praxissoftware-Anbieter haben Updates angekÃ¼ndigt. Jetzt prÃ¼fen ob die eigene Software E-Rechnung unterstÃ¼tzt und ggf. Update einplanen.",
+        "category":  "digital",
+        "status":  "announced",
+        "source":  "BMF Â· BZÃ„K",
+        "source_url":  "https://www.bundesfinanzministerium.de",
+        "date":  "2026-06-22",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000005",
+        "title":  "EU AI Act: Hochrisiko-Anforderungen fÃ¼r Diagnose-KI gelten ab August 2026",
+        "summary":  "KI-Systeme zur DiagnoseunterstÃ¼tzung (RÃ¶ntgenauswertung, Befunderstellung) mÃ¼ssen von Anbietern bis August 2026 konform zertifiziert sein. Praxen mÃ¼ssen Nachweise einfordern.",
+        "detail":  "Praxen selbst mÃ¼ssen nicht zertifiziert werden, aber Softwareanbieter fÃ¼r Diagnose-KI mÃ¼ssen KonformitÃ¤tsnachweise vorlegen. Checkliste Ã¼ber BZÃ„K erhÃ¤ltlich.",
+        "category":  "gesetze",
+        "status":  "announced",
+        "source":  "EU-Kommission",
+        "source_url":  "https://digital-strategy.ec.europa.eu",
+        "date":  "2026-07-05",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000006",
+        "title":  "RKI Ã¼berarbeitet Hygieneempfehlungen fÃ¼r Zahnarztpraxen â€” strengere Anforderungen",
+        "summary":  "Neue RKI-Empfehlungen zur InfektionsprÃ¤vention werden Ende 2026 verÃ¶ffentlicht. Strengere Anforderungen an AufbereitungsrÃ¤ume und Sterilisationsdokumentation, ab 2027 PrÃ¼fmaÃŸstab fÃ¼r Gesundheitsamt-Begehungen.",
+        "detail":  "Konsultation lÃ¤uft bis September 2026. BZÃ„K beteiligt sich und informiert. Empfehlung: Hygieneplan und AufbereitungsrÃ¤ume jetzt Ã¼berprÃ¼fen und MÃ¤ngel vorab beheben.",
+        "category":  "praxis",
+        "status":  "announced",
+        "source":  "RKI Â· BZÃ„K",
+        "source_url":  "https://www.rki.de",
+        "date":  "2026-05-30",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000007",
+        "title":  "GKV-Finanzstabilisierungsgesetz II: Neue Eigenanteil-Regelungen fÃ¼r Zahnersatz",
+        "summary":  "BMG plant Ã„nderungen bei Zahnersatz-Eigenanteilen. Anhebung der GKV-ZuschÃ¼sse bei gleichzeitiger Anpassung der FestzuschÃ¼sse. Gesetzentwurf fÃ¼r Q1 2027 erwartet.",
+        "detail":  "Noch kein Gesetzentwurf vorliegend. FrÃ¼he Beobachtung empfohlen â€” Ã„nderungen kÃ¶nnten Heil- und KostenplÃ¤ne und Patientenkommunikation betreffen.",
+        "category":  "krankenkassen",
+        "status":  "develop",
+        "source":  "BMG Â· GKV-Spitzenverband",
+        "source_url":  "https://www.bundesgesundheitsministerium.de",
+        "date":  "2026-07-08",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000008",
+        "title":  "Arbeitszeitgesetz-Reform: Flexiblere Wochenarbeitszeit fÃ¼r MFAs in Planung",
+        "summary":  "BMAS-Referentenentwurf: WochenhÃ¶chstarbeitszeit statt tÃ¤glicher HÃ¶chstgrenzen. FÃ¼r Zahnarztpraxen kÃ¶nnte das flexible Terminplanung und Notdienste vereinfachen. Umsetzung frÃ¼hestens 2027.",
+        "detail":  "Noch im frÃ¼hen Gesetzgebungsverfahren, Bundesrat-Zustimmung ausstehend. Beobachtung empfohlen.",
+        "category":  "personal",
+        "status":  "develop",
+        "source":  "BMAS",
+        "source_url":  "https://www.bmas.de",
+        "date":  "2026-06-18",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000009",
+        "title":  "Patientenrechtegesetz-Novelle: Erweiterte Informationspflichten vor Behandlung",
+        "summary":  "Bundesrat berÃ¤t Novelle: erweiterte AufklÃ¤rungspflichten vor kostenintensiven Behandlungen, standardisierte digitale EinwilligungserklÃ¤rung. Bei Verabschiedung frÃ¼hestens Mitte 2027 in Kraft.",
+        "detail":  "Zweite Bundesrat-Lesung fÃ¼r Herbst 2026 geplant. Praktisch relevant fÃ¼r Zahnersatz-Beratungsdokumentation.",
+        "category":  "gesetze",
+        "status":  "develop",
+        "source":  "Bundesrat Â· BMG",
+        "source_url":  "https://www.bundesrat.de",
+        "date":  "2026-07-12",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000010",
+        "title":  "Mindestlohnkommission: ErhÃ¶hung auf 15,00 â‚¬ ab Januar 2027 empfohlen",
+        "summary":  "Die Mindestlohnkommission empfiehlt eine Anhebung des allgemeinen Mindestlohns auf 15,00 â‚¬ ab 01.01.2027. FÃ¼r Zahnarztpraxen relevant bei HilfskrÃ¤ften ohne Tarifbindung.",
+        "detail":  "Betrifft insbesondere ReinigungskrÃ¤fte und ungelernte HilfskrÃ¤fte in der Praxis. MFAs sind durch Tarifvertrag meist bereits Ã¼ber diesem Niveau.",
+        "category":  "personal",
+        "status":  "develop",
+        "source":  "Mindestlohnkommission",
+        "source_url":  "https://www.mindestlohn-kommission.de",
+        "date":  "2026-06-25",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000011",
+        "title":  "G-BA: Neue FrÃ¼herkennungsrichtlinien MundhÃ¶hlenkrebs â€” Stellungnahme bis 15. Aug",
+        "summary":  "G-BA konsultiert neue Richtlinien fÃ¼r MundhÃ¶hlenkarzinom-FrÃ¼herkennung. MÃ¶gliche neue GKV-Leistungsposition fÃ¼r systematisches Screening. KZBV koordiniert gemeinsame Stellungnahme.",
+        "detail":  "Stellungnahmen Ã¼ber G-BA-Portal mÃ¶glich. KZBV koordiniert gemeinsame Stellungnahme der zahnÃ¤rztlichen KÃ¶rperschaften â€” Einzelpraxen kÃ¶nnen sich Ã¼ber ihre KZV einbringen.",
+        "category":  "krankenkassen",
+        "status":  "radar",
+        "source":  "G-BA",
+        "source_url":  "https://www.g-ba.de",
+        "date":  "2026-07-20",
+        "deadline":  "15. Aug 2026",
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000012",
+        "title":  "EU Ã¼berarbeitet Berufsanerkennungsrichtlinie fÃ¼r ZahnÃ¤rzte â€” Konsultation bis Sep",
+        "summary":  "EU-Kommission konsultiert Ãœberarbeitung der automatischen Anerkennung von Zahnarztqualifikationen. Potenzielle Erleichterung der Niederlassung aus EU-Drittstaaten in Deutschland.",
+        "detail":  "Ã–ffentliche Konsultation auf Have-Your-Say-Plattform der EU-Kommission. BZÃ„K beteiligt sich. MÃ¶gliche Auswirkung auf Wettbewerb und Praxisbesetzung.",
+        "category":  "gesetze",
+        "status":  "radar",
+        "source":  "EU-Kommission",
+        "source_url":  "https://ec.europa.eu/info/law/better-regulation",
+        "date":  "2026-07-01",
+        "deadline":  "30. Sep 2026",
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000013",
+        "title":  "KI-gestÃ¼tzte Kariesdiagnose: Erste CE-zertifizierte Systeme jetzt zugelassen",
+        "summary":  "Dental-KI-Systeme haben CE-Zertifizierung nach MDR erhalten. Automatische Karies- und Periapex-Erkennung auf RÃ¶ntgenbildern â€” noch keine GKV-Erstattung, aber als IGeL abrechenbar.",
+        "detail":  "Noch frÃ¼he Marktphase. Mehrere Anbieter planen 2026/27 GKV-AntrÃ¤ge. Interessante ErgÃ¤nzung fÃ¼r QualitÃ¤tssicherung â€” erste Praxen berichten von verbesserter Patientenkommunikation durch visualisierte Diagnosen.",
+        "category":  "digital",
+        "status":  "radar",
+        "source":  "BfArM Â· Fachliteratur",
+        "source_url":  "https://www.bfarm.de",
+        "date":  "2026-07-01",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000014",
+        "title":  "KZBV-Studie: Nachfolgeproblem bei Zahnarztpraxen verschÃ¤rft sich bis 2030",
+        "summary":  "Neue KZBV-Analyse zeigt: Bis 2030 suchen Ã¼ber 12.000 Praxisinhaber einen Nachfolger. Kassensitze in lÃ¤ndlichen Regionen besonders betroffen.",
+        "detail":  "Politisch relevant: MVZ-Regulierung fÃ¼r ZahnÃ¤rzte steht auf der Agenda mehrerer Bundestagsfraktionen. MÃ¶gliche Ã„nderungen der Zulassungsverordnung kÃ¶nnten Praxisstruktur und Wettbewerb verÃ¤ndern.",
+        "category":  "praxis",
+        "status":  "radar",
+        "source":  "KZBV",
+        "source_url":  "https://www.kzbv.de",
+        "date":  "2026-07-03",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000015",
+        "title":  "ePA fÃ¼r alle: Elektronische Patientenakte seit 01. Juli 2026 verpflichtend",
+        "summary":  "GKV-Versicherte erhalten automatisch eine ePA. Praxen sind verpflichtet, Befunde und Behandlungsdaten einzupflegen. Opt-out fÃ¼r Patienten mÃ¶glich. Sanktionen bei Nichteinhaltung ab 2027.",
+        "detail":  "Pflicht umfasst Befunde, RÃ¶ntgenbilder, MedikationsplÃ¤ne. HonorarkÃ¼rzungen bei Nichteinhaltung ab 2027 angekÃ¼ndigt. Patienten kÃ¶nnen Opt-out erklÃ¤ren â€” Dokumentation des Opt-outs empfohlen.",
+        "category":  "digital",
+        "status":  "active",
+        "source":  "BMG Â· gematik",
+        "source_url":  "https://www.gematik.de",
+        "date":  "2026-07-01",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000016",
+        "title":  "GOZ-Reform 2026: Erstmals seit 1988 neue GebÃ¼hrenordnung in Kraft",
+        "summary":  "Neue GOZ seit 01.05.2026. Punktwerte angehoben, neue Ziffern fÃ¼r digitale Abformungen und Implantate. Honorarsteigerungen im Schnitt 15â€“22 % fÃ¼r Privatpatienten. Software-Update erforderlich.",
+        "detail":  "Heil- und KostenplÃ¤ne fÃ¼r Privatpatienten sind nach neuer GOZ auszustellen. Praxissoftware sollte bereits aktualisiert sein â€” falls nicht, sofort Update einleiten.",
+        "category":  "krankenkassen",
+        "status":  "active",
+        "source":  "BZÃ„K Â· BMG",
+        "source_url":  "https://www.bzaek.de",
+        "date":  "2026-05-01",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000017",
+        "title":  "EU MDR: Ãœbergangsfrist fÃ¼r Klasse-I-Medizinprodukte abgelaufen",
+        "summary":  "Alle Instrumente, Abdruckmaterialien und sonstigen Klasse-I-Produkte mÃ¼ssen vollstÃ¤ndige MDR-KonformitÃ¤t aufweisen. Produkte ohne CE-Kennzeichnung nach MDR dÃ¼rfen nicht mehr eingesetzt werden.",
+        "detail":  "Lieferanten sollten aktuelle MDR-KonformitÃ¤tserklÃ¤rungen bereitstellen. Praxen sollten Produkte ohne MDR-Kennzeichnung aussortieren und Lieferanten nach Zertifikaten fragen.",
+        "category":  "gesetze",
+        "status":  "active",
+        "source":  "BfArM Â· EU-Kommission",
+        "source_url":  "https://www.bfarm.de",
+        "date":  "2026-06-01",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    },
+    {
+        "id":  "a1b2c3d4-0001-0001-0001-000000000018",
+        "title":  "BSI-Anforderungen fÃ¼r KI-gestÃ¼tzte Diagnosesysteme verbindlich",
+        "summary":  "BSI verÃ¶ffentlichte verbindliche Sicherheitsanforderungen fÃ¼r KI-Systeme in Arztpraxen. Betrifft KI-RÃ¶ntgenauswertung und automatisierte Befunderstellung. Ãœbergangsfrist bis 31.12.2026.",
+        "detail":  "Anforderungen umfassen: Zertifizierungspflicht der Anbieter, Dokumentationspflicht bei KI-Entscheidungen, PatientenaufklÃ¤rungspflicht.",
+        "category":  "gesetze",
+        "status":  "active",
+        "source":  "BSI",
+        "source_url":  "https://www.bsi.bund.de",
+        "date":  "2026-04-15",
+        "deadline":  null,
+        "section_ids":  [
+                            "sec-zahnarzt"
+                        ]
+    }
 ]

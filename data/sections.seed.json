@@ -1,0 +1,8 @@
+[
+  {"id": "sec-zahnarzt", "name": "Zahnmedizin",                       "icon": "🦷"},
+  {"id": "sec-allgemein","name": "Allgemeinmedizin",                   "icon": "🩺"},
+  {"id": "sec-kinder",   "name": "Kinder- und Jugendmedizin",         "icon": "👶"},
+  {"id": "sec-ortho",    "name": "Orthopädie & Unfallchirurgie",       "icon": "🦴"},
+  {"id": "sec-augen",    "name": "Augenheilkunde",                     "icon": "👁"},
+  {"id": "sec-psycho",   "name": "Psychiatrie & Psychotherapie",       "icon": "🧠"}
+]

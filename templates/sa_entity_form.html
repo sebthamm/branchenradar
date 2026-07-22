@@ -25,6 +25,21 @@
         <input type="text" id="name" name="name" required autofocus placeholder="z.B. Zahnarztpraxis Müller GmbH">
       </div>
 
+      <div class="field">
+        <label>Fachbereiche / Sektionen</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:2px">
+          {% for sec in sections %}
+          <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text);font-weight:400;cursor:pointer;padding:5px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg)">
+            <input type="checkbox" name="section_ids" value="{{ sec.id }}"
+                   {{ 'checked' if entity and sec.id in entity.get('section_ids', []) else '' }}
+                   style="accent-color:var(--navy)">
+            {{ sec.icon }} {{ sec.name }}
+          </label>
+          {% endfor %}
+        </div>
+        <div style="font-size:11px;color:var(--faint);margin-top:4px">Welche Fachbereiche sehen die Nutzer dieser Entity?</div>
+      </div>
+
       <hr class="divider">
       <div class="section-sub">Optional: Direkt einen Admin für diese Entity anlegen</div>
 

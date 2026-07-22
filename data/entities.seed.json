@@ -2,6 +2,7 @@
   {
     "id": "entity-demo-0001",
     "name": "Demo-Zahnarztpraxis Müller",
-    "created_at": "2026-07-22"
+    "created_at": "2026-07-22",
+    "section_ids": ["sec-zahnarzt"]
   }
 ]

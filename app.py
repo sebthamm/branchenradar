@@ -17,10 +17,11 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
 
-DATA_DIR   = os.path.join(os.path.dirname(__file__), "data")
+DATA_DIR      = os.path.join(os.path.dirname(__file__), "data")
 SIGNALS_FILE  = os.path.join(DATA_DIR, "signals.json")
 USERS_FILE    = os.path.join(DATA_DIR, "users.json")
 ENTITIES_FILE = os.path.join(DATA_DIR, "entities.json")
+SECTIONS_FILE = os.path.join(DATA_DIR, "sections.seed.json")  # sections are static
 
 def _init_data():
     """Copy seed files to data files on first run if data files don't exist."""
@@ -75,6 +76,10 @@ def load_users():     return _load(USERS_FILE)
 def save_users(d):    _save(USERS_FILE, d)
 def load_entities():  return _load(ENTITIES_FILE)
 def save_entities(d): _save(ENTITIES_FILE, d)
+def load_sections():  return _load(SECTIONS_FILE)
+
+def sections_by_id():
+    return {s["id"]: s for s in load_sections()}
 
 def get_entity(eid):
     return next((e for e in load_entities() if e["id"] == eid), None)
@@ -138,20 +143,49 @@ def logout():
 @app.route("/")
 @login_required
 def dashboard():
-    signals = load_signals()
+    all_signals = load_signals()
+    sections    = load_sections()
+    sec_map     = {s["id"]: s for s in sections}
+
+    # Determine which sections the current user's entity has access to
+    entity_id   = session.get("entity_id")
+    role        = session.get("role")
+    if role == "superadmin" or not entity_id:
+        allowed_section_ids = None  # sees everything
+    else:
+        entity = get_entity(entity_id)
+        allowed_section_ids = set(entity.get("section_ids", [])) if entity else set()
+
+    # Filter signals to allowed sections
+    if allowed_section_ids is not None:
+        signals = [s for s in all_signals
+                   if any(sid in allowed_section_ids for sid in s.get("section_ids", []))]
+        visible_sections = [s for s in sections if s["id"] in allowed_section_ids]
+    else:
+        signals = all_signals
+        visible_sections = sections
+
     def sort_key(s):
         try:   si = STATUS_ORDER.index(s.get("status", "radar"))
         except ValueError: si = 99
         return (si, s.get("date", ""))
     signals.sort(key=sort_key)
+
     counts = {s: 0 for s in STATUS_ORDER}
     for sig in signals:
         if sig.get("status") in counts:
             counts[sig["status"]] += 1
+
+    sec_counts = {}
+    for sig in signals:
+        for sid in sig.get("section_ids", []):
+            sec_counts[sid] = sec_counts.get(sid, 0) + 1
+
     return render_template(
         "dashboard.html",
         signals=signals, counts=counts,
         categories=CATEGORIES, status_labels=STATUS_LABELS,
+        sections=visible_sections, sec_map=sec_map, sec_counts=sec_counts,
         now=datetime.now().strftime("%d. %B %Y, %H:%M"),
         total=len(signals),
     )
@@ -162,9 +196,10 @@ def dashboard():
 @app.route("/superadmin")
 @role_required("superadmin")
 def sa_dashboard():
-    entities = load_entities()
-    users = load_users()
-    # Count users per entity
+    entities  = load_entities()
+    users     = load_users()
+    sections  = load_sections()
+    sec_map   = {s["id"]: s for s in sections}
     counts = {}
     for u in users:
         eid = u.get("entity_id")
@@ -172,7 +207,23 @@ def sa_dashboard():
             counts[eid] = counts.get(eid, 0) + 1
     return render_template("sa_dashboard.html",
         entities=entities, user_counts=counts, users=users,
-        role_labels=ROLE_LABELS)
+        sections=sections, sec_map=sec_map, role_labels=ROLE_LABELS)
+
+@app.route("/superadmin/entities/<eid>/edit", methods=["GET", "POST"])
+@role_required("superadmin")
+def sa_entity_edit(eid):
+    entities = load_entities()
+    entity = next((e for e in entities if e["id"] == eid), None)
+    if not entity:
+        abort(404)
+    if request.method == "POST":
+        entity["name"]        = request.form.get("name", "").strip()
+        entity["section_ids"] = request.form.getlist("section_ids")
+        save_entities(entities)
+        flash("Entity aktualisiert.", "success")
+        return redirect(url_for("sa_dashboard"))
+    return render_template("sa_entity_form.html", entity=entity,
+        sections=load_sections())
 
 @app.route("/superadmin/entities/new", methods=["GET", "POST"])
 @role_required("superadmin")
@@ -181,12 +232,13 @@ def sa_entity_new():
         name = request.form.get("name", "").strip()
         if not name:
             flash("Name ist erforderlich.", "error")
-            return render_template("sa_entity_form.html", entity=None)
+            return render_template("sa_entity_form.html", entity=None, sections=load_sections())
         entities = load_entities()
         new_entity = {
-            "id": str(uuid.uuid4()),
-            "name": name,
-            "created_at": datetime.now().strftime("%Y-%m-%d"),
+            "id":          str(uuid.uuid4()),
+            "name":        name,
+            "created_at":  datetime.now().strftime("%Y-%m-%d"),
+            "section_ids": request.form.getlist("section_ids"),
         }
         entities.append(new_entity)
         save_entities(entities)
@@ -213,7 +265,7 @@ def sa_entity_new():
         else:
             flash(f"Entity '{name}' angelegt. Admin noch hinzufügen.", "success")
         return redirect(url_for("sa_dashboard"))
-    return render_template("sa_entity_form.html", entity=None)
+    return render_template("sa_entity_form.html", entity=None, sections=load_sections())
 
 @app.route("/superadmin/entities/<eid>/delete", methods=["POST"])
 @role_required("superadmin")
@@ -333,7 +385,7 @@ def signal_new():
         return redirect(url_for("signal_list"))
     return render_template("signal_form.html", signal=None,
         categories=CATEGORIES, status_labels=STATUS_LABELS,
-        action=url_for("signal_new"))
+        sections=load_sections(), action=url_for("signal_new"))
 
 @app.route("/admin/signals/<sig_id>/edit", methods=["GET", "POST"])
 @role_required("admin", "superadmin")
@@ -353,7 +405,7 @@ def signal_edit(sig_id):
         return redirect(url_for("signal_list"))
     return render_template("signal_form.html", signal=sig,
         categories=CATEGORIES, status_labels=STATUS_LABELS,
-        action=url_for("signal_edit", sig_id=sig_id))
+        sections=load_sections(), action=url_for("signal_edit", sig_id=sig_id))
 
 @app.route("/admin/signals/<sig_id>/delete", methods=["POST"])
 @role_required("admin", "superadmin")
@@ -394,16 +446,17 @@ def _create_user(form, redirect_to, force_entity=None, force_role=None):
 
 def _signal_from_form(form, existing_id=None):
     return {
-        "id":       existing_id or str(uuid.uuid4()),
-        "title":    form.get("title", "").strip(),
-        "summary":  form.get("summary", "").strip(),
-        "detail":   form.get("detail", "").strip(),
-        "category": form.get("category", "gesetze"),
-        "status":   form.get("status", "radar"),
-        "source":   form.get("source", "").strip(),
-        "source_url": form.get("source_url", "").strip(),
-        "date":     form.get("date", datetime.now().strftime("%Y-%m-%d")),
-        "deadline": form.get("deadline", "").strip() or None,
+        "id":          existing_id or str(uuid.uuid4()),
+        "title":       form.get("title", "").strip(),
+        "summary":     form.get("summary", "").strip(),
+        "detail":      form.get("detail", "").strip(),
+        "category":    form.get("category", "gesetze"),
+        "status":      form.get("status", "radar"),
+        "source":      form.get("source", "").strip(),
+        "source_url":  form.get("source_url", "").strip(),
+        "date":        form.get("date", datetime.now().strftime("%Y-%m-%d")),
+        "deadline":    form.get("deadline", "").strip() or None,
+        "section_ids": form.getlist("section_ids"),
     }
 
 

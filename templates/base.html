@@ -40,7 +40,7 @@
     /* Header */
     .header { background: var(--navy); color: #fff; padding: 0 32px; }
     .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 0; }
-    .brand-title { font-family: Georgia, serif; font-size: 20px; font-weight: normal; color: #fff; text-decoration: none; }
+    .brand-title { font-family: "Optima", "Segoe UI", "Gill Sans MT", "Gill Sans", Tahoma, sans-serif; font-size: 21px; font-weight: 300; letter-spacing: 0.06em; color: #fff; text-decoration: none; text-transform: uppercase; }
     .brand-sub { font-size: 11px; color: rgba(255,255,255,.45); letter-spacing: .07em; text-transform: uppercase; margin-top: 1px; }
     .header-right { display: flex; align-items: center; gap: 16px; }
     .header-link { font-size: 12px; color: rgba(255,255,255,.55); text-decoration: none; }
@@ -71,17 +71,27 @@
 <body>
 <header class="header">
   <div class="header-inner">
-    <div>
-      <a href="{{ url_for('dashboard') }}" class="brand-title">Praxis-Radar</a>
-      <div class="brand-sub">Regulatorisches Monitoring · Zahnmedizin</div>
+    <div style="display:flex;align-items:center;gap:13px">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+        <circle cx="17" cy="17" r="16.5" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <circle cx="17" cy="17" r="11" stroke="rgba(255,255,255,0.18)" stroke-width="1" fill="none"/>
+        <circle cx="17" cy="17" r="5.5" stroke="rgba(255,255,255,0.28)" stroke-width="1" fill="none"/>
+        <circle cx="17" cy="17" r="2.2" fill="rgba(255,255,255,0.85)"/>
+        <line x1="17" y1="14.8" x2="17" y2="1.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M17 17 L26.5 9" stroke="rgba(255,255,255,0.35)" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <a href="{{ url_for('dashboard') }}" class="brand-title">Branchenradar</a>
+        <div class="brand-sub">Regulatorisches Monitoring · Medizin</div>
+      </div>
     </div>
     <div class="header-right">
       {% if session.get('user_id') %}
         <span style="font-size:12px;color:rgba(255,255,255,.35)">{{ session.name }}</span>
         {% if session.role == 'superadmin' %}
-          <a href="{{ url_for('sa_dashboard') }}" class="header-link">Superadmin</a>
+          <a href="{{ url_for('sa_dashboard') }}" class="header-link">Nutzerverwaltung</a>
         {% elif session.role == 'admin' %}
-          <a href="{{ url_for('admin_dashboard') }}" class="header-link">Admin</a>
+          <a href="{{ url_for('admin_dashboard') }}" class="header-link">Nutzerverwaltung</a>
         {% endif %}
         <a href="{{ url_for('signal_list') }}" class="header-link">Signale</a>
         <a href="{{ url_for('logout') }}" class="header-link">Abmelden</a>

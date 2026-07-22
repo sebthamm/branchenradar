@@ -38,15 +38,24 @@
   </div>
   {% if entities %}
   <table>
-    <thead><tr><th>Name</th><th>Erstellt</th><th>Nutzer</th><th></th></tr></thead>
+    <thead><tr><th>Name</th><th>Fachbereiche</th><th>Erstellt</th><th>Nutzer</th><th></th></tr></thead>
     <tbody>
       {% for e in entities %}
       <tr>
         <td><strong>{{ e.name }}</strong></td>
+        <td>
+          {% for sid in e.get('section_ids', []) %}
+            {% set sec = sec_map.get(sid) %}
+            {% if sec %}<span style="font-size:12px;margin-right:4px">{{ sec.icon }} {{ sec.name }}</span>{% endif %}
+          {% else %}
+            <span class="muted">—</span>
+          {% endfor %}
+        </td>
         <td class="muted">{{ e.created_at }}</td>
         <td class="muted">{{ user_counts.get(e.id, 0) }}</td>
         <td>
           <div class="actions">
+            <a href="{{ url_for('sa_entity_edit', eid=e.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>
             <form method="post" action="{{ url_for('sa_entity_delete', eid=e.id) }}"
                   onsubmit="return confirm('Entity und alle Nutzer löschen?')">
               <button type="submit" class="btn btn-danger btn-sm">Löschen</button>

@@ -126,6 +126,20 @@
 
 <main class="main">
 
+  {% if sections | length > 1 %}
+  <div class="filter-row" style="margin-bottom:10px">
+    <span class="filter-lbl">Fachbereich:</span>
+    <button class="pill active" data-sec="all" onclick="filterSec(this)">
+      Alle <span class="pill-count">{{ total }}</span>
+    </button>
+    {% for sec in sections %}
+    <button class="pill" data-sec="{{ sec.id }}" onclick="filterSec(this)">
+      {{ sec.icon }} {{ sec.name }} <span class="pill-count">{{ sec_counts.get(sec.id, 0) }}</span>
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <div class="filter-row">
     <span class="filter-lbl">Kategorie:</span>
     <button class="pill active" data-cat="all" onclick="filterCat(this)">
@@ -160,6 +174,7 @@
       <div class="card"
            data-cat="{{ s.category }}"
            data-phase="{{ s.status }}"
+           data-sections="{{ s.get('section_ids', []) | join(',') }}"
            data-text="{{ (s.title ~ ' ' ~ s.summary ~ ' ' ~ s.detail ~ ' ' ~ s.source) | lower }}"
            onclick="toggleCard(this)">
         <div class="card-stripe" style="background:var(--s-{{ s.status }})"></div>
@@ -207,16 +222,22 @@
 </main>
 
 <script>
+let _activeSec = 'all';
+let _activeCat = 'all';
+
 function toggleCard(card) {
   if (card.querySelector('.card-detail')) card.classList.toggle('open');
 }
-function filterCat(btn) {
-  document.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+function filterSec(btn) {
+  document.querySelectorAll('[data-sec]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const cat = btn.dataset.cat;
-  document.querySelectorAll('.card').forEach(card => {
-    card.dataset.catHidden = (cat !== 'all' && card.dataset.cat !== cat) ? '1' : '';
-  });
+  _activeSec = btn.dataset.sec;
+  updateVisibility();
+}
+function filterCat(btn) {
+  document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _activeCat = btn.dataset.cat;
   updateVisibility();
 }
 function doSearch(q) {
@@ -229,7 +250,10 @@ function doSearch(q) {
 function updateVisibility() {
   let visible = 0;
   document.querySelectorAll('.card').forEach(card => {
-    const hide = card.dataset.catHidden === '1' || card.dataset.searchHidden === '1';
+    const secOk  = _activeSec === 'all' || (card.dataset.sections || '').split(',').includes(_activeSec);
+    const catOk  = _activeCat === 'all' || card.dataset.cat === _activeCat;
+    const searchOk = card.dataset.searchHidden !== '1';
+    const hide = !secOk || !catOk || !searchOk;
     card.style.display = hide ? 'none' : '';
     if (!hide) visible++;
   });
