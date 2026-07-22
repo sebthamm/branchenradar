@@ -5,12 +5,26 @@
 <style>
   /* Search */
   .search-wrap { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; }
-  .search-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 12px; padding: 12px 0; }
-  .search-box { flex: 1; max-width: 480px; display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; }
+  .search-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 10px; padding: 12px 0; flex-wrap: wrap; }
+  .search-box { flex: 1; min-width: 180px; max-width: 420px; display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; }
   .search-box:focus-within { border-color: var(--navy); }
   .search-box input { border: none; background: none; color: var(--text); font-size: 13px; width: 100%; outline: none; }
   .search-box input::placeholder { color: var(--faint); }
   .result-count { font-size: 12px; color: var(--faint); }
+
+  /* Section dropdown */
+  .sec-dropdown-wrap { position: relative; }
+  .sec-dropdown-btn { display: flex; align-items: center; gap: 6px; padding: 7px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; font-size: 13px; color: var(--text); cursor: pointer; white-space: nowrap; user-select: none; }
+  .sec-dropdown-btn:hover { border-color: var(--navy); }
+  .sec-dropdown-btn.has-filter { border-color: var(--navy); color: var(--navy); background: var(--surface2); }
+  @media (prefers-color-scheme: dark) { .sec-dropdown-btn.has-filter { color: #90b8f0; border-color: #90b8f0; } }
+  .sec-dropdown-btn svg { flex-shrink: 0; opacity: .5; }
+  .sec-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 220px; z-index: 100; padding: 6px 0; }
+  .sec-dropdown-menu.open { display: block; }
+  .sec-option { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  .sec-option:hover { background: var(--surface2); }
+  .sec-option input[type="checkbox"] { accent-color: var(--navy); cursor: pointer; flex-shrink: 0; }
+  .sec-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
 
   /* Summary bar */
   .summary-bar { background: var(--surface); border-bottom: 1px solid var(--border); }
@@ -94,8 +108,28 @@
       <span style="color:var(--faint)">⌕</span>
       <input type="text" id="search-input" placeholder="Signale durchsuchen…" oninput="doSearch(this.value)" autocomplete="off">
     </div>
+    {% if sections | length > 1 %}
+    <div class="sec-dropdown-wrap" id="sec-dropdown-wrap">
+      <div class="sec-dropdown-btn" id="sec-dropdown-btn" onclick="toggleSecDropdown(event)">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.3"/><circle cx="6.5" cy="6.5" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>
+        <span id="sec-dropdown-label">Alle Fachbereiche</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="sec-dropdown-menu" id="sec-dropdown-menu">
+        <label class="sec-option">
+          <input type="checkbox" id="sec-all" onchange="secAllChanged(this)" checked> Alle Fachbereiche
+        </label>
+        <hr class="sec-divider">
+        {% for sec in sections %}
+        <label class="sec-option">
+          <input type="checkbox" class="sec-cb" value="{{ sec.id }}" onchange="secCbChanged()">
+          {{ sec.icon }} {{ sec.name }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
     <span class="result-count" id="result-count"></span>
-    <span style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0)"><!-- spacer --></span>
   </div>
 </div>
 
@@ -126,19 +160,6 @@
 
 <main class="main">
 
-  {% if sections | length > 1 %}
-  <div class="filter-row" style="margin-bottom:10px">
-    <span class="filter-lbl">Fachbereich:</span>
-    <button class="pill active" data-sec="all" onclick="filterSec(this)">
-      Alle <span class="pill-count">{{ total }}</span>
-    </button>
-    {% for sec in sections %}
-    <button class="pill" data-sec="{{ sec.id }}" onclick="filterSec(this)">
-      {{ sec.icon }} {{ sec.name }} <span class="pill-count">{{ sec_counts.get(sec.id, 0) }}</span>
-    </button>
-    {% endfor %}
-  </div>
-  {% endif %}
 
   <div class="filter-row">
     <span class="filter-lbl">Kategorie:</span>
@@ -222,24 +243,66 @@
 </main>
 
 <script>
-let _activeSec = 'all';
+let _activeSecs = new Set(); // empty = all
 let _activeCat = 'all';
 
 function toggleCard(card) {
   if (card.querySelector('.card-detail')) card.classList.toggle('open');
 }
-function filterSec(btn) {
-  document.querySelectorAll('[data-sec]').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  _activeSec = btn.dataset.sec;
+
+// ── Section dropdown ──────────────────────────────────────────
+function toggleSecDropdown(e) {
+  e.stopPropagation();
+  document.getElementById('sec-dropdown-menu').classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  document.getElementById('sec-dropdown-menu')?.classList.remove('open');
+});
+
+function secAllChanged(cb) {
+  if (cb.checked) {
+    document.querySelectorAll('.sec-cb').forEach(c => c.checked = false);
+    _activeSecs = new Set();
+  } else {
+    cb.checked = true; // can't uncheck "all" without selecting something
+  }
+  updateSecLabel();
   updateVisibility();
 }
+
+function secCbChanged() {
+  const checked = [...document.querySelectorAll('.sec-cb:checked')];
+  _activeSecs = new Set(checked.map(c => c.value));
+  const allCb = document.getElementById('sec-all');
+  allCb.checked = _activeSecs.size === 0;
+  updateSecLabel();
+  updateVisibility();
+}
+
+function updateSecLabel() {
+  const btn = document.getElementById('sec-dropdown-btn');
+  const label = document.getElementById('sec-dropdown-label');
+  const checked = [...document.querySelectorAll('.sec-cb:checked')];
+  if (checked.length === 0) {
+    label.textContent = 'Alle Fachbereiche';
+    btn.classList.remove('has-filter');
+  } else if (checked.length === 1) {
+    label.textContent = checked[0].parentElement.textContent.trim();
+    btn.classList.add('has-filter');
+  } else {
+    label.textContent = `${checked.length} Fachbereiche`;
+    btn.classList.add('has-filter');
+  }
+}
+
+// ── Category pills ────────────────────────────────────────────
 function filterCat(btn) {
   document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   _activeCat = btn.dataset.cat;
   updateVisibility();
 }
+
 function doSearch(q) {
   q = q.toLowerCase().trim();
   document.querySelectorAll('.card').forEach(card => {
@@ -247,11 +310,13 @@ function doSearch(q) {
   });
   updateVisibility();
 }
+
 function updateVisibility() {
   let visible = 0;
   document.querySelectorAll('.card').forEach(card => {
-    const secOk  = _activeSec === 'all' || (card.dataset.sections || '').split(',').includes(_activeSec);
-    const catOk  = _activeCat === 'all' || card.dataset.cat === _activeCat;
+    const cardSecs = (card.dataset.sections || '').split(',').filter(Boolean);
+    const secOk = _activeSecs.size === 0 || cardSecs.some(s => _activeSecs.has(s));
+    const catOk = _activeCat === 'all' || card.dataset.cat === _activeCat;
     const searchOk = card.dataset.searchHidden !== '1';
     const hide = !secOk || !catOk || !searchOk;
     card.style.display = hide ? 'none' : '';
@@ -262,7 +327,8 @@ function updateVisibility() {
     group.style.display = has ? '' : 'none';
   });
   const q = document.getElementById('search-input').value.trim();
-  document.getElementById('result-count').textContent = q ? `${visible} Ergebnis${visible !== 1 ? 'se' : ''}` : '';
+  const filtered = _activeSecs.size > 0 || _activeCat !== 'all' || q;
+  document.getElementById('result-count').textContent = filtered ? `${visible} Ergebnis${visible !== 1 ? 'se' : ''}` : '';
   document.getElementById('empty-state').style.display = visible === 0 && document.querySelectorAll('.card').length > 0 ? '' : 'none';
 }
 </script>

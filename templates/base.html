@@ -87,13 +87,15 @@
     </div>
     <div class="header-right">
       {% if session.get('user_id') %}
-        <span style="font-size:12px;color:rgba(255,255,255,.35)">{{ session.name }}</span>
+        <a href="{{ url_for('dashboard') }}" class="header-link">Branchenradar</a>
         {% if session.role == 'superadmin' %}
           <a href="{{ url_for('sa_dashboard') }}" class="header-link">Nutzerverwaltung</a>
         {% elif session.role == 'admin' %}
           <a href="{{ url_for('admin_dashboard') }}" class="header-link">Nutzerverwaltung</a>
         {% endif %}
         <a href="{{ url_for('signal_list') }}" class="header-link">Signale</a>
+        <span style="width:1px;height:14px;background:rgba(255,255,255,.15);display:inline-block"></span>
+        <span style="font-size:12px;color:rgba(255,255,255,.4)">{{ session.name }}</span>
         <a href="{{ url_for('logout') }}" class="header-link">Abmelden</a>
       {% else %}
         <a href="{{ url_for('login') }}" class="header-link">Login</a>
