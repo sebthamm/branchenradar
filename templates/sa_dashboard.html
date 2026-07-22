@@ -1,16 +1,46 @@
 {% extends "base.html" %}
-{% block title %}Superadmin — Branchenradar{% endblock %}
+{% block title %}Nutzerverwaltung — Branchenradar{% endblock %}
 {% block head %}
 <style>
-  .main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 60px; }
-  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
-  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--faint); font-weight: 600; margin: 32px 0 12px; }
-  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 8px; }
-  th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 10px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+  .main { max-width: 1000px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-title { font-family: Georgia, serif; font-size: 24px; font-weight: normal; margin-bottom: 32px; }
+
+  /* Section blocks */
+  .block { margin-bottom: 40px; }
+  .block-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .block-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--faint); font-weight: 600; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 9px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
   td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--surface2); }
+  tr.expand-row td { padding: 0; border-bottom: 1px solid var(--border); }
+  tr.expand-row:last-child td { border-bottom: none; }
+
+  /* Expand panels */
+  .expand-panel { display: none; background: var(--surface2); padding: 20px 20px; border-top: 1px solid var(--border); }
+  .expand-panel.open { display: block; }
+
+  /* Sub-table (users inside entity) */
+  .sub-table { width: 100%; border-collapse: collapse; }
+  .sub-table th { background: transparent; font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); padding: 6px 10px; border-bottom: 1px solid var(--border); font-weight: 600; }
+  .sub-table td { padding: 8px 10px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .sub-table tr:last-child td { border-bottom: none; }
+
+  /* Inline edit form */
+  .inline-form label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 5px; margin-top: 14px; }
+  .inline-form label:first-child { margin-top: 0; }
+  .inline-form input[type="text"], .inline-form input[type="password"] { width: 100%; padding: 8px 11px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); outline: none; }
+  .inline-form input:focus { border-color: var(--navy); }
+  .inline-form .hint { font-size: 11px; color: var(--faint); margin-top: 3px; }
+  .sec-checks { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 4px; }
+  .sec-check { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text); cursor: pointer; padding: 4px 9px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); }
+  .form-row { display: flex; gap: 16px; }
+  .form-row > div { flex: 1; }
+  .form-actions-inline { display: flex; gap: 8px; margin-top: 16px; }
+
+  /* Role chips */
   .role-chip { display: inline-flex; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
   .role-superadmin { background: #2a1060; color: #c8a0ff; }
   .role-admin      { background: #0e3060; color: #80b8ff; }
@@ -19,98 +49,223 @@
     .role-superadmin { background: rgba(107,68,168,.3); color: #c8a0ff; }
     .role-admin      { background: rgba(46,123,170,.3); color: #80b8ff; }
   }
-  .actions { display: flex; gap: 6px; }
+
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .muted { color: var(--muted); }
-  @media (max-width: 700px) { .main { padding: 16px; } }
+  .empty-row td { text-align: center; color: var(--faint); padding: 24px; }
+
+  /* Toggle button active state */
+  .btn-toggle.active { background: var(--surface2); border-color: var(--navy); color: var(--navy); }
+  @media (prefers-color-scheme: dark) { .btn-toggle.active { color: #90b8f0; border-color: #90b8f0; } }
+
+  @media (max-width: 700px) { .main { padding: 16px; } .form-row { flex-direction: column; gap: 0; } }
 </style>
 {% endblock %}
+
 {% block content %}
 <div class="main">
-  <div class="page-head">
-    <div class="page-title">Superadmin</div>
-  </div>
-  <p style="font-size:13px;color:var(--muted);margin-bottom:4px">Verwaltung aller Entities und Nutzer.</p>
+  <div class="page-title">Nutzerverwaltung</div>
 
-  <!-- Entities -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:32px;margin-bottom:12px">
-    <div class="section-title" style="margin:0">Entities</div>
-    <a href="{{ url_for('sa_entity_new') }}" class="btn btn-primary btn-sm">+ Neue Entity</a>
+  {# ── SUPERADMINS ─────────────────────────────────────────── #}
+  {% set superadmins = users | selectattr('role', 'equalto', 'superadmin') | list %}
+  <div class="block">
+    <div class="block-head">
+      <div class="block-label">Superadmins</div>
+      <button class="btn btn-primary btn-sm" onclick="togglePanel('new-superadmin')">+ Neuer Superadmin</button>
+    </div>
+    <table>
+      <thead><tr><th>Name</th><th>Benutzername</th><th></th></tr></thead>
+      <tbody>
+        {% for u in superadmins %}
+        <tr>
+          <td>{{ u.name }}</td>
+          <td class="muted">{{ u.username }}</td>
+          <td>
+            <div class="actions">
+              <a href="{{ url_for('sa_user_edit', uid=u.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>
+              {% if u.id != session.user_id %}
+              <form method="post" action="{{ url_for('sa_user_delete', uid=u.id) }}" onsubmit="return confirm('Superadmin löschen?')">
+                <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr class="empty-row"><td colspan="3">Keine Superadmins gefunden.</td></tr>
+        {% endfor %}
+        {# Inline new-superadmin form #}
+        <tr class="expand-row">
+          <td colspan="3">
+            <div class="expand-panel" id="panel-new-superadmin">
+              <form method="post" action="{{ url_for('sa_user_new') }}" class="inline-form">
+                <input type="hidden" name="role" value="superadmin">
+                <div class="form-row">
+                  <div>
+                    <label>Name</label>
+                    <input type="text" name="name" placeholder="Vollständiger Name">
+                  </div>
+                  <div>
+                    <label>Benutzername *</label>
+                    <input type="text" name="username" required autocomplete="off">
+                  </div>
+                  <div>
+                    <label>Passwort *</label>
+                    <input type="password" name="password" required autocomplete="new-password">
+                  </div>
+                </div>
+                <div class="form-actions-inline">
+                  <button type="submit" class="btn btn-primary btn-sm">Anlegen</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="togglePanel('new-superadmin')">Abbrechen</button>
+                </div>
+              </form>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-  {% if entities %}
-  <table>
-    <thead><tr><th>Name</th><th>Fachbereiche</th><th>Erstellt</th><th>Nutzer</th><th></th></tr></thead>
-    <tbody>
-      {% for e in entities %}
-      <tr>
-        <td><strong>{{ e.name }}</strong></td>
-        <td>
-          {% for sid in e.get('section_ids', []) %}
-            {% set sec = sec_map.get(sid) %}
-            {% if sec %}<span style="font-size:12px;margin-right:4px">{{ sec.icon }} {{ sec.name }}</span>{% endif %}
-          {% else %}
-            <span class="muted">—</span>
-          {% endfor %}
-        </td>
-        <td class="muted">{{ e.created_at }}</td>
-        <td class="muted">{{ user_counts.get(e.id, 0) }}</td>
-        <td>
-          <div class="actions">
-            <a href="{{ url_for('sa_entity_edit', eid=e.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>
-            <form method="post" action="{{ url_for('sa_entity_delete', eid=e.id) }}"
-                  onsubmit="return confirm('Entity und alle Nutzer löschen?')">
-              <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <div style="padding:24px;text-align:center;color:var(--faint);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
-    Noch keine Entities. <a href="{{ url_for('sa_entity_new') }}" style="color:var(--navy)">Erste Entity anlegen →</a>
-  </div>
-  {% endif %}
 
-  <!-- All users -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:36px;margin-bottom:12px">
-    <div class="section-title" style="margin:0">Alle Nutzer</div>
-    <a href="{{ url_for('sa_user_new') }}" class="btn btn-primary btn-sm">+ Nutzer anlegen</a>
-  </div>
-  {% set sorted_users = users | sort(attribute='role') %}
-  {% if users %}
-  <table>
-    <thead><tr><th>Name</th><th>Benutzername</th><th>Rolle</th><th>Entity</th><th></th></tr></thead>
-    <tbody>
-      {% for u in users %}
-      {% set entity = entities | selectattr('id', 'equalto', u.entity_id) | first if u.entity_id else none %}
-      <tr>
-        <td>{{ u.name }}</td>
-        <td class="muted">{{ u.username }}</td>
-        <td><span class="role-chip role-{{ u.role }}">{{ role_labels.get(u.role, u.role) }}</span></td>
-        <td class="muted">{{ entity.name if entity else '—' }}</td>
-        <td>
-          <div class="actions">
-            <a href="{{ url_for('sa_user_edit', uid=u.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>
-            <form method="post" action="{{ url_for('sa_user_delete', uid=u.id) }}"
-                  onsubmit="return confirm('Nutzer löschen?')">
-              <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <div style="padding:24px;text-align:center;color:var(--faint);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
-    Keine Nutzer vorhanden.
-  </div>
-  {% endif %}
+  {# ── ENTITIES ─────────────────────────────────────────────── #}
+  <div class="block">
+    <div class="block-head">
+      <div class="block-label">Entities</div>
+      <a href="{{ url_for('sa_entity_new') }}" class="btn btn-primary btn-sm">+ Neue Entity</a>
+    </div>
+    <table>
+      <thead><tr><th>Name</th><th>Fachbereiche</th><th>Nutzer</th><th></th></tr></thead>
+      <tbody>
+        {% for e in entities %}
+        {% set entity_users = users | selectattr('entity_id', 'equalto', e.id) | list %}
+        {% set uid_e = e.id | replace('-','_') %}
 
-  <div style="margin-top:36px;padding-top:24px;border-top:1px solid var(--border);display:flex;gap:12px">
-    <a href="{{ url_for('signal_list') }}" class="btn btn-secondary">Signale verwalten</a>
-    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Zum Dashboard</a>
+        {# Entity row #}
+        <tr>
+          <td><strong>{{ e.name }}</strong></td>
+          <td>
+            {% for sid in e.get('section_ids', []) %}
+              {% set sec = sec_map.get(sid) %}
+              {% if sec %}<span style="font-size:12px;margin-right:5px">{{ sec.icon }} {{ sec.name }}</span>{% endif %}
+            {% else %}<span class="muted">—</span>
+            {% endfor %}
+          </td>
+          <td>
+            <button class="btn btn-secondary btn-sm btn-toggle" id="btn-users-{{ uid_e }}"
+                    onclick="toggleEntity('users', '{{ uid_e }}')">
+              {{ entity_users | length }} Nutzer ▾
+            </button>
+          </td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-secondary btn-sm btn-toggle" id="btn-edit-{{ uid_e }}"
+                      onclick="toggleEntity('edit', '{{ uid_e }}')">Bearbeiten</button>
+              <form method="post" action="{{ url_for('sa_entity_delete', eid=e.id) }}"
+                    onsubmit="return confirm('Entity und alle Nutzer löschen?')">
+                <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+
+        {# Expand: Users #}
+        <tr class="expand-row">
+          <td colspan="4">
+            <div class="expand-panel" id="panel-users-{{ uid_e }}">
+              {% if entity_users %}
+              <table class="sub-table">
+                <thead><tr><th>Name</th><th>Benutzername</th><th>Rolle</th><th></th></tr></thead>
+                <tbody>
+                  {% for u in entity_users %}
+                  <tr>
+                    <td>{{ u.name }}</td>
+                    <td class="muted">{{ u.username }}</td>
+                    <td><span class="role-chip role-{{ u.role }}">{{ role_labels.get(u.role, u.role) }}</span></td>
+                    <td>
+                      <div class="actions">
+                        <a href="{{ url_for('sa_user_edit', uid=u.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>
+                        <form method="post" action="{{ url_for('sa_user_delete', uid=u.id) }}"
+                              onsubmit="return confirm('Nutzer löschen?')">
+                          <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% else %}
+              <p style="font-size:13px;color:var(--faint);margin:0">Noch keine Nutzer in dieser Entity.</p>
+              {% endif %}
+              <div style="margin-top:12px">
+                <a href="{{ url_for('sa_user_new') }}?entity={{ e.id }}" class="btn btn-secondary btn-sm">+ Nutzer hinzufügen</a>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        {# Expand: Edit entity #}
+        <tr class="expand-row">
+          <td colspan="4">
+            <div class="expand-panel" id="panel-edit-{{ uid_e }}">
+              <form method="post" action="{{ url_for('sa_entity_edit', eid=e.id) }}" class="inline-form">
+                <div class="form-row">
+                  <div style="flex:2">
+                    <label>Name der Entity</label>
+                    <input type="text" name="name" value="{{ e.name }}" required>
+                  </div>
+                </div>
+                <label>Fachbereiche</label>
+                <div class="sec-checks">
+                  {% for sec in sections %}
+                  <label class="sec-check">
+                    <input type="checkbox" name="section_ids" value="{{ sec.id }}"
+                           {{ 'checked' if sec.id in e.get('section_ids', []) else '' }}
+                           style="accent-color:var(--navy)">
+                    {{ sec.icon }} {{ sec.name }}
+                  </label>
+                  {% endfor %}
+                </div>
+                <div class="form-actions-inline">
+                  <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
+                  <button type="button" class="btn btn-secondary btn-sm"
+                          onclick="toggleEntity('edit', '{{ uid_e }}')">Abbrechen</button>
+                </div>
+              </form>
+            </div>
+          </td>
+        </tr>
+
+        {% else %}
+        <tr class="empty-row"><td colspan="4">Noch keine Entities. <a href="{{ url_for('sa_entity_new') }}" style="color:var(--navy)">Erste Entity anlegen →</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
+
 </div>
+
+<script>
+function togglePanel(key) {
+  const panel = document.getElementById('panel-' + key);
+  panel.classList.toggle('open');
+}
+
+function toggleEntity(type, uid) {
+  const panel = document.getElementById('panel-' + type + '-' + uid);
+  const btn   = document.getElementById('btn-' + type + '-' + uid);
+  const isOpen = panel.classList.contains('open');
+
+  // Close sibling panel of same entity when opening the other
+  const other = type === 'users' ? 'edit' : 'users';
+  const otherPanel = document.getElementById('panel-' + other + '-' + uid);
+  const otherBtn   = document.getElementById('btn-' + other + '-' + uid);
+  if (otherPanel && otherPanel.classList.contains('open')) {
+    otherPanel.classList.remove('open');
+    if (otherBtn) otherBtn.classList.remove('active');
+  }
+
+  panel.classList.toggle('open', !isOpen);
+  if (btn) btn.classList.toggle('active', !isOpen);
+}
+</script>
 {% endblock %}
