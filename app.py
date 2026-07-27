@@ -24,15 +24,32 @@ SIGNALS_FILE  = os.path.join(DATA_DIR, "signals.json")
 USERS_FILE    = os.path.join(DATA_DIR, "users.json")
 ENTITIES_FILE = os.path.join(DATA_DIR, "entities.json")
 SECTIONS_FILE = os.path.join(DATA_DIR, "sections.seed.json")  # sections are static
+TODOS_FILE    = os.path.join(DATA_DIR, "todos.json")
+SETTINGS_FILE = os.path.join(DATA_DIR, "settings.json")
+
+DEFAULT_TODO_CATEGORIES = [
+    "Abrechnung & Vergütung",
+    "Compliance & Regulatorik",
+    "Praxisorganisation",
+    "IT & Digitalisierung",
+    "Personal & Fortbildung",
+]
 
 def _init_data():
     """Copy seed files to data files on first run if data files don't exist."""
-    for name in ("signals", "users", "entities"):
+    import shutil
+    for name in ("signals", "users", "entities", "todos"):
         target = os.path.join(DATA_DIR, f"{name}.json")
         seed   = os.path.join(DATA_DIR, f"{name}.seed.json")
         if not os.path.exists(target) and os.path.exists(seed):
-            import shutil
             shutil.copy2(seed, target)
+    # settings is a dict, not a list
+    if not os.path.exists(SETTINGS_FILE):
+        seed = os.path.join(DATA_DIR, "settings.seed.json")
+        if os.path.exists(seed):
+            shutil.copy2(seed, SETTINGS_FILE)
+        else:
+            _save(SETTINGS_FILE, {"default_todo_categories": DEFAULT_TODO_CATEGORIES})
 
 _init_data()
 
@@ -79,6 +96,24 @@ def save_users(d):    _save(USERS_FILE, d)
 def load_entities():  return _load(ENTITIES_FILE)
 def save_entities(d): _save(ENTITIES_FILE, d)
 def load_sections():  return _load(SECTIONS_FILE)
+def load_todos():     return _load(TODOS_FILE)
+def save_todos(d):    _save(TODOS_FILE, d)
+
+def load_settings():
+    if not os.path.exists(SETTINGS_FILE):
+        return {"default_todo_categories": DEFAULT_TODO_CATEGORIES}
+    with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_settings(d): _save(SETTINGS_FILE, d)
+
+def entity_todo_categories(entity_id):
+    if not entity_id:
+        return DEFAULT_TODO_CATEGORIES
+    e = get_entity(entity_id)
+    if e:
+        return e.get("todo_categories", DEFAULT_TODO_CATEGORIES)
+    return DEFAULT_TODO_CATEGORIES
 
 def sections_by_id():
     return {s["id"]: s for s in load_sections()}
@@ -113,6 +148,22 @@ def role_required(*roles):
             return f(*args, **kwargs)
         return decorated
     return decorator
+
+
+# ── Context processor ────────────────────────────────────────────────────────
+
+@app.context_processor
+def inject_globals():
+    eid = session.get("entity_id")
+    return {
+        "todo_categories": entity_todo_categories(eid),
+        "pending_todos": sum(
+            1 for t in load_todos()
+            if not t.get("done") and (
+                session.get("role") == "superadmin" or t.get("entity_id") == eid
+            )
+        ) if session.get("user_id") else 0,
+    }
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
@@ -236,11 +287,13 @@ def sa_entity_new():
             flash("Name ist erforderlich.", "error")
             return render_template("sa_entity_form.html", entity=None, sections=load_sections())
         entities = load_entities()
+        default_cats = load_settings().get("default_todo_categories", DEFAULT_TODO_CATEGORIES)
         new_entity = {
-            "id":          str(uuid.uuid4()),
-            "name":        name,
-            "created_at":  datetime.now().strftime("%Y-%m-%d"),
-            "section_ids": request.form.getlist("section_ids"),
+            "id":               str(uuid.uuid4()),
+            "name":             name,
+            "created_at":       datetime.now().strftime("%Y-%m-%d"),
+            "section_ids":      request.form.getlist("section_ids"),
+            "todo_categories":  default_cats,
         }
         entities.append(new_entity)
         save_entities(entities)
@@ -419,6 +472,103 @@ def signal_delete(sig_id):
     save_signals(signals)
     flash("Signal gelöscht.", "success")
     return redirect(url_for("signal_list"))
+
+# ── ToDos ─────────────────────────────────────────────────────────────────────
+
+@app.route("/todos")
+@role_required("admin", "superadmin")
+def todos():
+    eid      = session.get("entity_id")
+    role     = session.get("role")
+    all_todos = load_todos()
+    if role == "superadmin":
+        my_todos = all_todos
+    else:
+        my_todos = [t for t in all_todos if t.get("entity_id") == eid]
+    sig_map = {s["id"]: s for s in load_signals()}
+    cats    = entity_todo_categories(eid)
+    return render_template("todos.html",
+        todos=my_todos, sig_map=sig_map, categories=cats,
+        status_labels=STATUS_LABELS)
+
+@app.route("/todos/new", methods=["POST"])
+@role_required("admin", "superadmin")
+def todo_new():
+    eid = session.get("entity_id")
+    todo = {
+        "id":         str(uuid.uuid4()),
+        "signal_id":  request.form.get("signal_id", ""),
+        "signal_title": request.form.get("signal_title", ""),
+        "entity_id":  eid,
+        "category":   request.form.get("category", ""),
+        "deadline":   request.form.get("deadline", ""),
+        "comment":    request.form.get("comment", "").strip(),
+        "done":       False,
+        "created_by": session.get("user_id"),
+        "created_at": datetime.now().isoformat(),
+    }
+    todos = load_todos()
+    todos.append(todo)
+    save_todos(todos)
+    flash("ToDo angelegt.", "success")
+    next_url = request.form.get("next") or url_for("todos")
+    return redirect(next_url)
+
+@app.route("/todos/<todo_id>/toggle", methods=["POST"])
+@role_required("admin", "superadmin")
+def todo_toggle(todo_id):
+    todos = load_todos()
+    for t in todos:
+        if t["id"] == todo_id:
+            t["done"] = not t.get("done", False)
+            if t["done"]:
+                t["done_at"] = datetime.now().isoformat()
+            else:
+                t.pop("done_at", None)
+            break
+    save_todos(todos)
+    return redirect(url_for("todos"))
+
+@app.route("/todos/<todo_id>/delete", methods=["POST"])
+@role_required("admin", "superadmin")
+def todo_delete(todo_id):
+    todos = [t for t in load_todos() if t["id"] != todo_id]
+    save_todos(todos)
+    return redirect(url_for("todos"))
+
+
+# ── Settings ──────────────────────────────────────────────────────────────────
+
+@app.route("/settings", methods=["GET", "POST"])
+@role_required("admin", "superadmin")
+def settings():
+    eid = session.get("entity_id")
+    entities = load_entities()
+    entity = next((e for e in entities if e["id"] == eid), None)
+    if not entity:
+        abort(404)
+    if request.method == "POST":
+        cats = [c.strip() for c in request.form.getlist("categories") if c.strip()]
+        entity["todo_categories"] = cats
+        save_entities(entities)
+        flash("Einstellungen gespeichert.", "success")
+        return redirect(url_for("settings"))
+    cats = entity.get("todo_categories", DEFAULT_TODO_CATEGORIES)
+    return render_template("settings.html", entity=entity, categories=cats)
+
+@app.route("/superadmin/settings", methods=["GET", "POST"])
+@role_required("superadmin")
+def sa_settings():
+    cfg = load_settings()
+    if request.method == "POST":
+        cats = [c.strip() for c in request.form.getlist("categories") if c.strip()]
+        cfg["default_todo_categories"] = cats
+        save_settings(cfg)
+        flash("Standard-Kategorien gespeichert.", "success")
+        return redirect(url_for("sa_settings"))
+    cats = cfg.get("default_todo_categories", DEFAULT_TODO_CATEGORIES)
+    return render_template("sa_settings.html", categories=cats)
+
 
 @app.route("/admin/signals/import", methods=["GET", "POST"])
 @role_required("admin", "superadmin")

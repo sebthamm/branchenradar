@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Einstellungen — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 640px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; margin-bottom: 8px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px; }
+  .card-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 4px; }
+  .card-sub { font-size: 12px; color: var(--faint); margin-bottom: 20px; line-height: 1.5; }
+  .cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .cat-row { display: flex; align-items: center; gap: 8px; }
+  .cat-row input[type="text"] { flex: 1; padding: 8px 11px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); outline: none; }
+  .cat-row input:focus { border-color: var(--navy); }
+  .cat-row .del-btn { background: none; border: none; cursor: pointer; color: var(--faint); font-size: 16px; padding: 4px 6px; border-radius: 4px; line-height: 1; flex-shrink: 0; }
+  .cat-row .del-btn:hover { color: var(--s-action); background: var(--surface2); }
+  .add-btn { font-size: 12px; color: var(--navy); background: none; border: 1px dashed var(--border); border-radius: var(--radius); padding: 7px 14px; cursor: pointer; width: 100%; text-align: left; transition: all .15s; }
+  .add-btn:hover { border-color: var(--navy); background: var(--surface2); }
+  .form-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .info-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+  @media (max-width: 700px) { .main { padding: 16px; } .card { padding: 20px 16px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-title">Einstellungen</div>
+  <div class="page-sub">Superadmin · Systemweite Vorlagen</div>
+
+  <div class="card">
+    <div class="card-title">Standard-ToDo-Kategorien</div>
+    <div class="card-sub">Diese Kategorien werden automatisch bei der Erstellung neuer Entities übernommen. Bestehende Entities sind nicht betroffen — deren Kategorien können separat unter Nutzerverwaltung → Entity → Einstellungen angepasst werden.</div>
+    <div class="info-box">
+      💡 Tipp: Halte die Kategorien allgemein genug, um für verschiedene Praxistypen zu passen — z.B. „Abrechnung & Vergütung" statt „GOZ-Abrechnung".
+    </div>
+    <form method="post">
+      <div class="cat-list" id="cat-list">
+        {% for cat in categories %}
+        <div class="cat-row">
+          <input type="text" name="categories" value="{{ cat }}" required>
+          <button type="button" class="del-btn" onclick="removeRow(this)" title="Entfernen">×</button>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="add-btn" onclick="addRow()">+ Kategorie hinzufügen</button>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Speichern</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function addRow() {
+  const list = document.getElementById('cat-list');
+  const row  = document.createElement('div');
+  row.className = 'cat-row';
+  row.innerHTML = '<input type="text" name="categories" required placeholder="Neue Kategorie"><button type="button" class="del-btn" onclick="removeRow(this)">×</button>';
+  list.appendChild(row);
+  row.querySelector('input').focus();
+}
+function removeRow(btn) {
+  const list = document.getElementById('cat-list');
+  if (list.children.length <= 1) return;
+  btn.closest('.cat-row').remove();
+}
+</script>
+{% endblock %}

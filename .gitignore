@@ -11,3 +11,5 @@ venv/
 data/signals.json
 data/users.json
 data/entities.json
+data/todos.json
+data/settings.json

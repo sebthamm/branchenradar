@@ -98,6 +98,8 @@
   .empty { text-align: center; padding: 48px 24px; color: var(--faint); font-size: 14px; }
   .update-time { font-size: 11px; color: rgba(255,255,255,.45); }
   .update-time strong { color: rgba(255,255,255,.75); }
+  .todo-btn { background: none; border: 1px solid var(--border); border-radius: 3px; color: var(--muted); font-size: 10px; font-weight: 600; padding: 2px 7px; cursor: pointer; letter-spacing: .03em; transition: all .15s; }
+  .todo-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--surface2); }
 </style>
 {% endblock %}
 
@@ -215,6 +217,10 @@
           <div class="card-foot">
             <span class="card-source">{{ s.source }}</span>
             <div class="card-meta">
+              {% if session.get('role') in ('admin', 'superadmin') %}
+              <button class="todo-btn" onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href)"
+                      title="ToDo ableiten">+ ToDo</button>
+              {% endif %}
               <span class="card-date">{{ s.date }}</span>
               {% if s.detail %}<span class="chevron">▼</span>{% endif %}
             </div>

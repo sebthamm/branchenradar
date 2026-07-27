@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}ToDos — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 960px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+  .pill { border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 99px; padding: 5px 14px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all .15s; }
+  .pill:hover { border-color: var(--navy); color: var(--text); }
+  .pill.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .pill-count { background: var(--surface2); color: var(--muted); border-radius: 99px; padding: 1px 6px; font-size: 10px; }
+  .pill.active .pill-count { background: rgba(255,255,255,.2); color: #fff; }
+
+  /* Todo cards */
+  .todo-list { display: flex; flex-direction: column; gap: 8px; }
+  .todo-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; box-shadow: var(--shadow); transition: opacity .2s; }
+  .todo-card.done { opacity: .55; }
+  .todo-card.done .todo-title { text-decoration: line-through; color: var(--muted); }
+  .todo-check form { margin: 0; }
+  .todo-check button { background: none; border: 2px solid var(--border); border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: transparent; flex-shrink: 0; transition: all .15s; margin-top: 1px; }
+  .todo-check button:hover { border-color: var(--navy); }
+  .todo-card.done .todo-check button { background: var(--s-active); border-color: var(--s-active); color: #fff; }
+  .todo-body { flex: 1; min-width: 0; }
+  .todo-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .todo-signal { font-size: 12px; color: var(--navy); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .todo-signal::before { content: "↳ "; opacity: .5; }
+  .todo-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .cat-chip { display: inline-flex; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; background: var(--surface2); color: var(--muted); }
+  .deadline-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--s-action); font-weight: 500; }
+  .deadline-chip.ok { color: var(--muted); }
+  .todo-comment { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .todo-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn { background: none; border: none; cursor: pointer; color: var(--faint); font-size: 14px; padding: 4px; border-radius: 4px; transition: color .15s; }
+  .icon-btn:hover { color: var(--s-action); }
+
+  .empty { text-align: center; padding: 48px 24px; color: var(--faint); font-size: 14px; }
+  .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 20px 0 8px; }
+  .section-label:first-child { margin-top: 0; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">ToDos</div>
+  </div>
+
+  {% set open_todos = todos | rejectattr('done') | list %}
+  {% set done_todos = todos | selectattr('done') | list %}
+
+  <div class="filter-bar">
+    <button class="pill active" data-filter="all"  onclick="filterTodos(this)">Alle <span class="pill-count">{{ todos | length }}</span></button>
+    <button class="pill"        data-filter="open" onclick="filterTodos(this)">Offen <span class="pill-count">{{ open_todos | length }}</span></button>
+    <button class="pill"        data-filter="done" onclick="filterTodos(this)">Erledigt <span class="pill-count">{{ done_todos | length }}</span></button>
+    {% for cat in categories %}
+    <button class="pill" data-cat="{{ cat }}" onclick="filterCat(this)">{{ cat }}</button>
+    {% endfor %}
+  </div>
+
+  {% if todos %}
+  <div class="todo-list" id="todo-list">
+
+    {% if open_todos %}
+    <div class="section-label" data-section="open">Offen</div>
+    {% for t in open_todos | sort(attribute='deadline') %}
+    {% set sig = sig_map.get(t.signal_id) %}
+    <div class="todo-card" data-done="0" data-cat="{{ t.category }}">
+      <div class="todo-check">
+        <form method="post" action="{{ url_for('todo_toggle', todo_id=t.id) }}">
+          <button type="submit" title="Als erledigt markieren">✓</button>
+        </form>
+      </div>
+      <div class="todo-body">
+        <div class="todo-title">{{ t.category or 'ToDo' }}</div>
+        {% if sig %}<div class="todo-signal">{{ sig.title }}</div>{% elif t.signal_title %}<div class="todo-signal">{{ t.signal_title }}</div>{% endif %}
+        <div class="todo-meta">
+          {% if t.category %}<span class="cat-chip">{{ t.category }}</span>{% endif %}
+          {% if t.deadline %}
+          <span class="deadline-chip">⏱ {{ t.deadline }}</span>
+          {% endif %}
+        </div>
+        {% if t.comment %}<div class="todo-comment">{{ t.comment }}</div>{% endif %}
+      </div>
+      <div class="todo-actions">
+        <form method="post" action="{{ url_for('todo_delete', todo_id=t.id) }}"
+              onsubmit="return confirm('ToDo löschen?')">
+          <button type="submit" class="icon-btn" title="Löschen">✕</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if done_todos %}
+    <div class="section-label" data-section="done" style="margin-top:24px">Erledigt</div>
+    {% for t in done_todos | sort(attribute='done_at', reverse=True) %}
+    {% set sig = sig_map.get(t.signal_id) %}
+    <div class="todo-card done" data-done="1" data-cat="{{ t.category }}">
+      <div class="todo-check">
+        <form method="post" action="{{ url_for('todo_toggle', todo_id=t.id) }}">
+          <button type="submit" title="Wieder öffnen">✓</button>
+        </form>
+      </div>
+      <div class="todo-body">
+        <div class="todo-title">{{ t.category or 'ToDo' }}</div>
+        {% if sig %}<div class="todo-signal">{{ sig.title }}</div>{% elif t.signal_title %}<div class="todo-signal">{{ t.signal_title }}</div>{% endif %}
+        <div class="todo-meta">
+          {% if t.category %}<span class="cat-chip">{{ t.category }}</span>{% endif %}
+          {% if t.deadline %}<span class="deadline-chip ok">{{ t.deadline }}</span>{% endif %}
+        </div>
+        {% if t.comment %}<div class="todo-comment">{{ t.comment }}</div>{% endif %}
+      </div>
+      <div class="todo-actions">
+        <form method="post" action="{{ url_for('todo_delete', todo_id=t.id) }}"
+              onsubmit="return confirm('ToDo löschen?')">
+          <button type="submit" class="icon-btn" title="Löschen">✕</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+  </div>
+  {% else %}
+  <div class="empty">
+    Noch keine ToDos.<br>
+    <span style="font-size:13px">Klicke bei einem Signal auf „ToDo ableiten", um loszulegen.</span>
+  </div>
+  {% endif %}
+</div>
+<script>
+let _activeFilter = 'all';
+let _activeCat = null;
+
+function filterTodos(btn) {
+  document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _activeFilter = btn.dataset.filter;
+  _activeCat = null;
+  document.querySelectorAll('[data-cat]').forEach(b => { if (b.classList.contains('pill')) b.classList.remove('active'); });
+  applyFilter();
+}
+function filterCat(btn) {
+  const same = btn.classList.contains('active');
+  document.querySelectorAll('[data-cat].pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-filter="all"]').classList.add('active');
+  _activeFilter = 'all';
+  if (same) { _activeCat = null; } else { btn.classList.add('active'); _activeCat = btn.dataset.cat; }
+  applyFilter();
+}
+function applyFilter() {
+  document.querySelectorAll('.todo-card').forEach(card => {
+    const isDone   = card.dataset.done === '1';
+    const filterOk = _activeFilter === 'all' || (_activeFilter === 'open' && !isDone) || (_activeFilter === 'done' && isDone);
+    const catOk    = !_activeCat || card.dataset.cat === _activeCat;
+    card.style.display = (filterOk && catOk) ? '' : 'none';
+  });
+  document.querySelectorAll('[data-section]').forEach(lbl => {
+    const sec = lbl.dataset.section;
+    const hasDone = sec === 'done';
+    const cards = document.querySelectorAll(`.todo-card[data-done="${hasDone ? 1 : 0}"]`);
+    const anyVisible = [...cards].some(c => c.style.display !== 'none');
+    lbl.style.display = anyVisible ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

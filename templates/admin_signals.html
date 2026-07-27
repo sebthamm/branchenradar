@@ -141,6 +141,10 @@
           </div>
           <div class="dp-actions">
             <a href="{{ url_for('signal_edit', sig_id=s.id) }}" class="btn btn-secondary btn-sm" onclick="event.stopPropagation()">Bearbeiten</a>
+            <button class="btn btn-secondary btn-sm"
+                    onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href)">
+              + ToDo ableiten
+            </button>
             <form method="post" action="{{ url_for('signal_delete', sig_id=s.id) }}"
                   onsubmit="return confirm('Signal wirklich löschen?')" onclick="event.stopPropagation()">
               <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
