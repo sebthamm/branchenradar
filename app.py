@@ -672,6 +672,17 @@ def settings():
     return render_template("settings.html", entity=entity, categories=cats,
         teams=teams, entity_users=all_users, signal_categories=CATEGORIES)
 
+@app.route("/superadmin/functions")
+@role_required("superadmin")
+def sa_functions():
+    return render_template("sa_functions.html",
+        now=datetime.now().strftime("%d. %B %Y"))
+
+@app.route("/superadmin/logbook")
+@role_required("superadmin")
+def sa_logbook():
+    return render_template("sa_logbook.html")
+
 @app.route("/superadmin/settings", methods=["GET", "POST"])
 @role_required("superadmin")
 def sa_settings():

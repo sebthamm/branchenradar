@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Log-Buch — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .sa-subnav { background: var(--surface); border-bottom: 1px solid var(--border); }
+  .sa-subnav-inner { max-width: 1000px; margin: 0 auto; padding: 0 32px; display: flex; }
+  .sa-tab { display: inline-block; padding: 12px 18px; font-size: 13px; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; transition: all .15s; }
+  .sa-tab:hover { color: var(--text); }
+  .sa-tab.active { color: var(--navy); border-bottom-color: var(--navy); font-weight: 500; }
+  @media (prefers-color-scheme: dark) { .sa-tab.active { color: #90b8f0; border-bottom-color: #90b8f0; } }
+
+  .main { max-width: 800px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-title { font-family: Georgia, serif; font-size: 24px; font-weight: normal; margin-bottom: 36px; }
+
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ""; position: absolute; left: 7px; top: 6px; bottom: 0; width: 1px; background: var(--border); }
+
+  .entry { position: relative; margin-bottom: 32px; }
+  .entry::before { content: ""; position: absolute; left: -24px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--navy); border: 2px solid var(--bg); }
+
+  .entry-date { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin-bottom: 6px; }
+  .entry-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .entry-items { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px; }
+  .entry-items li { font-size: 13px; color: var(--muted); padding-left: 14px; position: relative; line-height: 1.5; }
+  .entry-items li::before { content: "–"; position: absolute; left: 0; color: var(--faint); }
+
+  .tag { display: inline-flex; padding: 1px 7px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-left: 6px; vertical-align: middle; }
+  .tag-new   { background: rgba(37,122,88,.15);  color: var(--s-active); }
+  .tag-fix   { background: rgba(196,120,14,.15); color: var(--s-announced); }
+  .tag-infra { background: rgba(46,123,170,.15); color: var(--s-radar); }
+  @media (prefers-color-scheme: dark) {
+    .tag-new   { background: rgba(37,122,88,.25); }
+    .tag-fix   { background: rgba(196,120,14,.25); }
+    .tag-infra { background: rgba(46,123,170,.25); }
+  }
+  @media (max-width: 700px) { .main { padding: 16px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="sa-subnav">
+  <div class="sa-subnav-inner">
+    <a href="{{ url_for('sa_dashboard') }}" class="sa-tab">Nutzerverwaltung</a>
+    <a href="{{ url_for('sa_functions') }}" class="sa-tab">Functions</a>
+    <a href="{{ url_for('sa_logbook') }}"   class="sa-tab active">Log-Buch</a>
+  </div>
+</div>
+<div class="main">
+  <div class="page-title">Log-Buch</div>
+
+  <div class="timeline">
+
+    <div class="entry">
+      <div class="entry-date">27. Juli 2026</div>
+      <div class="entry-title">Teams, ToDo-Erweiterungen &amp; Benachrichtigungen <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>Teams je Entity: Nutzer können Team Abrechnung, Team Personal oder eigenen Teams zugewiesen werden</li>
+        <li>Teams erhalten Signal-Kategorien — Nutzer in Teams sehen auf dem Dashboard nur die Kategorien ihrer Teams</li>
+        <li>ToDo-Zuweisung: Admins können ToDos direkt im Erstellungs-Modal oder nachträglich aus der Liste einem Nutzer zuweisen</li>
+        <li>Benachrichtigungs-Badge am „ToDos"-Menüpunkt: rotes Badge für neue Zuweisungen (Nutzer) und erledigte Rückmeldungen (Admin)</li>
+        <li>„Erledigt"-Klick öffnet Popup mit Kommentarfeld — Kommentar erscheint als Rückmeldung in der Admin-Ansicht</li>
+        <li>Überfällige ToDos werden mit rotem Rand und Warnung hervorgehoben</li>
+        <li>Erinnerungsbereich „Erledigt — Rückmeldungen" in der Admin-ToDo-Liste</li>
+        <li>Wieder-öffnen von erledigten ToDos (Admin)</li>
+        <li>Einstellungen um Teams-Sektion erweitert: Mitglieder und Signal-Kategorien je Team konfigurierbar</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">27. Juli 2026</div>
+      <div class="entry-title">ToDo-System &amp; Einstellungen <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>ToDo-Reiter im Header für Admins und Superadmins</li>
+        <li>ToDos aus Signalen ableiten — Modal mit Kategorie, Frist und Kommentar</li>
+        <li>ToDo-Liste mit Filter nach Offen / Erledigt und Kategorie</li>
+        <li>Einstellungen-Reiter: ToDo-Kategorien je Entity konfigurierbar</li>
+        <li>Superadmin-Einstellungen: Standard-ToDo-Kategorien als Vorlage für neue Entities</li>
+        <li>Standard-Kategorien werden beim Anlegen neuer Entities automatisch übernommen</li>
+        <li>ToDo-Funktion nur für Admin und Superadmin — Nutzer-Rolle hat keinen Zugriff</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">22. Juli 2026</div>
+      <div class="entry-title">Signaldatenbank &amp; Batch-Import <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>Signalliste zur vollständigen Datenbankansicht ausgebaut: alle Felder in der Tabelle sichtbar</li>
+        <li>Klappbare Detailzeilen mit Zusammenfassung, Detailtext, Quelle und Aktionen</li>
+        <li>Spalten sortierbar per Klick auf den Tabellen-Header</li>
+        <li>Volltextsuche innerhalb der Signalliste</li>
+        <li>Batch-Import: Paste-Variante (TSV direkt aus Excel / Google Sheets)</li>
+        <li>Batch-Import: Datei-Upload (CSV, UTF-8, Tab / Semikolon / Komma)</li>
+        <li>Spaltenreferenz und Download-Vorlage auf der Import-Seite</li>
+        <li>Automatische Zuordnung von Status, Kategorie und Fachbereich beim Import (Klartext-Aliases)</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">22. Juli 2026</div>
+      <div class="entry-title">Header &amp; Dashboard-Navigation <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>„Branchenradar"-Link im Header ergänzt</li>
+        <li>Username mit Trennlinie direkt vor „Abmelden" positioniert</li>
+        <li>Fachbereich-Filter vom Dashboard in die Suchzeile verschoben — Multi-Select-Dropdown mit „Alle Fachbereiche"-Option</li>
+        <li>Bugfix: Abbrechen-Link im Signal-Formular zeigte auf nicht existente Route</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">22. Juli 2026</div>
+      <div class="entry-title">Nutzerverwaltung — Redesign <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>Superadmin-Sektion oben auf der Nutzerverwaltungsseite: Superadmins anlegen, bearbeiten, löschen</li>
+        <li>Entities mit Inline-Expand: Nutzerliste und Bearbeitungsformular klappen direkt in der Zeile auf</li>
+        <li>Kein Seitenwechsel mehr beim Bearbeiten einer Entity</li>
+        <li>Getrennte Toggle-Buttons für „Nutzer anzeigen" und „Bearbeiten" je Entity</li>
+        <li>Seitenüberschrift von „Superadmin" auf „Nutzerverwaltung" geändert</li>
+        <li>Buttons „Signale verwalten" und „Dashboard" unten entfernt</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">22. Juli 2026</div>
+      <div class="entry-title">Fachbereiche (Sections) <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>6 Fachbereiche eingeführt: Zahnmedizin, Allgemeinmedizin, Kinder- und Jugendmedizin, Orthopädie &amp; Unfallchirurgie, Augenheilkunde, Psychiatrie &amp; Psychotherapie</li>
+        <li>Signale werden einem oder mehreren Fachbereichen zugewiesen</li>
+        <li>Entities erhalten Fachbereich-Zuweisung — Nutzer sehen nur Signale ihrer Fachbereiche</li>
+        <li>Fachbereich-Filterleiste im Dashboard</li>
+        <li>Header-Redesign: SVG-Radar-Icon, Optima-Schrift, „BRANCHENRADAR" Wordmark</li>
+        <li>„Nutzerverwaltung"-Link im Header für Superadmin und Admin</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">22. Juli 2026</div>
+      <div class="entry-title">Infrastruktur &amp; Deployment <span class="tag tag-infra">Infra</span></div>
+      <ul class="entry-items">
+        <li>Deploy-Webhook: HTTP-POST-Endpunkt löst git pull + Gunicorn-Reload (SIGHUP) aus — kein sudo erforderlich</li>
+        <li>Datenpersistenz: Laufzeitdaten (Signale, Nutzer, Entities) werden nicht durch Deploys überschrieben</li>
+        <li>Seed-Dateien (*.seed.json) in git — werden einmalig auf frischen Server kopiert</li>
+        <li>Hetzner-Server: Ubuntu 26.04, nginx + Gunicorn, systemd-Service „branchenradar"</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">22. Juli 2026</div>
+      <div class="entry-title">Initialversion <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>Flask-Webapp als Ersatz für den bisherigen Signal Collector</li>
+        <li>Rollenmodell: Superadmin / Admin / Nutzer mit Entity-Zugehörigkeit</li>
+        <li>Session-basiertes Login mit SHA-256-Passwort-Hashing</li>
+        <li>Dashboard mit 5 Statusphasen: Handlungsbedarf, Angekündigt, In Entwicklung, Im Radar, Verfügbar</li>
+        <li>Signal-CRUD: anlegen, bearbeiten, löschen</li>
+        <li>5 Signal-Kategorien: Krankenkassen &amp; GKV, Digitalisierung &amp; TI, Gesetze &amp; Regulatorien, Personal &amp; Tarife, Praxismanagement</li>
+        <li>Entity-Verwaltung im Superadmin-Bereich</li>
+        <li>Statistik-Balken im Dashboard (Anzahl je Status)</li>
+        <li>Dunkles und helles Design (automatisch, OS-Präferenz)</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

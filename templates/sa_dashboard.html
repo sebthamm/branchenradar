@@ -2,6 +2,13 @@
 {% block title %}Nutzerverwaltung — Branchenradar{% endblock %}
 {% block head %}
 <style>
+  .sa-subnav { background: var(--surface); border-bottom: 1px solid var(--border); }
+  .sa-subnav-inner { max-width: 1000px; margin: 0 auto; padding: 0 32px; display: flex; gap: 0; }
+  .sa-tab { display: inline-block; padding: 12px 18px; font-size: 13px; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; transition: all .15s; }
+  .sa-tab:hover { color: var(--text); }
+  .sa-tab.active { color: var(--navy); border-bottom-color: var(--navy); font-weight: 500; }
+  @media (prefers-color-scheme: dark) { .sa-tab.active { color: #90b8f0; border-bottom-color: #90b8f0; } }
+
   .main { max-width: 1000px; margin: 0 auto; padding: 28px 32px 60px; }
   .page-title { font-family: Georgia, serif; font-size: 24px; font-weight: normal; margin-bottom: 32px; }
 
@@ -63,6 +70,13 @@
 {% endblock %}
 
 {% block content %}
+<div class="sa-subnav">
+  <div class="sa-subnav-inner">
+    <a href="{{ url_for('sa_dashboard') }}" class="sa-tab active">Nutzerverwaltung</a>
+    <a href="{{ url_for('sa_functions') }}" class="sa-tab">Functions</a>
+    <a href="{{ url_for('sa_logbook') }}"   class="sa-tab">Log-Buch</a>
+  </div>
+</div>
 <div class="main">
   <div class="page-title">Nutzerverwaltung</div>
 

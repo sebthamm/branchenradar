@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Functions — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .sa-subnav { background: var(--surface); border-bottom: 1px solid var(--border); }
+  .sa-subnav-inner { max-width: 1000px; margin: 0 auto; padding: 0 32px; display: flex; }
+  .sa-tab { display: inline-block; padding: 12px 18px; font-size: 13px; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; transition: all .15s; }
+  .sa-tab:hover { color: var(--text); }
+  .sa-tab.active { color: var(--navy); border-bottom-color: var(--navy); font-weight: 500; }
+  @media (prefers-color-scheme: dark) { .sa-tab.active { color: #90b8f0; border-bottom-color: #90b8f0; } }
+
+  .main { max-width: 1000px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 8px; }
+  .page-title { font-family: Georgia, serif; font-size: 24px; font-weight: normal; }
+  .timestamp { font-size: 12px; color: var(--faint); }
+
+  .module { margin-bottom: 36px; }
+  .module-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .module-icon { font-size: 16px; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .feature-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .feature-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .role-tag { display: inline-flex; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-left: 6px; vertical-align: middle; }
+  .tag-sa  { background: rgba(107,68,168,.15); color: #7B44C8; }
+  .tag-adm { background: rgba(46,123,170,.15); color: #1A6898; }
+  .tag-all { background: var(--surface2); color: var(--muted); }
+  @media (prefers-color-scheme: dark) {
+    .tag-sa  { background: rgba(107,68,168,.3); color: #c8a0ff; }
+    .tag-adm { background: rgba(46,123,170,.3); color: #80b8ff; }
+  }
+  @media (max-width: 700px) { .main { padding: 16px; } .feature-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="sa-subnav">
+  <div class="sa-subnav-inner">
+    <a href="{{ url_for('sa_dashboard') }}" class="sa-tab">Nutzerverwaltung</a>
+    <a href="{{ url_for('sa_functions') }}" class="sa-tab active">Functions</a>
+    <a href="{{ url_for('sa_logbook') }}"   class="sa-tab">Log-Buch</a>
+  </div>
+</div>
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Functions</div>
+    <div class="timestamp">Stand: {{ now }}</div>
+  </div>
+
+  <!-- RADAR / DASHBOARD -->
+  <div class="module">
+    <div class="module-title"><span class="module-icon">🔭</span> Radar-Dashboard</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-name">Signalübersicht nach Status <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">Signale werden in 5 Phasen gruppiert: Handlungsbedarf, Angekündigt, In Entwicklung, Im Radar, Verfügbar / In Kraft. Statistische Zusammenfassung als Balken oben.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Volltext-Suche <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">Echtzeit-Suche über Titel, Zusammenfassung, Detailtext und Quelle aller sichtbaren Signale.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Fachbereich-Filter <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">Multi-Select-Dropdown in der Suchzeile — Mehrfachauswahl von Fachbereichen möglich. „Alle Fachbereiche" setzt zurück.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Kategorie-Filter <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">Filter-Pills für Signal-Kategorien: Krankenkassen & GKV, Digitalisierung & TI, Gesetze & Regulatorien, Personal & Tarife, Praxismanagement.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Klappbare Signalkarten <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">Klick auf eine Karte öffnet den Detailtext und den Quellen-Link. Status wird farblich durch einen Streifen und einen Chip kommuniziert.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Team-basierter Signalfilter <span class="role-tag tag-all">Nutzer</span></div>
+        <div class="feature-desc">Nutzer, die einem Team angehören, sehen ausschließlich die Signal-Kategorien, die dem jeweiligen Team zugewiesen wurden.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">ToDo ableiten <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Button auf jeder Signalkarte öffnet ein Modal — Kategorie, Frist und Kommentar vergeben, optional direkt einem Nutzer zuweisen.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNALE -->
+  <div class="module">
+    <div class="module-title"><span class="module-icon">📡</span> Signaldatenbank</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-name">Vollständige Tabellenansicht <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Alle Felder tabellarisch: Titel, Status, Kategorie, Fachbereich, Quelle, Datum, Frist. Klapp-Detail mit Zusammenfassung, Detailtext und Aktionen. Spalten sortierbar.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Signal anlegen &amp; bearbeiten <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Formular mit allen Feldern: Titel, Zusammenfassung, Detailtext, Status, Kategorie, Quelle (Name + URL), Datum, Frist, Fachbereiche.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Batch-Import per Paste <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Tabelle direkt aus Excel oder Google Sheets einkopieren (TSV). Automatische Erkennung des Trennzeichens (Tab, Semikolon, Komma).</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Batch-Import per Datei-Upload <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">CSV-Datei hochladen (UTF-8). Spaltenreferenz und Download-Vorlage auf der Import-Seite verfügbar.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Fachbereich-Zuweisung <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Signale können einem oder mehreren Fachbereichen zugewiesen werden. Entities sehen nur Signale, die ihren Fachbereichen entsprechen.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TODOS -->
+  <div class="module">
+    <div class="module-title"><span class="module-icon">✓</span> ToDo-System</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-name">ToDo erstellen <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Aus jedem Signal ein ToDo ableiten — via Modal mit Kategorie, Frist, Kommentar und optionaler Nutzerzuweisung.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Nutzerzuweisung <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">ToDos direkt beim Erstellen oder nachträglich aus der Liste einem Nutzer zuweisen. Zugewiesene ToDos erscheinen in der ToDo-Liste des Nutzers.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Benachrichtigungs-Badge <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">Rotes Badge am „ToDos"-Menüpunkt: Für Nutzer bei neuer Zuweisung, für Admins wenn ein zugewiesenes ToDo erledigt wurde. Verschwindet beim Öffnen der Liste.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Erledigt mit Kommentar <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">Klick auf das Häkchen öffnet ein Popup mit optionalem Kommentarfeld. Kommentar wird in der Admin-Ansicht als Rückmeldung angezeigt.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Überfällige ToDos <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">ToDos mit überschrittener Frist werden mit rotem Rand und „⚠ Überfällig"-Label hervorgehoben.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Filter und Kategorien <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">ToDo-Liste filterbar nach Offen / Erledigt und nach Kategorie. Kategorien je Entity konfigurierbar.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NUTZERVERWALTUNG -->
+  <div class="module">
+    <div class="module-title"><span class="module-icon">👥</span> Nutzer- und Entity-Verwaltung</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-name">Drei Rollenebenen <span class="role-tag tag-sa">Superadmin</span></div>
+        <div class="feature-desc">Superadmin (systemweit), Admin (pro Entity), Nutzer (lesend + ToDos). Rollenbasierte Zugriffskontrolle auf alle Bereiche.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Entity-Verwaltung <span class="role-tag tag-sa">Superadmin</span></div>
+        <div class="feature-desc">Entities (Praxen, Organisationen) anlegen, bearbeiten, löschen. Fachbereiche je Entity zuweisbar. Inline-Bearbeitung ohne Seitenwechsel.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Superadmin-Verwaltung <span class="role-tag tag-sa">Superadmin</span></div>
+        <div class="feature-desc">Superadmins anlegen, bearbeiten und löschen. Eigener Account kann nicht gelöscht werden.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Nutzerverwaltung je Entity <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Admins können Nutzer in ihrer Entity anlegen und entfernen. Superadmins können alle Nutzer aller Entities verwalten.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Teams <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Nutzer können Teams zugewiesen werden (Standard: Team Abrechnung, Team Personal). Teams erhalten zugewiesene Signal-Kategorien.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EINSTELLUNGEN / TECHNIK -->
+  <div class="module">
+    <div class="module-title"><span class="module-icon">⚙</span> Einstellungen &amp; Technik</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-name">ToDo-Kategorien konfigurieren <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Jede Entity kann eigene ToDo-Kategorien definieren. Standard-Kategorien werden beim Anlegen neuer Entities vom Superadmin-Template übernommen.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Standard-Kategorien (Vorlage) <span class="role-tag tag-sa">Superadmin</span></div>
+        <div class="feature-desc">Superadmin definiert Standard-ToDo-Kategorien, die automatisch bei der Erstellung neuer Entities übernommen werden.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Datenpersistenz <span class="role-tag tag-sa">Superadmin</span></div>
+        <div class="feature-desc">Alle Daten (Signale, Nutzer, Entities, ToDos) werden als JSON-Dateien auf dem Server gespeichert — kein Datenbank-Server erforderlich. Deploys überschreiben keine Laufzeitdaten.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Webhook-Deployment <span class="role-tag tag-sa">Superadmin</span></div>
+        <div class="feature-desc">Code-Updates werden per HTTP-POST-Webhook ausgelöst (git pull + Gunicorn-Reload). Kein manueller Server-Zugriff nötig.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Dunkles / Helles Design <span class="role-tag tag-all">Alle</span></div>
+        <div class="feature-desc">Automatische Theme-Erkennung via prefers-color-scheme. Manueller Toggle im Browser überschreibt die OS-Einstellung.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
