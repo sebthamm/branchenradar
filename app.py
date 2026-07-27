@@ -154,15 +154,34 @@ def role_required(*roles):
 
 @app.context_processor
 def inject_globals():
-    eid = session.get("entity_id")
+    uid  = session.get("user_id")
+    eid  = session.get("entity_id")
+    role = session.get("role")
+
+    entity_users = []
+    if role in ("admin", "superadmin") and eid:
+        entity_users = [u for u in load_users() if u.get("entity_id") == eid]
+
+    badge = 0
+    if uid:
+        todos = load_todos()
+        if role in ("admin", "superadmin"):
+            # open todos for entity + unread done-notifications
+            badge = sum(
+                1 for t in todos
+                if t.get("entity_id") == eid and (
+                    (not t.get("done")) or
+                    (t.get("done") and t.get("assigned_by") == uid and not t.get("admin_read_at"))
+                )
+            )
+        else:
+            # user: unread assigned todos
+            badge = sum(1 for t in todos if t.get("assigned_to") == uid and not t.get("assignee_read_at"))
+
     return {
         "todo_categories": entity_todo_categories(eid),
-        "pending_todos": sum(
-            1 for t in load_todos()
-            if not t.get("done") and (
-                session.get("role") == "superadmin" or t.get("entity_id") == eid
-            )
-        ) if session.get("user_id") else 0,
+        "pending_todos":   badge,
+        "entity_users":    entity_users,
     }
 
 
@@ -217,6 +236,19 @@ def dashboard():
     else:
         signals = all_signals
         visible_sections = sections
+
+    # For "user" role: additionally filter by team categories
+    if role == "user" and entity_id:
+        entity = get_entity(entity_id)
+        if entity:
+            uid = session.get("user_id")
+            user_teams = [t for t in entity.get("teams", []) if uid in t.get("member_ids", [])]
+            if user_teams:
+                team_cats = set()
+                for tm in user_teams:
+                    team_cats.update(tm.get("category_ids", []))
+                if team_cats:
+                    signals = [s for s in signals if s.get("category") in team_cats]
 
     def sort_key(s):
         try:   si = STATUS_ORDER.index(s.get("status", "radar"))
@@ -287,13 +319,18 @@ def sa_entity_new():
             flash("Name ist erforderlich.", "error")
             return render_template("sa_entity_form.html", entity=None, sections=load_sections())
         entities = load_entities()
-        default_cats = load_settings().get("default_todo_categories", DEFAULT_TODO_CATEGORIES)
+        cfg = load_settings()
+        default_cats = cfg.get("default_todo_categories", DEFAULT_TODO_CATEGORIES)
         new_entity = {
-            "id":               str(uuid.uuid4()),
-            "name":             name,
-            "created_at":       datetime.now().strftime("%Y-%m-%d"),
-            "section_ids":      request.form.getlist("section_ids"),
-            "todo_categories":  default_cats,
+            "id":              str(uuid.uuid4()),
+            "name":            name,
+            "created_at":      datetime.now().strftime("%Y-%m-%d"),
+            "section_ids":     request.form.getlist("section_ids"),
+            "todo_categories": default_cats,
+            "teams": [
+                {"id": str(uuid.uuid4()), "name": "Team Abrechnung", "member_ids": [], "category_ids": ["krankenkassen", "gesetze"]},
+                {"id": str(uuid.uuid4()), "name": "Team Personal",   "member_ids": [], "category_ids": ["personal"]},
+            ],
         }
         entities.append(new_entity)
         save_entities(entities)
@@ -476,55 +513,117 @@ def signal_delete(sig_id):
 # ── ToDos ─────────────────────────────────────────────────────────────────────
 
 @app.route("/todos")
-@role_required("admin", "superadmin")
+@login_required
 def todos():
-    eid      = session.get("entity_id")
-    role     = session.get("role")
+    uid  = session.get("user_id")
+    eid  = session.get("entity_id")
+    role = session.get("role")
     all_todos = load_todos()
-    if role == "superadmin":
-        my_todos = all_todos
-    else:
+
+    if role in ("admin", "superadmin"):
         my_todos = [t for t in all_todos if t.get("entity_id") == eid]
-    sig_map = {s["id"]: s for s in load_signals()}
-    cats    = entity_todo_categories(eid)
+        # Mark done-notifications as read for this admin
+        changed = False
+        for t in all_todos:
+            if t.get("assigned_by") == uid and t.get("done") and not t.get("admin_read_at"):
+                t["admin_read_at"] = datetime.now().isoformat()
+                changed = True
+        if changed:
+            save_todos(all_todos)
+    else:
+        my_todos = [t for t in all_todos if t.get("assigned_to") == uid]
+        # Mark assignee unread as read
+        changed = False
+        for t in all_todos:
+            if t.get("assigned_to") == uid and not t.get("assignee_read_at"):
+                t["assignee_read_at"] = datetime.now().isoformat()
+                changed = True
+        if changed:
+            save_todos(all_todos)
+
+    sig_map    = {s["id"]: s for s in load_signals()}
+    user_map   = {u["id"]: u for u in load_users()}
+    cats       = entity_todo_categories(eid)
+    today      = datetime.now().strftime("%Y-%m-%d")
     return render_template("todos.html",
-        todos=my_todos, sig_map=sig_map, categories=cats,
-        status_labels=STATUS_LABELS)
+        todos=my_todos, sig_map=sig_map, user_map=user_map,
+        categories=cats, today=today, status_labels=STATUS_LABELS)
 
 @app.route("/todos/new", methods=["POST"])
 @role_required("admin", "superadmin")
 def todo_new():
+    uid = session.get("user_id")
     eid = session.get("entity_id")
+    assigned_to = request.form.get("assigned_to", "").strip() or None
     todo = {
-        "id":         str(uuid.uuid4()),
-        "signal_id":  request.form.get("signal_id", ""),
-        "signal_title": request.form.get("signal_title", ""),
-        "entity_id":  eid,
-        "category":   request.form.get("category", ""),
-        "deadline":   request.form.get("deadline", ""),
-        "comment":    request.form.get("comment", "").strip(),
-        "done":       False,
-        "created_by": session.get("user_id"),
-        "created_at": datetime.now().isoformat(),
+        "id":              str(uuid.uuid4()),
+        "signal_id":       request.form.get("signal_id", ""),
+        "signal_title":    request.form.get("signal_title", ""),
+        "entity_id":       eid,
+        "category":        request.form.get("category", ""),
+        "deadline":        request.form.get("deadline", ""),
+        "comment":         request.form.get("comment", "").strip(),
+        "done":            False,
+        "done_at":         None,
+        "done_comment":    "",
+        "done_by":         None,
+        "assigned_to":     assigned_to,
+        "assigned_by":     uid if assigned_to else None,
+        "assigned_at":     datetime.now().isoformat() if assigned_to else None,
+        "assignee_read_at": None,
+        "admin_read_at":   None,
+        "created_by":      uid,
+        "created_at":      datetime.now().isoformat(),
     }
     todos = load_todos()
     todos.append(todo)
     save_todos(todos)
     flash("ToDo angelegt.", "success")
-    next_url = request.form.get("next") or url_for("todos")
-    return redirect(next_url)
+    return redirect(request.form.get("next") or url_for("todos"))
 
-@app.route("/todos/<todo_id>/toggle", methods=["POST"])
+@app.route("/todos/<todo_id>/assign", methods=["POST"])
 @role_required("admin", "superadmin")
-def todo_toggle(todo_id):
+def todo_assign(todo_id):
+    uid = session.get("user_id")
+    assigned_to = request.form.get("assigned_to", "").strip() or None
     todos = load_todos()
     for t in todos:
         if t["id"] == todo_id:
-            t["done"] = not t.get("done", False)
-            if t["done"]:
-                t["done_at"] = datetime.now().isoformat()
-            else:
-                t.pop("done_at", None)
+            t["assigned_to"]      = assigned_to
+            t["assigned_by"]      = uid if assigned_to else None
+            t["assigned_at"]      = datetime.now().isoformat() if assigned_to else None
+            t["assignee_read_at"] = None
+            break
+    save_todos(todos)
+    return redirect(url_for("todos"))
+
+@app.route("/todos/<todo_id>/complete", methods=["POST"])
+@login_required
+def todo_complete(todo_id):
+    uid = session.get("user_id")
+    todos = load_todos()
+    for t in todos:
+        if t["id"] == todo_id:
+            t["done"]          = True
+            t["done_at"]       = datetime.now().isoformat()
+            t["done_comment"]  = request.form.get("done_comment", "").strip()
+            t["done_by"]       = uid
+            t["admin_read_at"] = None  # admin gets notified
+            break
+    save_todos(todos)
+    return redirect(url_for("todos"))
+
+@app.route("/todos/<todo_id>/reopen", methods=["POST"])
+@role_required("admin", "superadmin")
+def todo_reopen(todo_id):
+    todos = load_todos()
+    for t in todos:
+        if t["id"] == todo_id:
+            t["done"]         = False
+            t["done_at"]      = None
+            t["done_comment"] = ""
+            t["done_by"]      = None
+            t["admin_read_at"] = None
             break
     save_todos(todos)
     return redirect(url_for("todos"))
@@ -548,13 +647,30 @@ def settings():
     if not entity:
         abort(404)
     if request.method == "POST":
-        cats = [c.strip() for c in request.form.getlist("categories") if c.strip()]
-        entity["todo_categories"] = cats
+        action = request.form.get("action", "categories")
+        if action == "categories":
+            cats = [c.strip() for c in request.form.getlist("categories") if c.strip()]
+            entity["todo_categories"] = cats
+        elif action == "teams":
+            teams = []
+            i = 0
+            while request.form.get(f"team_{i}_name") is not None:
+                name    = request.form.get(f"team_{i}_name", "").strip()
+                tid     = request.form.get(f"team_{i}_id") or str(uuid.uuid4())
+                members = request.form.getlist(f"team_{i}_members")
+                cats_t  = request.form.getlist(f"team_{i}_cats")
+                if name:
+                    teams.append({"id": tid, "name": name, "member_ids": members, "category_ids": cats_t})
+                i += 1
+            entity["teams"] = teams
         save_entities(entities)
         flash("Einstellungen gespeichert.", "success")
         return redirect(url_for("settings"))
-    cats = entity.get("todo_categories", DEFAULT_TODO_CATEGORIES)
-    return render_template("settings.html", entity=entity, categories=cats)
+    cats       = entity.get("todo_categories", DEFAULT_TODO_CATEGORIES)
+    teams      = entity.get("teams", [])
+    all_users  = [u for u in load_users() if u.get("entity_id") == eid]
+    return render_template("settings.html", entity=entity, categories=cats,
+        teams=teams, entity_users=all_users, signal_categories=CATEGORIES)
 
 @app.route("/superadmin/settings", methods=["GET", "POST"])
 @role_required("superadmin")

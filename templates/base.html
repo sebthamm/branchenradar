@@ -161,6 +161,15 @@
       </select>
       <label for="todo-deadline">Frist</label>
       <input type="date" name="deadline" id="todo-deadline">
+      {% if entity_users %}
+      <label for="todo-assign">Zuweisen an</label>
+      <select name="assigned_to" id="todo-assign">
+        <option value="">— Nicht zuweisen —</option>
+        {% for u in entity_users %}
+        <option value="{{ u.id }}">{{ u.name or u.username }}{% if u.role == 'admin' %} (Admin){% endif %}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
       <label for="todo-comment">Kommentar</label>
       <textarea name="comment" id="todo-comment" placeholder="Was genau ist zu tun?"></textarea>
       <div class="modal-actions">
