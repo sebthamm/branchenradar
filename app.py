@@ -941,6 +941,32 @@ def sources():
 
         return redirect(url_for("sources"))
 
+@app.route("/admin/sources/import", methods=["POST"])
+@role_required("admin", "superadmin")
+def sources_import():
+    rows = request.get_json(silent=True) or []
+    if not rows:
+        return jsonify({"ok": False, "msg": "Keine Daten"}), 400
+    sources_list = load_sources()
+    added = 0
+    for row in rows[:20]:
+        name = (row.get("name") or "").strip()
+        if not name:
+            continue
+        sources_list.append({
+            "id":         str(uuid.uuid4()),
+            "name":       name,
+            "url":        (row.get("url") or "").strip(),
+            "category":   row.get("category") or "Sonstiges",
+            "priority":   row.get("priority") or "mittel",
+            "status":     row.get("status") or "geplant",
+            "notes":      (row.get("notes") or "").strip(),
+            "created_at": datetime.now().strftime("%Y-%m-%d"),
+        })
+        added += 1
+    save_sources(sources_list)
+    return jsonify({"ok": True, "added": added})
+
     sources_list = load_sources()
     hints = cfg.get("source_prompt_hints", "")
     return render_template("sources.html",
