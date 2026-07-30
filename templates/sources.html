@@ -164,6 +164,7 @@
           <th>Kategorie</th>
           <th>Priorität</th>
           <th>Status</th>
+          <th>Hinweise</th>
           <th>URL</th>
           <th></th>
         </tr>
@@ -176,6 +177,13 @@
           <td class="muted" style="font-size:12px">{{ src.category }}</td>
           <td><span class="badge p-{{ src.priority }}">{{ src.priority }}</span></td>
           <td><span class="badge s-{{ src.status }}">{{ source_status_labels.get(src.status, src.status) }}</span></td>
+          <td style="max-width:260px">
+            {% if src.notes %}
+              <span class="muted" style="font-size:12px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="{{ src.notes }}">{{ src.notes }}</span>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
           <td>
             {% if src.url %}
               <a href="{{ src.url }}" target="_blank" class="url-link" title="{{ src.url }}">↗ Link</a>
@@ -199,8 +207,8 @@
 
         {# Expand: Edit #}
         <tr class="expand-row">
-          <td colspan="6">
-            <div class="expand-panel" id="panel-edit-{{ uid }}">
+          <td colspan="7">
+            <div class="expand-panel" id="panel-edit-{{ uid }}" style="">
               <form method="post" action="{{ url_for('sources') }}">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="source_id" value="{{ src.id }}">
@@ -251,7 +259,7 @@
           </td>
         </tr>
         {% else %}
-        <tr class="empty-row"><td colspan="6">Noch keine Quellen angelegt. <button class="btn btn-secondary btn-sm" onclick="toggleNewPanel()" style="margin-left:8px">Erste Quelle anlegen</button></td></tr>
+        <tr class="empty-row"><td colspan="7">Noch keine Quellen angelegt. <button class="btn btn-secondary btn-sm" onclick="toggleNewPanel()" style="margin-left:8px">Erste Quelle anlegen</button></td></tr>
         {% endfor %}
       </tbody>
     </table>
