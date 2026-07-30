@@ -112,6 +112,10 @@
       <input type="hidden" name="action" value="new">
       <div class="inline-form">
         <div>
+          <label>Kürzel</label>
+          <input type="text" name="kuerzel" placeholder="z.B. BMG">
+        </div>
+        <div>
           <label>Name *</label>
           <input type="text" name="name" required placeholder="z.B. Bundesministerium für Gesundheit">
         </div>
@@ -156,6 +160,7 @@
     <table>
       <thead>
         <tr>
+          <th>Kürzel</th>
           <th>Name</th>
           <th>Kategorie</th>
           <th>Priorität</th>
@@ -169,6 +174,7 @@
         {% for src in sources %}
         {% set uid = src.id | replace('-','_') %}
         <tr onclick="toggleEdit('{{ uid }}')" style="cursor:pointer" title="Klicken zum Auf-/Zuklappen">
+          <td style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap">{{ src.kuerzel or '—' }}</td>
           <td style="font-weight:500">{{ src.name }}</td>
           <td class="muted" style="font-size:12px">{{ src.category }}</td>
           <td><span class="badge p-{{ src.priority }}">{{ src.priority }}</span></td>
@@ -201,12 +207,16 @@
 
         {# Expand: Edit #}
         <tr class="expand-row">
-          <td colspan="7">
+          <td colspan="8">
             <div class="expand-panel" id="panel-edit-{{ uid }}" style="">
               <form method="post" action="{{ url_for('sources') }}">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="source_id" value="{{ src.id }}">
                 <div class="inline-form">
+                  <div>
+                    <label>Kürzel</label>
+                    <input type="text" name="kuerzel" value="{{ src.kuerzel or '' }}">
+                  </div>
                   <div>
                     <label>Name *</label>
                     <input type="text" name="name" value="{{ src.name }}" required>
@@ -249,7 +259,7 @@
           </td>
         </tr>
         {% else %}
-        <tr class="empty-row"><td colspan="7">Noch keine Quellen angelegt. <button class="btn btn-secondary btn-sm" onclick="toggleNewPanel()" style="margin-left:8px">Erste Quelle anlegen</button></td></tr>
+        <tr class="empty-row"><td colspan="8">Noch keine Quellen angelegt. <button class="btn btn-secondary btn-sm" onclick="toggleNewPanel()" style="margin-left:8px">Erste Quelle anlegen</button></td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -265,7 +275,7 @@
     <div id="import-step-paste">
       <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
         Kopiere Zeilen direkt aus Excel oder Google Sheets und füge sie hier ein.
-        Spaltenreihenfolge: <strong>Name · URL · Kategorie · Priorität · Status · Hinweise</strong>
+        Spaltenreihenfolge: <strong>Kürzel · Name · URL · Kategorie · Priorität · Status · Hinweise</strong>
         <span style="color:var(--faint)"> — nur Name ist Pflicht, max. 20 Zeilen.</span>
       </p>
       <textarea id="import-paste-area" placeholder="Hier aus Excel / Google Sheets einfügen (Strg+V) …"
@@ -285,6 +295,7 @@
         <table id="import-table" style="width:100%;border-collapse:collapse;font-size:12px">
           <thead>
             <tr style="background:var(--surface2)">
+              <th style="padding:7px 10px;text-align:left;border:1px solid var(--border);white-space:nowrap">Kürzel</th>
               <th style="padding:7px 10px;text-align:left;border:1px solid var(--border);white-space:nowrap">Name *</th>
               <th style="padding:7px 10px;text-align:left;border:1px solid var(--border)">URL</th>
               <th style="padding:7px 10px;text-align:left;border:1px solid var(--border)">Kategorie</th>
@@ -436,15 +447,17 @@ function parseImportPaste() {
 
   for (const line of lines.slice(0, 20)) {
     const cols = line.split('\t');
-    const name = (cols[0] || '').trim();
+    const kuerzel = (cols[0] || '').trim();
+    const name = (cols[1] || '').trim();
     if (!name) continue;
     rows.push({
+      kuerzel:  kuerzel,
       name:     name,
-      url:      (cols[1] || '').trim(),
-      category: (cols[2] || '').trim() || 'Sonstiges',
-      priority: PRIORITY_MAP[(cols[3] || '').trim().toLowerCase()] || 'mittel',
-      status:   STATUS_MAP[(cols[4] || '').trim().toLowerCase()]   || 'geplant',
-      notes:    (cols[5] || '').trim(),
+      url:      (cols[2] || '').trim(),
+      category: (cols[3] || '').trim() || 'Sonstiges',
+      priority: PRIORITY_MAP[(cols[4] || '').trim().toLowerCase()] || 'mittel',
+      status:   (cols[5] || '').trim(),
+      notes:    (cols[6] || '').trim(),
     });
   }
 
@@ -470,6 +483,7 @@ function renderImportPreview() {
       td.appendChild(input);
       return td;
     };
+    tr.appendChild(cell(r.kuerzel,  'kuerzel'));
     tr.appendChild(cell(r.name,     'name'));
     tr.appendChild(cell(r.url,      'url'));
     tr.appendChild(cell(r.category, 'category'));
@@ -529,8 +543,9 @@ function downloadImportTemplate() {
   </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
   <meta charset="UTF-8"></head>
   <body><table>
-    <tr><th>Name</th><th>URL</th><th>Kategorie</th><th>Priorität</th><th>Status</th><th>Hinweise</th></tr>
+    <tr><th>Kürzel</th><th>Name</th><th>URL</th><th>Kategorie</th><th>Priorität</th><th>Status</th><th>Hinweise</th></tr>
     <tr>
+      <td>BMG</td>
       <td>Bundesministerium für Gesundheit</td>
       <td>https://bundesgesundheitsministerium.de</td>
       <td>Bundesministerium / Behörde</td>

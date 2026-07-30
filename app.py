@@ -903,11 +903,12 @@ def sources():
         if action == "new":
             src = {
                 "id":         str(uuid.uuid4()),
+                "kuerzel":    request.form.get("kuerzel", "").strip(),
                 "name":       request.form.get("name", "").strip(),
                 "url":        request.form.get("url", "").strip(),
                 "category":   request.form.get("category", "Sonstiges"),
                 "priority":   request.form.get("priority", "mittel"),
-                "status":     request.form.get("status", "geplant"),
+                "status":     request.form.get("status", "").strip(),
                 "notes":      request.form.get("notes", "").strip(),
                 "created_at": datetime.now().strftime("%Y-%m-%d"),
             }
@@ -919,11 +920,12 @@ def sources():
             sid = request.form.get("source_id", "")
             for s in sources_list:
                 if s["id"] == sid:
+                    s["kuerzel"]  = request.form.get("kuerzel", "").strip()
                     s["name"]     = request.form.get("name", "").strip()
                     s["url"]      = request.form.get("url", "").strip()
                     s["category"] = request.form.get("category", "Sonstiges")
                     s["priority"] = request.form.get("priority", "mittel")
-                    s["status"]   = request.form.get("status", "geplant")
+                    s["status"]   = request.form.get("status", "").strip()
                     s["notes"]    = request.form.get("notes", "").strip()
                     break
             save_sources(sources_list)
@@ -964,11 +966,12 @@ def sources_import():
             continue
         sources_list.append({
             "id":         str(uuid.uuid4()),
+            "kuerzel":    (row.get("kuerzel") or "").strip(),
             "name":       name,
             "url":        (row.get("url") or "").strip(),
             "category":   row.get("category") or "Sonstiges",
             "priority":   row.get("priority") or "mittel",
-            "status":     row.get("status") or "geplant",
+            "status":     (row.get("status") or "").strip(),
             "notes":      (row.get("notes") or "").strip(),
             "created_at": datetime.now().strftime("%Y-%m-%d"),
         })
