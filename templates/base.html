@@ -96,10 +96,12 @@
         {% if session.role == 'superadmin' %}
           <a href="{{ url_for('sa_dashboard') }}" class="header-link">Nutzerverwaltung</a>
           <a href="{{ url_for('signal_list') }}" class="header-link">Signale</a>
+          <a href="{{ url_for('sources') }}" class="header-link">Quellen</a>
           <a href="{{ url_for('sa_settings') }}" class="header-link">Einstellungen</a>
         {% elif session.role == 'admin' %}
           <a href="{{ url_for('admin_dashboard') }}" class="header-link">Nutzerverwaltung</a>
           <a href="{{ url_for('signal_list') }}" class="header-link">Signale</a>
+          <a href="{{ url_for('sources') }}" class="header-link">Quellen</a>
           <a href="{{ url_for('settings') }}" class="header-link">Einstellungen</a>
         {% endif %}
         <span style="width:1px;height:14px;background:rgba(255,255,255,.15);display:inline-block"></span>

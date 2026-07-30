@@ -26,6 +26,7 @@ ENTITIES_FILE = os.path.join(DATA_DIR, "entities.json")
 SECTIONS_FILE = os.path.join(DATA_DIR, "sections.seed.json")  # sections are static
 TODOS_FILE    = os.path.join(DATA_DIR, "todos.json")
 SETTINGS_FILE = os.path.join(DATA_DIR, "settings.json")
+SOURCES_FILE  = os.path.join(DATA_DIR, "sources.json")
 
 DEFAULT_TODO_CATEGORIES = [
     "Abrechnung & Vergütung",
@@ -38,7 +39,7 @@ DEFAULT_TODO_CATEGORIES = [
 def _init_data():
     """Copy seed files to data files on first run if data files don't exist."""
     import shutil
-    for name in ("signals", "users", "entities", "todos"):
+    for name in ("signals", "users", "entities", "todos", "sources"):
         target = os.path.join(DATA_DIR, f"{name}.json")
         seed   = os.path.join(DATA_DIR, f"{name}.seed.json")
         if not os.path.exists(target) and os.path.exists(seed):
@@ -98,6 +99,8 @@ def save_entities(d): _save(ENTITIES_FILE, d)
 def load_sections():  return _load(SECTIONS_FILE)
 def load_todos():     return _load(TODOS_FILE)
 def save_todos(d):    _save(TODOS_FILE, d)
+def load_sources():   return _load(SOURCES_FILE)
+def save_sources(d):  _save(SOURCES_FILE, d)
 
 def load_settings():
     if not os.path.exists(SETTINGS_FILE):
@@ -867,6 +870,85 @@ def _signal_from_form(form, existing_id=None):
         "deadline":    form.get("deadline", "").strip() or None,
         "section_ids": form.getlist("section_ids"),
     }
+
+
+# ── Sources ───────────────────────────────────────────────────────────────────
+
+SOURCE_CATEGORIES = [
+    "Bundesministerium / Behörde",
+    "Kassenärztliche Vereinigung",
+    "Krankenkassen & GKV",
+    "Berufsverband",
+    "Gesetzgebung / Parlament",
+    "Fachpresse",
+    "Sonstiges",
+]
+SOURCE_PRIORITIES = ["hoch", "mittel", "niedrig"]
+SOURCE_STATUSES   = ["geplant", "in_recherche", "aktiv", "inaktiv"]
+SOURCE_STATUS_LABELS = {
+    "geplant":       "Geplant",
+    "in_recherche":  "In Recherche",
+    "aktiv":         "Aktiv",
+    "inaktiv":       "Inaktiv",
+}
+
+@app.route("/admin/sources", methods=["GET", "POST"])
+@role_required("admin", "superadmin")
+def sources():
+    cfg = load_settings()
+    if request.method == "POST":
+        action = request.form.get("action", "")
+        sources_list = load_sources()
+
+        if action == "new":
+            src = {
+                "id":         str(uuid.uuid4()),
+                "name":       request.form.get("name", "").strip(),
+                "url":        request.form.get("url", "").strip(),
+                "category":   request.form.get("category", "Sonstiges"),
+                "priority":   request.form.get("priority", "mittel"),
+                "status":     request.form.get("status", "geplant"),
+                "notes":      request.form.get("notes", "").strip(),
+                "created_at": datetime.now().strftime("%Y-%m-%d"),
+            }
+            sources_list.append(src)
+            save_sources(sources_list)
+            flash("Quelle angelegt.", "success")
+
+        elif action == "edit":
+            sid = request.form.get("source_id", "")
+            for s in sources_list:
+                if s["id"] == sid:
+                    s["name"]     = request.form.get("name", "").strip()
+                    s["url"]      = request.form.get("url", "").strip()
+                    s["category"] = request.form.get("category", "Sonstiges")
+                    s["priority"] = request.form.get("priority", "mittel")
+                    s["status"]   = request.form.get("status", "geplant")
+                    s["notes"]    = request.form.get("notes", "").strip()
+                    break
+            save_sources(sources_list)
+            flash("Quelle aktualisiert.", "success")
+
+        elif action == "delete":
+            sid = request.form.get("source_id", "")
+            save_sources([s for s in sources_list if s["id"] != sid])
+            flash("Quelle gelöscht.", "success")
+
+        elif action == "hints":
+            cfg["source_prompt_hints"] = request.form.get("source_prompt_hints", "").strip()
+            save_settings(cfg)
+            flash("Allgemeine Hinweise gespeichert.", "success")
+
+        return redirect(url_for("sources"))
+
+    sources_list = load_sources()
+    hints = cfg.get("source_prompt_hints", "")
+    return render_template("sources.html",
+        sources=sources_list, hints=hints,
+        source_categories=SOURCE_CATEGORIES,
+        source_priorities=SOURCE_PRIORITIES,
+        source_statuses=SOURCE_STATUSES,
+        source_status_labels=SOURCE_STATUS_LABELS)
 
 
 # ── 403 handler ───────────────────────────────────────────────────────────────

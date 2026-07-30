@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% block title %}Quellen — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+  .page-title { font-family: Georgia, serif; font-size: 24px; font-weight: normal; }
+
+  /* Hints box */
+  .hints-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px; }
+  .hints-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin-bottom: 10px; }
+  .hints-box textarea { width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); font-family: inherit; line-height: 1.6; resize: vertical; min-height: 90px; outline: none; }
+  .hints-box textarea:focus { border-color: var(--navy); }
+  .hints-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+  .hints-desc { font-size: 12px; color: var(--faint); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 9px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr.expand-row td { padding: 0; border-bottom: 1px solid var(--border); }
+  tr.expand-row:last-child td { border-bottom: none; }
+  .expand-panel { display: none; background: var(--surface2); padding: 20px 24px; border-top: 1px solid var(--border); }
+  .expand-panel.open { display: block; }
+
+  /* Inline form */
+  .inline-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+  .inline-form .full { grid-column: 1 / -1; }
+  .inline-form label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 5px; margin-top: 14px; }
+  .inline-form label:first-child { margin-top: 0; }
+  .inline-form input[type="text"], .inline-form input[type="url"], .inline-form select, .inline-form textarea {
+    width: 100%; padding: 8px 11px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); font-size: 13px; color: var(--text); outline: none; font-family: inherit;
+  }
+  .inline-form input:focus, .inline-form select:focus, .inline-form textarea:focus { border-color: var(--navy); }
+  .inline-form textarea { min-height: 80px; resize: vertical; line-height: 1.6; }
+  .form-actions { display: flex; gap: 8px; margin-top: 16px; grid-column: 1 / -1; }
+
+  /* New-source panel */
+  .new-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; display: none; }
+  .new-panel.open { display: block; }
+  .new-panel .inline-form label:first-child { margin-top: 0; }
+
+  /* Badges */
+  .badge { display: inline-flex; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+  .p-hoch     { background: rgba(176,48,96,.12);  color: var(--s-action); }
+  .p-mittel   { background: rgba(196,120,14,.12); color: var(--s-announced); }
+  .p-niedrig  { background: var(--surface2); color: var(--muted); }
+  .s-aktiv       { background: rgba(37,122,88,.12); color: var(--s-active); }
+  .s-in_recherche{ background: rgba(107,68,168,.12); color: var(--s-develop); }
+  .s-geplant     { background: rgba(46,123,170,.12); color: var(--s-radar); }
+  .s-inaktiv     { background: var(--surface2); color: var(--faint); }
+  @media (prefers-color-scheme: dark) {
+    .p-hoch  { background: rgba(176,48,96,.25); }
+    .p-mittel{ background: rgba(196,120,14,.25); }
+    .s-aktiv { background: rgba(37,122,88,.25); }
+    .s-in_recherche { background: rgba(107,68,168,.25); }
+    .s-geplant { background: rgba(46,123,170,.25); }
+  }
+
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .muted { color: var(--muted); }
+  .url-link { color: var(--s-radar); text-decoration: none; font-size: 12px; }
+  .url-link:hover { text-decoration: underline; }
+  .empty-row td { text-align: center; color: var(--faint); padding: 32px; }
+
+  /* Prompt modal */
+  .prompt-modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index:600; align-items: center; justify-content: center; }
+  .prompt-modal-backdrop.open { display: flex; }
+  .prompt-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 40px rgba(0,0,0,.25); width: 100%; max-width: 640px; padding: 28px 32px; position: relative; max-height: 85vh; display: flex; flex-direction: column; }
+  .prompt-modal-title { font-family: Georgia, serif; font-size: 18px; font-weight: normal; margin-bottom: 16px; }
+  .prompt-modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 20px; color: var(--faint); cursor: pointer; }
+  .prompt-modal-close:hover { color: var(--text); }
+  .prompt-output { flex: 1; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-wrap; font-family: "SF Mono", "Fira Code", Consolas, monospace; min-height: 200px; }
+  .prompt-modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .copy-feedback { font-size: 12px; color: var(--s-active); display: none; }
+
+  @media (max-width: 700px) { .main { padding: 16px; } .inline-form { grid-template-columns: 1fr; } .inline-form .full { grid-column: 1; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Quellen</div>
+    <div class="actions">
+      <button class="btn btn-secondary btn-sm" onclick="generateAllPrompt()">Prompt für alle Quellen</button>
+      <button class="btn btn-primary btn-sm" onclick="toggleNewPanel()">+ Neue Quelle</button>
+    </div>
+  </div>
+
+  {# ── Allgemeine Hinweise ── #}
+  <div class="hints-box">
+    <div class="hints-label">Allgemeine Hinweise für die KI</div>
+    <form method="post" action="{{ url_for('sources') }}">
+      <input type="hidden" name="action" value="hints">
+      <textarea name="source_prompt_hints" placeholder="z.B. Neue Inhalte bitte als Signal im Format: Titel | Status | Kategorie | Zusammenfassung | Quelle | URL ablegen. Nur Inhalte der letzten 30 Tage berücksichtigen.">{{ hints }}</textarea>
+      <div class="hints-actions">
+        <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
+        <span class="hints-desc">Diese Hinweise werden in jeden generierten Prompt eingebettet.</span>
+      </div>
+    </form>
+  </div>
+
+  {# ── Neue Quelle ── #}
+  <div class="new-panel" id="new-panel">
+    <div style="font-size:13px;font-weight:600;margin-bottom:16px;color:var(--text)">Neue Quelle anlegen</div>
+    <form method="post" action="{{ url_for('sources') }}">
+      <input type="hidden" name="action" value="new">
+      <div class="inline-form">
+        <div>
+          <label>Name *</label>
+          <input type="text" name="name" required placeholder="z.B. Bundesministerium für Gesundheit">
+        </div>
+        <div>
+          <label>URL</label>
+          <input type="url" name="url" placeholder="https://...">
+        </div>
+        <div>
+          <label>Kategorie</label>
+          <select name="category">
+            {% for cat in source_categories %}
+            <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Priorität</label>
+          <select name="priority">
+            {% for p in source_priorities %}
+            <option value="{{ p }}">{{ p | capitalize }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Status</label>
+          <select name="status">
+            {% for s in source_statuses %}
+            <option value="{{ s }}">{{ source_status_labels[s] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="full">
+          <label>Hinweise für die KI</label>
+          <textarea name="notes" placeholder="Was soll die KI bei dieser Quelle besonders beachten? Welche Themen sind relevant?"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-sm">Anlegen</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleNewPanel()">Abbrechen</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  {# ── Tabelle ── #}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Kategorie</th>
+          <th>Priorität</th>
+          <th>Status</th>
+          <th>URL</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for src in sources %}
+        {% set uid = src.id | replace('-','_') %}
+        <tr>
+          <td style="font-weight:500">{{ src.name }}</td>
+          <td class="muted" style="font-size:12px">{{ src.category }}</td>
+          <td><span class="badge p-{{ src.priority }}">{{ src.priority }}</span></td>
+          <td><span class="badge s-{{ src.status }}">{{ source_status_labels.get(src.status, src.status) }}</span></td>
+          <td>
+            {% if src.url %}
+              <a href="{{ src.url }}" target="_blank" class="url-link" title="{{ src.url }}">↗ Link</a>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-secondary btn-sm" onclick="generateSinglePrompt('{{ src.id }}')">Prompt</button>
+              <button class="btn btn-secondary btn-sm btn-toggle" id="btn-edit-{{ uid }}"
+                      onclick="toggleEdit('{{ uid }}')">Bearbeiten</button>
+              <form method="post" action="{{ url_for('sources') }}" onsubmit="return confirm('Quelle löschen?')">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="source_id" value="{{ src.id }}">
+                <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+
+        {# Expand: Edit #}
+        <tr class="expand-row">
+          <td colspan="6">
+            <div class="expand-panel" id="panel-edit-{{ uid }}">
+              <form method="post" action="{{ url_for('sources') }}">
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="source_id" value="{{ src.id }}">
+                <div class="inline-form">
+                  <div>
+                    <label>Name *</label>
+                    <input type="text" name="name" value="{{ src.name }}" required>
+                  </div>
+                  <div>
+                    <label>URL</label>
+                    <input type="url" name="url" value="{{ src.url }}">
+                  </div>
+                  <div>
+                    <label>Kategorie</label>
+                    <select name="category">
+                      {% for cat in source_categories %}
+                      <option value="{{ cat }}" {{ 'selected' if cat == src.category else '' }}>{{ cat }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div>
+                    <label>Priorität</label>
+                    <select name="priority">
+                      {% for p in source_priorities %}
+                      <option value="{{ p }}" {{ 'selected' if p == src.priority else '' }}>{{ p | capitalize }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div>
+                    <label>Status</label>
+                    <select name="status">
+                      {% for s in source_statuses %}
+                      <option value="{{ s }}" {{ 'selected' if s == src.status else '' }}>{{ source_status_labels[s] }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="full">
+                    <label>Hinweise für die KI</label>
+                    <textarea name="notes">{{ src.notes }}</textarea>
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEdit('{{ uid }}')">Abbrechen</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr class="empty-row"><td colspan="6">Noch keine Quellen angelegt. <button class="btn btn-secondary btn-sm" onclick="toggleNewPanel()" style="margin-left:8px">Erste Quelle anlegen</button></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ── Prompt Modal ── #}
+<div class="prompt-modal-backdrop" id="prompt-modal" onclick="closePromptModal(event)">
+  <div class="prompt-modal" role="dialog" aria-modal="true">
+    <button class="prompt-modal-close" onclick="closePromptModal()" aria-label="Schließen">×</button>
+    <div class="prompt-modal-title" id="prompt-modal-title">Generierter Prompt</div>
+    <div class="prompt-output" id="prompt-output"></div>
+    <div class="prompt-modal-actions">
+      <button class="btn btn-primary btn-sm" onclick="copyPrompt()">Kopieren</button>
+      <span class="copy-feedback" id="copy-feedback">Kopiert ✓</span>
+      <button class="btn btn-secondary btn-sm" onclick="closePromptModal()">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SOURCES = {{ sources | tojson }};
+const HINTS   = {{ hints | tojson }};
+
+function toggleNewPanel() {
+  const p = document.getElementById('new-panel');
+  p.classList.toggle('open');
+}
+
+function toggleEdit(uid) {
+  const panel = document.getElementById('panel-edit-' + uid);
+  const btn   = document.getElementById('btn-edit-' + uid);
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  if (btn) btn.classList.toggle('active', !isOpen);
+}
+
+function buildPrompt(srcs, title) {
+  let lines = [];
+  lines.push('# ' + title);
+  lines.push('');
+  lines.push('Bitte prüfe die folgenden Quellen auf neue regulatorische Informationen, die für Zahnarztpraxen, Allgemeinmediziner und andere Gesundheitseinrichtungen in Deutschland relevant sind.');
+  lines.push('');
+
+  srcs.forEach((s, i) => {
+    lines.push('## Quelle ' + (i + 1) + ': ' + s.name);
+    if (s.url)   lines.push('URL: ' + s.url);
+    if (s.notes) lines.push('Hinweise: ' + s.notes);
+    lines.push('');
+  });
+
+  if (HINTS && HINTS.trim()) {
+    lines.push('---');
+    lines.push('## Allgemeine Hinweise');
+    lines.push(HINTS.trim());
+  }
+
+  return lines.join('\n');
+}
+
+function generateSinglePrompt(sourceId) {
+  const src = SOURCES.find(s => s.id === sourceId);
+  if (!src) return;
+  const text = buildPrompt([src], 'Recherche-Prompt: ' + src.name);
+  openPromptModal('Prompt — ' + src.name, text);
+}
+
+function generateAllPrompt() {
+  if (!SOURCES.length) { alert('Noch keine Quellen vorhanden.'); return; }
+  const active = SOURCES.filter(s => s.status !== 'inaktiv');
+  const text = buildPrompt(active.length ? active : SOURCES, 'Recherche-Prompt: Alle Quellen');
+  openPromptModal('Prompt — Alle Quellen (' + (active.length || SOURCES.length) + ')', text);
+}
+
+function openPromptModal(title, text) {
+  document.getElementById('prompt-modal-title').textContent = title;
+  document.getElementById('prompt-output').textContent = text;
+  document.getElementById('copy-feedback').style.display = 'none';
+  document.getElementById('prompt-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePromptModal(e) {
+  if (e && e.target !== document.getElementById('prompt-modal')) return;
+  document.getElementById('prompt-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function copyPrompt() {
+  const text = document.getElementById('prompt-output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const fb = document.getElementById('copy-feedback');
+    fb.style.display = 'inline';
+    setTimeout(() => { fb.style.display = 'none'; }, 2000);
+  });
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePromptModal(); });
+</script>
+{% endblock %}
