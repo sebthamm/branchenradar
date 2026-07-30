@@ -941,6 +941,15 @@ def sources():
 
         return redirect(url_for("sources"))
 
+    sources_list = load_sources()
+    hints = cfg.get("source_prompt_hints", "")
+    return render_template("sources.html",
+        sources=sources_list, hints=hints,
+        source_categories=SOURCE_CATEGORIES,
+        source_priorities=SOURCE_PRIORITIES,
+        source_statuses=SOURCE_STATUSES,
+        source_status_labels=SOURCE_STATUS_LABELS)
+
 @app.route("/admin/sources/import", methods=["POST"])
 @role_required("admin", "superadmin")
 def sources_import():
@@ -966,15 +975,6 @@ def sources_import():
         added += 1
     save_sources(sources_list)
     return jsonify({"ok": True, "added": added})
-
-    sources_list = load_sources()
-    hints = cfg.get("source_prompt_hints", "")
-    return render_template("sources.html",
-        sources=sources_list, hints=hints,
-        source_categories=SOURCE_CATEGORIES,
-        source_priorities=SOURCE_PRIORITIES,
-        source_statuses=SOURCE_STATUSES,
-        source_status_labels=SOURCE_STATUS_LABELS)
 
 
 # ── 403 handler ───────────────────────────────────────────────────────────────
