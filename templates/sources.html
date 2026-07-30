@@ -117,7 +117,7 @@
         </div>
         <div>
           <label>URL</label>
-          <input type="url" name="url" placeholder="https://...">
+          <input type="text" name="url" placeholder="https://...">
         </div>
         <div>
           <label>Kategorie</label>
@@ -137,11 +137,7 @@
         </div>
         <div>
           <label>Status</label>
-          <select name="status">
-            {% for s in source_statuses %}
-            <option value="{{ s }}">{{ source_status_labels[s] }}</option>
-            {% endfor %}
-          </select>
+          <input type="text" name="status" placeholder="z.B. aktiv, geplant, in Recherche …">
         </div>
         <div class="full">
           <label>Hinweise für die KI</label>
@@ -172,11 +168,11 @@
       <tbody>
         {% for src in sources %}
         {% set uid = src.id | replace('-','_') %}
-        <tr>
+        <tr onclick="toggleEdit('{{ uid }}')" style="cursor:pointer" title="Klicken zum Auf-/Zuklappen">
           <td style="font-weight:500">{{ src.name }}</td>
           <td class="muted" style="font-size:12px">{{ src.category }}</td>
           <td><span class="badge p-{{ src.priority }}">{{ src.priority }}</span></td>
-          <td><span class="badge s-{{ src.status }}">{{ source_status_labels.get(src.status, src.status) }}</span></td>
+          <td><span class="muted" style="font-size:12px">{{ src.status or '—' }}</span></td>
           <td style="max-width:260px">
             {% if src.notes %}
               <span class="muted" style="font-size:12px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="{{ src.notes }}">{{ src.notes }}</span>
@@ -186,16 +182,14 @@
           </td>
           <td>
             {% if src.url %}
-              <a href="{{ src.url }}" target="_blank" class="url-link" title="{{ src.url }}">↗ Link</a>
+              <a href="{{ src.url }}" target="_blank" class="url-link" title="{{ src.url }}" onclick="event.stopPropagation()">↗ Link</a>
             {% else %}
               <span class="muted">—</span>
             {% endif %}
           </td>
-          <td>
+          <td onclick="event.stopPropagation()">
             <div class="actions">
               <button class="btn btn-secondary btn-sm" onclick="generateSinglePrompt('{{ src.id }}')">Prompt</button>
-              <button class="btn btn-secondary btn-sm btn-toggle" id="btn-edit-{{ uid }}"
-                      onclick="toggleEdit('{{ uid }}')">Bearbeiten</button>
               <form method="post" action="{{ url_for('sources') }}" onsubmit="return confirm('Quelle löschen?')">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="source_id" value="{{ src.id }}">
@@ -219,7 +213,7 @@
                   </div>
                   <div>
                     <label>URL</label>
-                    <input type="url" name="url" value="{{ src.url }}">
+                    <input type="text" name="url" value="{{ src.url }}">
                   </div>
                   <div>
                     <label>Kategorie</label>
@@ -239,11 +233,7 @@
                   </div>
                   <div>
                     <label>Status</label>
-                    <select name="status">
-                      {% for s in source_statuses %}
-                      <option value="{{ s }}" {{ 'selected' if s == src.status else '' }}>{{ source_status_labels[s] }}</option>
-                      {% endfor %}
-                    </select>
+                    <input type="text" name="status" value="{{ src.status }}">
                   </div>
                   <div class="full">
                     <label>Hinweise für die KI</label>
