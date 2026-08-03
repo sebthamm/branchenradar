@@ -72,16 +72,38 @@
   .empty-row td { text-align: center; color: var(--faint); padding: 32px; }
   .cell-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12px; line-height: 1.4; color: var(--muted); }
 
+  /* Ingestion chips */
+  .ingestion-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .chip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+  .chip-scrape  { background: rgba(46,123,170,.12);  color: var(--s-radar); }
+  .chip-feed    { background: rgba(37,122,88,.12);   color: var(--s-active); }
+  .chip-pdf     { background: rgba(196,120,14,.12);  color: var(--s-announced); }
+  .chip-search  { background: rgba(107,68,168,.12);  color: var(--s-develop); }
+  @media (prefers-color-scheme: dark) {
+    .chip-scrape { background: rgba(46,123,170,.25); }
+    .chip-feed   { background: rgba(37,122,88,.25); }
+    .chip-pdf    { background: rgba(196,120,14,.25); }
+    .chip-search { background: rgba(107,68,168,.25); }
+  }
+
   /* Prompt modal */
   .prompt-modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index:600; align-items: center; justify-content: center; }
   .prompt-modal-backdrop.open { display: flex; }
-  .prompt-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 40px rgba(0,0,0,.25); width: 100%; max-width: 640px; padding: 28px 32px; position: relative; max-height: 85vh; display: flex; flex-direction: column; }
-  .prompt-modal-title { font-family: Georgia, serif; font-size: 18px; font-weight: normal; margin-bottom: 16px; }
+  .prompt-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 40px rgba(0,0,0,.25); width: 100%; max-width: 720px; padding: 28px 32px; position: relative; max-height: 90vh; display: flex; flex-direction: column; }
+  .prompt-modal-title { font-family: Georgia, serif; font-size: 18px; font-weight: normal; margin-bottom: 12px; }
   .prompt-modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 20px; color: var(--faint); cursor: pointer; }
   .prompt-modal-close:hover { color: var(--text); }
-  .prompt-output { flex: 1; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-wrap; font-family: "SF Mono", "Fira Code", Consolas, monospace; min-height: 200px; }
-  .prompt-modal-actions { display: flex; gap: 8px; margin-top: 14px; }
-  .copy-feedback { font-size: 12px; color: var(--s-active); display: none; }
+
+  /* Agent tabs inside modal */
+  .agent-tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+  .agent-tab  { padding: 6px 14px; border-radius: var(--radius); font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--bg); color: var(--muted); cursor: pointer; }
+  .agent-tab:hover { background: var(--surface2); }
+  .agent-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .agent-meta { font-size: 12px; color: var(--faint); margin-bottom: 8px; }
+
+  .prompt-output { flex: 1; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; font-size: 12px; line-height: 1.7; color: var(--text); white-space: pre-wrap; font-family: "SF Mono", "Fira Code", Consolas, monospace; min-height: 220px; }
+  .prompt-modal-actions { display: flex; gap: 8px; margin-top: 14px; align-items: center; }
+  .copy-feedback { font-size: 12px; color: var(--s-active); }
 
   @media (max-width: 900px) { .main { padding: 16px; } .inline-form { grid-template-columns: 1fr 1fr; } .inline-form .two { grid-column: span 2; } }
   @media (max-width: 600px) { .inline-form { grid-template-columns: 1fr; } .inline-form .full,.inline-form .two { grid-column: 1; } }
@@ -93,7 +115,11 @@
   <div class="page-head">
     <div class="page-title">Quellen</div>
     <div class="actions">
-      <button class="btn btn-secondary btn-sm" onclick="generateAllPrompt()">Prompt für alle Quellen</button>
+      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('scrape')">Scrape-Agent</button>
+      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('feed')">Feed-Agent</button>
+      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('pdf')">PDF-Agent</button>
+      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('search')">Search-Agent</button>
+      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('all')">Alle Quellen</button>
       <button class="btn btn-primary btn-sm" onclick="toggleNewPanel()">+ Neue Quelle</button>
     </div>
   </div>
@@ -168,6 +194,14 @@
           </select>
         </div>
         <div class="full">
+          <label>Ingestion-Methoden</label>
+          <div class="multi-checks">
+            {% for key, label, desc in source_ingestion_methods %}
+            <label class="multi-check" title="{{ desc }}"><input type="checkbox" name="ingestion_methods" value="{{ key }}"> {{ label }}</label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="full">
           <label>Sekundärkategorien</label>
           <div class="multi-checks">
             {% for cat in source_secondary_categories %}
@@ -203,8 +237,8 @@
           <th>Kürzel</th>
           <th>Name</th>
           <th>Primärkategorie</th>
-          <th>Priorität</th>
-          <th>Status</th>
+          <th>Prio</th>
+          <th>Ingestion</th>
           <th>Rollen</th>
           <th>Zugang</th>
           <th>Hinweise</th>
@@ -220,7 +254,12 @@
           <td style="font-weight:500;min-width:160px">{{ src.name }}</td>
           <td style="font-size:12px;color:var(--muted);white-space:nowrap">{{ src.primary_category or src.get('category','') or '—' }}</td>
           <td><span class="badge p-{{ src.priority }}">{{ src.priority }}</span></td>
-          <td><span class="muted" style="font-size:12px">{{ src.status or '—' }}</span></td>
+          <td>
+            {% set methods = src.ingestion_methods if src.ingestion_methods is defined else [] %}
+            <div class="ingestion-chips">
+              {% for m in methods %}<span class="chip chip-{{ m }}">{{ m }}</span>{% else %}<span class="muted">—</span>{% endfor %}
+            </div>
+          </td>
           <td style="max-width:140px">
             {% set roles = src.relevant_roles if src.relevant_roles is defined else [] %}
             {% if roles %}
@@ -310,6 +349,15 @@
                     </select>
                   </div>
                   <div class="full">
+                    <label>Ingestion-Methoden</label>
+                    {% set cur_ing = src.ingestion_methods if src.ingestion_methods is defined else [] %}
+                    <div class="multi-checks">
+                      {% for key, label, desc in source_ingestion_methods %}
+                      <label class="multi-check" title="{{ desc }}"><input type="checkbox" name="ingestion_methods" value="{{ key }}" {{ 'checked' if key in cur_ing else '' }}> {{ label }}</label>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  <div class="full">
                     <label>Sekundärkategorien</label>
                     {% set cur_sec = src.secondary_categories if src.secondary_categories is defined else [] %}
                     <div class="multi-checks">
@@ -353,6 +401,13 @@
   <div class="prompt-modal" role="dialog" aria-modal="true">
     <button class="prompt-modal-close" onclick="closePromptModal()" aria-label="Schließen">×</button>
     <div class="prompt-modal-title" id="prompt-modal-title">Generierter Prompt</div>
+    <div class="agent-tabs" id="agent-tabs" style="display:none">
+      <button class="agent-tab" data-agent="scrape"  onclick="switchAgentTab('scrape')">Scrape-Agent</button>
+      <button class="agent-tab" data-agent="feed"    onclick="switchAgentTab('feed')">Feed-Agent</button>
+      <button class="agent-tab" data-agent="pdf"     onclick="switchAgentTab('pdf')">PDF-Agent</button>
+      <button class="agent-tab" data-agent="search"  onclick="switchAgentTab('search')">Search-Agent</button>
+    </div>
+    <div class="agent-meta" id="agent-meta" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
     <div class="prompt-output" id="prompt-output"></div>
     <div class="prompt-modal-actions">
       <button class="btn btn-primary btn-sm" onclick="copyPrompt()">Kopieren</button>
@@ -366,6 +421,52 @@
 const SOURCES = {{ sources | tojson }};
 const HINTS   = {{ hints | tojson }};
 
+// ── State ─────────────────────────────────────────────────────────────────────
+let _modalSources = [];   // sources filtered for current agent session
+let _activeAgent  = null; // 'scrape' | 'feed' | 'pdf' | 'search' | 'all' | 'single'
+
+// ── Agent personas & formats ──────────────────────────────────────────────────
+const AGENT_CONFIGS = {
+  scrape: {
+    label: 'Scrape-Agent',
+    persona: `Du bist ein spezialisierter Web-Scraping-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, öffentlich zugängliche Webseiten von Behörden, Verbänden und Institutionen systematisch auf neue regulatorische Inhalte zu prüfen.`,
+    method: `Du rufst jede URL direkt ab (HTTP GET), analysierst den HTML-Inhalt und extrahierst relevante neue Dokumente, Meldungen oder Änderungen.`,
+    hint: `Achte besonders auf Neuigkeiten, Pressemitteilungen, aktuelle Meldungen und Änderungen im Bereich der Gesundheitsversorgung. Vergleiche mit bekannten Inhalten und melde nur tatsächlich neue Informationen.`,
+  },
+  feed: {
+    label: 'Feed-Agent',
+    persona: `Du bist ein spezialisierter Feed- und API-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, strukturierte Datenquellen (RSS-Feeds, Atom-Feeds, Newsletter-Archive, APIs) auf neue regulatorische Inhalte zu prüfen.`,
+    method: `Du liest RSS/Atom-Feeds, verarbeitest Newsletter-Inhalte oder rufst APIs ab und analysierst die zurückgegebenen Einträge auf Relevanz für Gesundheitseinrichtungen in Deutschland.`,
+    hint: `Filtere nach Einträgen der letzten 7 Tage. Fokussiere auf Themen wie Abrechnung, Datenschutz, Hygiene, Qualitätsmanagement und regulatorische Änderungen.`,
+  },
+  pdf: {
+    label: 'PDF-Agent',
+    persona: `Du bist ein spezialisierter PDF-Analyse-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, verlinkte Dokumente (PDFs, Word-Dateien) von Quellen-Webseiten zu finden, herunterzuladen und auf regulatorisch relevante Inhalte zu analysieren.`,
+    method: `Du durchsuchst die Quellen-URLs nach verlinkten Dokumenten, lädst diese herunter und extrahierst relevante Inhalte aus PDFs und anderen Dokumentformaten.`,
+    hint: `Priorisiere aktuelle Leitlinien, Rundschreiben, Beschlüsse und offizielle Bekanntmachungen. Achte auf Versionsnummern und Datumsangaben, um neue von bekannten Dokumenten zu unterscheiden.`,
+  },
+  search: {
+    label: 'Search-Agent',
+    persona: `Du bist ein spezialisierter Recherche-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, Quellen mit Login-Pflicht, Datenbanken oder kostenpflichtigen Inhalten auf neue regulatorische Informationen zu prüfen.`,
+    method: `Du verwendest gespeicherte Zugangsdaten oder öffentliche Suchfunktionen, um in geschützten Bereichen oder Datenbanken nach neuen relevanten Inhalten zu suchen.`,
+    hint: `Falls kein direkter Zugang möglich ist, suche nach öffentlichen Zusammenfassungen, Pressemitteilungen oder alternativen Zugangswegen zur gleichen Information.`,
+  },
+};
+
+const OUTPUT_FORMAT = `## Ausgabeformat
+Für jede gefundene neue Information erstelle einen Eintrag im folgenden Format:
+
+**[KÜRZEL] Quelle:** Name der Quelle
+**Datum:** TT.MM.JJJJ (soweit bekannt)
+**Titel:** Kurzer beschreibender Titel
+**Zusammenfassung:** 2–4 Sätze, die den Inhalt und die Relevanz für Gesundheitseinrichtungen erklären
+**Betroffene Rollen:** (z.B. Praxisinhaber, Abrechnung, QM, Datenschutz)
+**Priorität:** Hoch / Mittel / Niedrig
+**Link:** Direkter Link zur Quelle
+
+---`;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function toggleNewPanel() {
   document.getElementById('new-panel').classList.toggle('open');
 }
@@ -375,47 +476,139 @@ function toggleEdit(uid) {
   panel.classList.toggle('open');
 }
 
-function buildPrompt(srcs, title) {
-  const lines = ['# ' + title, ''];
-  lines.push('Bitte prüfe die folgenden Quellen auf neue regulatorische Informationen für Zahnarztpraxen, Allgemeinmediziner und andere Gesundheitseinrichtungen in Deutschland.');
+// ── Prompt builders ───────────────────────────────────────────────────────────
+function buildAgentPrompt(agentKey, srcs) {
+  const cfg = AGENT_CONFIGS[agentKey];
+  const lines = [];
+
+  // 1. Persona
+  lines.push('# ' + cfg.label + ' — Branchenradar Gesundheitswesen');
   lines.push('');
-  srcs.forEach((s, i) => {
-    lines.push('## Quelle ' + (i + 1) + ': ' + (s.kuerzel ? '[' + s.kuerzel + '] ' : '') + s.name);
-    if (s.url)             lines.push('URL: ' + s.url);
-    if (s.primary_category) lines.push('Kategorie: ' + s.primary_category);
-    if (s.zugang)          lines.push('Zugang: ' + s.zugang);
-    if (s.expected_update) lines.push('Aktualisierung: ' + s.expected_update);
-    if (s.relevant_roles && s.relevant_roles.length) lines.push('Relevante Rollen: ' + s.relevant_roles.join(', '));
-    if (s.notes)           lines.push('Hinweise: ' + s.notes);
-    lines.push('');
-  });
+  lines.push('## Persona & Aufgabe');
+  lines.push(cfg.persona);
+  lines.push('');
+
+  // 2. Output format
+  lines.push(OUTPUT_FORMAT);
+  lines.push('');
+
+  // 3. Global hints
+  lines.push('## Globale Hinweise');
+  lines.push(cfg.hint);
   if (HINTS && HINTS.trim()) {
-    lines.push('---');
-    lines.push('## Allgemeine Hinweise');
+    lines.push('');
     lines.push(HINTS.trim());
   }
+  lines.push('');
+
+  // 4. Source list
+  lines.push('## Methode');
+  lines.push(cfg.method);
+  lines.push('');
+  lines.push('## Zu prüfende Quellen (' + srcs.length + ')');
+  lines.push('');
+  srcs.forEach((s, i) => {
+    lines.push('### ' + (i + 1) + '. [' + (s.kuerzel || '?') + '] ' + s.name);
+    if (s.url)              lines.push('URL: ' + s.url);
+    if (s.primary_category) lines.push('Kategorie: ' + s.primary_category);
+    if (s.zugang)           lines.push('Zugang: ' + s.zugang);
+    if (s.expected_update)  lines.push('Aktualisierung: ' + s.expected_update);
+    if (s.relevant_roles && s.relevant_roles.length)
+                            lines.push('Relevante Rollen: ' + s.relevant_roles.join(', '));
+    if (s.notes)            lines.push('Hinweise: ' + s.notes);
+    lines.push('');
+  });
+
   return lines.join('\n');
+}
+
+function buildAllPrompt(srcs) {
+  const lines = [];
+  lines.push('# Recherche-Prompt — Alle Quellen (' + srcs.length + ')');
+  lines.push('');
+  lines.push('Bitte prüfe die folgenden Quellen auf neue regulatorische Informationen für Zahnarztpraxen, Allgemeinmediziner und andere Gesundheitseinrichtungen in Deutschland.');
+  lines.push('');
+  lines.push(OUTPUT_FORMAT);
+  lines.push('');
+  if (HINTS && HINTS.trim()) {
+    lines.push('## Allgemeine Hinweise');
+    lines.push(HINTS.trim());
+    lines.push('');
+  }
+  lines.push('## Quellen');
+  lines.push('');
+  srcs.forEach((s, i) => {
+    lines.push('### ' + (i + 1) + '. [' + (s.kuerzel || '?') + '] ' + s.name);
+    if (s.url)              lines.push('URL: ' + s.url);
+    if (s.ingestion_methods && s.ingestion_methods.length)
+                            lines.push('Ingestion: ' + s.ingestion_methods.join(', '));
+    if (s.primary_category) lines.push('Kategorie: ' + s.primary_category);
+    if (s.zugang)           lines.push('Zugang: ' + s.zugang);
+    if (s.expected_update)  lines.push('Aktualisierung: ' + s.expected_update);
+    if (s.relevant_roles && s.relevant_roles.length)
+                            lines.push('Relevante Rollen: ' + s.relevant_roles.join(', '));
+    if (s.notes)            lines.push('Hinweise: ' + s.notes);
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+// ── Modal open/close ──────────────────────────────────────────────────────────
+function openAgentPrompt(agentKey) {
+  if (!SOURCES.length) { alert('Noch keine Quellen vorhanden.'); return; }
+
+  if (agentKey === 'all') {
+    _activeAgent  = 'all';
+    _modalSources = SOURCES;
+    document.getElementById('agent-tabs').style.display = 'none';
+    document.getElementById('agent-meta').textContent = '';
+    _showPrompt('Prompt — Alle Quellen (' + SOURCES.length + ')', buildAllPrompt(SOURCES));
+  } else {
+    const filtered = SOURCES.filter(s => (s.ingestion_methods || []).includes(agentKey));
+    _activeAgent  = agentKey;
+    _modalSources = filtered;
+    document.getElementById('agent-tabs').style.display = 'flex';
+    // Set active tab
+    document.querySelectorAll('.agent-tab').forEach(t => t.classList.toggle('active', t.dataset.agent === agentKey));
+    _showAgentTab(agentKey, filtered);
+  }
+
+  document.getElementById('prompt-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function switchAgentTab(agentKey) {
+  _activeAgent = agentKey;
+  const filtered = SOURCES.filter(s => (s.ingestion_methods || []).includes(agentKey));
+  _modalSources = filtered;
+  document.querySelectorAll('.agent-tab').forEach(t => t.classList.toggle('active', t.dataset.agent === agentKey));
+  _showAgentTab(agentKey, filtered);
+}
+
+function _showAgentTab(agentKey, srcs) {
+  const cfg = AGENT_CONFIGS[agentKey];
+  document.getElementById('agent-meta').textContent = cfg.label + ' — ' + srcs.length + ' Quellen';
+  document.getElementById('prompt-modal-title').textContent = 'Generierter Prompt — ' + cfg.label;
+  document.getElementById('prompt-output').textContent = buildAgentPrompt(agentKey, srcs);
+  document.getElementById('copy-feedback').style.display = 'none';
 }
 
 function generateSinglePrompt(sourceId) {
   const src = SOURCES.find(s => s.id === sourceId);
   if (!src) return;
-  openPromptModal('Prompt — ' + src.name, buildPrompt([src], 'Recherche-Prompt: ' + src.name));
+  _activeAgent  = 'single';
+  _modalSources = [src];
+  document.getElementById('agent-tabs').style.display = 'none';
+  document.getElementById('agent-meta').textContent = src.kuerzel ? '[' + src.kuerzel + '] ' + src.name : src.name;
+  _showPrompt('Prompt — ' + src.name, buildAllPrompt([src]));
+  document.getElementById('prompt-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
-function generateAllPrompt() {
-  if (!SOURCES.length) { alert('Noch keine Quellen vorhanden.'); return; }
-  const active = SOURCES.filter(s => s.status !== 'inaktiv');
-  const list = active.length ? active : SOURCES;
-  openPromptModal('Prompt — Alle Quellen (' + list.length + ')', buildPrompt(list, 'Recherche-Prompt: Alle Quellen'));
-}
-
-function openPromptModal(title, text) {
+function _showPrompt(title, text) {
   document.getElementById('prompt-modal-title').textContent = title;
   document.getElementById('prompt-output').textContent = text;
   document.getElementById('copy-feedback').style.display = 'none';
-  document.getElementById('prompt-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
 }
 
 function closePromptModal(e) {

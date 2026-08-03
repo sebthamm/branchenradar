@@ -1,6 +1,6 @@
 [
   {
-    "id": "dbba4261-0425-4d2f-86c4-70c282ca55b4",
+    "id": "7099554b-caf4-4292-a769-4f610a291dfc",
     "kuerzel": "AKdÄ",
     "name": "Arzneimittelkommission der deutschen Ärzteschaft",
     "url": "https://www.akdae.de",
@@ -17,6 +17,11 @@
       "Praxismanagement",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Drug Safety Mail; Arzneimittelrisiko; Rote-Hand-Brief; Arzneiverordnung; Medikationssicherheit; Nebenwirkung; Therapie",
@@ -25,7 +30,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "540bf4fe-d482-4742-bb50-3da9488441ab",
+    "id": "bf658972-f169-43eb-9edc-53d865fe477c",
     "kuerzel": "AB",
     "name": "Ärztekammer Berlin",
     "url": "https://www.aekb.de",
@@ -44,6 +49,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -52,7 +62,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "429a4859-cf20-404e-8059-c51c1d243b75",
+    "id": "19f67b57-eb33-4786-b323-2d6fc91dc3fe",
     "kuerzel": "AB2",
     "name": "Ärztekammer Bremen",
     "url": "https://www.aekhb.de",
@@ -71,6 +81,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -79,7 +94,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b919572f-bafa-40b2-a6b2-2fd28dfbccb4",
+    "id": "1e31ffd6-09e2-4e5f-9fcd-967b093eb5a7",
     "kuerzel": "AS",
     "name": "Ärztekammer des Saarlandes",
     "url": "https://www.aeksaar.de",
@@ -98,6 +113,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -106,7 +126,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "845f3c1c-f25c-4c72-a288-796812d2d3b9",
+    "id": "f34bb1fa-13c9-45dc-8449-736483d1c7fb",
     "kuerzel": "ASAZ",
     "name": "Ärztekammer des Saarlandes – Abteilung Zahnärzte",
     "url": "https://www.zaek-saar.de",
@@ -129,6 +149,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -137,7 +162,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "8d93c3f5-35f6-4f41-b487-143a8bc20ba7",
+    "id": "39d08ce8-3ba1-4251-b169-6143506708c5",
     "kuerzel": "AH",
     "name": "Ärztekammer Hamburg",
     "url": "https://www.aekhh.de",
@@ -156,6 +181,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -164,7 +194,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a7f2ea31-c19b-4c6c-b74f-64bcfe5acfe6",
+    "id": "ab82dd23-ed24-40a0-9634-8cc5cebb3824",
     "kuerzel": "AMV",
     "name": "Ärztekammer Mecklenburg-Vorpommern",
     "url": "https://www.aek-mv.de",
@@ -183,6 +213,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -191,7 +226,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "81f3ab28-a526-4372-9b91-7e12e1cab5be",
+    "id": "a11a3551-fc16-43e1-8b85-e8726cded1d8",
     "kuerzel": "AN",
     "name": "Ärztekammer Niedersachsen",
     "url": "https://www.aekn.de",
@@ -210,6 +245,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -218,7 +258,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f8e775f8-3786-4f87-a37a-f2bafdf5e5f5",
+    "id": "629826a1-2e0c-4c7a-9ce8-a94359edff6b",
     "kuerzel": "AN2",
     "name": "Ärztekammer Nordrhein",
     "url": "https://www.aekno.de",
@@ -237,6 +277,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -245,7 +290,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "98c5e8cb-99db-4c89-9cdf-3741cbc96eb6",
+    "id": "5a8e0655-5a75-4ba5-b974-08a647801239",
     "kuerzel": "ASA",
     "name": "Ärztekammer Sachsen-Anhalt",
     "url": "https://www.aeksa.de",
@@ -264,6 +309,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -272,7 +322,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "471e672a-ba7d-4772-9da5-7a3dec026a19",
+    "id": "a2083336-dc70-4d23-b6f6-3f4639175cb3",
     "kuerzel": "ASH",
     "name": "Ärztekammer Schleswig-Holstein",
     "url": "https://www.aeksh.de",
@@ -291,6 +341,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -299,7 +354,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "49fdd358-9124-4da9-bf4a-a2cdcf7239c6",
+    "id": "b79b7092-8ec9-4045-b889-b43ff7c26560",
     "kuerzel": "AWL",
     "name": "Ärztekammer Westfalen-Lippe",
     "url": "https://www.aekwl.de",
@@ -318,6 +373,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -326,7 +386,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "d96d6fa9-2512-4708-bf02-e2c57a1ef09f",
+    "id": "83dcfdea-1b4d-47d9-b3e6-a9e7bc4ed4b4",
     "kuerzel": "AWMF",
     "name": "AWMF",
     "url": "https://register.awmf.org",
@@ -340,6 +400,12 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf",
+      "search",
+      "feed"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Leitlinie; Allgemeinmedizin; Hausarzt; Diagnostik; Therapie; Prävention; Zahnmedizinische Leitlinien; Zahnmedizin; Stellungnahme; Empfehlung\nTaxonomie und Fachgebietsfilter zwingend; Ablaufdatum und Versionsstatus speichern. Fachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -348,7 +414,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ff3f4d30-cd5e-4d2c-8428-10480ae2cd50",
+    "id": "cdcee7e3-e700-4de7-b9ac-2e0317f017f6",
     "kuerzel": "B",
     "name": "BAuA",
     "url": "https://www.baua.de",
@@ -362,6 +428,10 @@
       "QM/Hygiene",
       "Praxismanagement"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: TRBA 250; Biostoffe; Nadelstich; Schutzmaßnahmen; Gesundheitsdienst",
@@ -370,7 +440,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b70a3930-c9ef-4e2c-8336-7d6180d80bc0",
+    "id": "93a2fed7-40ab-4185-91e1-ebd8bf82f901",
     "kuerzel": "BL",
     "name": "Bayerische Landesärztekammer",
     "url": "https://www.blaek.de",
@@ -389,6 +459,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -397,7 +472,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "8d410703-98fd-463b-82b3-46a88f5ee6cd",
+    "id": "101130c3-3579-42ad-8380-76a4a2cd3225",
     "kuerzel": "BL2",
     "name": "Bayerische Landeszahnärztekammer",
     "url": "https://www.blzk.de",
@@ -420,6 +495,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -428,7 +508,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a1799523-46b8-4bd5-b50e-10b22f830ae8",
+    "id": "112dc7b3-e2be-4879-9055-92fcbcabd5f0",
     "kuerzel": "BFARM",
     "name": "BfArM",
     "url": "https://www.bfarm.de",
@@ -450,6 +530,12 @@
       "Praxismanagement",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Rote-Hand-Brief; Risikoinformation; Nebenwirkung; Kontraindikation; Lieferengpass; Wirkstoff; Arzneimittel; Versorgung; Arzneimittelsicherheit; Schulungsmaterial; Risikominimierung; Medizinprodukt; Rückruf; Sicherheitsinformation; Vorkommnis; Herstellermaßnahme\nRelevanzfilter anhand typischer Praxiswirkstoffe und Alternativen.",
@@ -458,7 +544,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "31ee8cf0-3bf4-4ed2-8fe2-2dae802530a5",
+    "id": "bf60ae91-f55d-4a23-a949-8c41f67b04fc",
     "kuerzel": "BGW",
     "name": "BGW",
     "url": "https://www.bgw-online.de",
@@ -473,6 +559,10 @@
       "QM/Hygiene",
       "Praxismanagement"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Arbeitsschutz; Gefährdungsbeurteilung; Nadelstich; Biostoffe; Gewalt; Zahnmedizin; Biostoff",
@@ -481,7 +571,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "3b4ba006-50e9-4168-af39-ea779d61694e",
+    "id": "d11fc8b6-2e5d-4c90-81b2-bfbe950f9375",
     "kuerzel": "BSI",
     "name": "Bundesamt für Sicherheit in der Informationstechnik",
     "url": "https://www.bsi.bund.de",
@@ -496,6 +586,10 @@
       "IT",
       "MFA/ZFA"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Cyber; Schwachstelle; Praxissoftware; Ransomware; TI; Sicherheitswarnung\nAuf Gesundheitswesen und typische Praxissoftware/Komponenten filtern.",
@@ -504,7 +598,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "13845def-a301-4fce-b8dc-fd042f5293c8",
+    "id": "06b86f77-2576-4229-b7c5-527e2a4a3b30",
     "kuerzel": "BS",
     "name": "Bundesamt für Strahlenschutz",
     "url": "https://www.bfs.de",
@@ -519,6 +613,10 @@
       "QM/Hygiene",
       "Praxismanagement"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Röntgen; DVT; Strahlenschutz; Zahnmedizin; Fachkunde",
@@ -527,7 +625,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b3fd122e-09f9-4bf8-9d57-ddbab2e74b9d",
+    "id": "f9196b6f-3031-4c93-9c6f-32f40cc9ad81",
     "kuerzel": "BÄK",
     "name": "Bundesärztekammer",
     "url": "https://www.bundesaerztekammer.de",
@@ -550,6 +648,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsrecht; Arzt; GOÄ; Versorgung; Fortbildung; Analogbewertung; Honorar; Privatabrechnung; Berufsordnung; Schweigepflicht; Dokumentation; Werbung; Fernbehandlung",
@@ -558,7 +661,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "e7bbf039-b23a-4c30-bdb2-b568b4f2e5bd",
+    "id": "93275ba3-4abc-4698-aa59-291c8afb0248",
     "kuerzel": "BfDI",
     "name": "Bundesbeauftragte für den Datenschutz",
     "url": "https://www.bfdi.bund.de",
@@ -574,6 +677,10 @@
       "IT",
       "MFA/ZFA"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Gesundheitsdaten; Datenschutz; ePA; Einwilligung; Auskunft",
@@ -582,7 +689,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "81fbfba1-55f5-47cc-bb92-9a6b80769116",
+    "id": "4ffc6d3c-f6e2-4176-bb32-bc99ec10c053",
     "kuerzel": "BMG",
     "name": "Bundesministerium für Gesundheit",
     "url": "https://www.bundesgesundheitsministerium.de",
@@ -605,6 +712,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Gesetz; Verordnung; Referentenentwurf; Kabinettsentwurf; Praxis; Versorgung; Digitalisierung; Stellungnahme; Inkrafttreten; Übergangsfrist; Bekanntmachung; Bericht; Strategie; Richtlinie\nFrühindikator; Status von Entwurf bis Inkrafttreten zwingend extrahieren. Primäre Quelle für aktuelle Gesundheitsgesetzgebung.",
@@ -613,7 +724,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f98d5427-f79b-452c-abba-b4e4622878e9",
+    "id": "cc80ebff-13be-452e-bf7d-a8989baaa1d7",
     "kuerzel": "BZÄK",
     "name": "Bundeszahnärztekammer",
     "url": "https://www.bzaek.de",
@@ -654,6 +765,11 @@
       "MFA/ZFA",
       "Abrechnung"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BZÄK; Zahnarztpraxis; GOZ; Hygiene; Beruf; Analogliste; Gebühren; Abrechnung; Urteil; Faktor; Beratungsforum; Beschluss; PKV; Beihilfe; DAHZ; Aufbereitung; Medizinprodukte; Wasserführende Systeme; Arzneimittel; Antibiotika; Analgetika; Lokalanästhesie; ePA; TI; KIM; Datenschutz; Berufsordnung; Werbung; Kooperation; Dokumentation; Patientenrechte",
@@ -662,7 +778,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "89ef2743-2b8a-48f1-8168-f1d647108755",
+    "id": "61f2a7e1-64ee-4fa9-acfd-bc2f2e0ace02",
     "kuerzel": "D",
     "name": "Datenschutzkonferenz",
     "url": "https://www.datenschutzkonferenz-online.de",
@@ -678,6 +794,10 @@
       "IT",
       "MFA/ZFA"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Gesundheitsdaten; Praxis; Video; Datenschutz; Auftragsverarbeitung",
@@ -686,7 +806,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "31e2106c-1ba5-41ae-9fea-29d80e97cacd",
+    "id": "a4ad877c-d8b9-414e-b5f8-b3292b52b171",
     "kuerzel": "DEGAM",
     "name": "DEGAM",
     "url": "https://www.degam.de",
@@ -702,6 +822,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Allgemeinmedizin; Hausarzt; Leitlinie; Stellungnahme; Versorgung; DEGAM; S1; S2; S3; Update",
@@ -710,7 +835,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f1ce8fad-7323-4b67-bc0a-453509e00373",
+    "id": "258fcdff-4b6e-4bba-842d-da6c08ee8453",
     "kuerzel": "DAHZ",
     "name": "Deutscher Arbeitskreis für Hygiene in der Zahnmedizin",
     "url": "https://dahz.org",
@@ -726,6 +851,10 @@
       "QM/Hygiene",
       "Praxismanagement"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hygiene; Aufbereitung; Wasserführende Systeme; Medizinprodukte; Zahnarztpraxis",
@@ -734,7 +863,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "dd6840b6-4a81-4ecd-a52c-1ffb15aaad7f",
+    "id": "c6334629-7711-46e7-ba0d-fd9dbea07cd5",
     "kuerzel": "GEM",
     "name": "gematik",
     "url": "https://www.gematik.de",
@@ -755,6 +884,10 @@
       "IT",
       "MFA/ZFA"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: ePA; E-Rezept; KIM; TI; Konnektor; Kryptografie; Störung; Frist; Praxis; Medikationsliste; PVS; Upload; Pflicht; EBZ; Zahnarztpraxis",
@@ -763,7 +896,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "95ef6812-8310-440b-a166-f6d60b94fa69",
+    "id": "9f738974-4cd8-490b-b058-d9fa321eb74f",
     "kuerzel": "GBA",
     "name": "Gemeinsamer Bundesausschuss",
     "url": "https://www.g-ba.de",
@@ -801,6 +934,11 @@
       "ZFA",
       "ZMV/Abrechnung"
     ],
+    "ingestion_methods": [
+      "feed",
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Vertragsärztlich; vertragszahnärztlich; DMP; Arzneimittel; Qualität; Prävention; Inkrafttreten; Beschluss; Richtlinie; Bundesanzeiger; Übergangsregelung; Anlage; Änderung; letzte Änderungen; Praxis; Versorgung; Frist; Umsetzung; Diabetes; KHK; COPD; Asthma; Herzinsuffizienz; Depression; Osteoporose; zahnärztliche Versorgung; PAR; KFO; Zahnersatz; Früherkennung\nPrimärer maschinenlesbarer Einstieg. Beschlussstatus, Nichtbeanstandung und Bundesanzeiger-Veröffentlichung getrennt speichern.",
@@ -809,7 +947,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "7a4205e3-76d6-453c-b721-e791790509af",
+    "id": "0d2cc40a-5e05-41a6-98b7-3d04b241d0f2",
     "kuerzel": "GKV-SV",
     "name": "GKV-Spitzenverband",
     "url": "https://www.gkv-spitzenverband.de",
@@ -829,6 +967,10 @@
       "QM/Hygiene",
       "ZMV/Abrechnung"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: ambulant; Vergütung; Vertrag; GKV; Praxis; Abrechnung; Vereinbarung; Versorgung; Erstattung; Leistung; Zahnersatz; Festzuschuss; BEMA",
@@ -837,7 +979,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "869bb7fc-ef95-4425-a9ee-cdde07cd39e3",
+    "id": "438cf3ca-08a4-4528-ae3d-6df452abda79",
     "kuerzel": "HH",
     "name": "Hausärztinnen- und Hausärzteverband",
     "url": "https://www.haev.de",
@@ -859,6 +1001,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; HZV; Praxis; Vergütung; Vertrag; Versorgung; Landesverband; Abrechnung\nCrawler soll alle verlinkten Landesverbandsdomains als Child-Sources registrieren.",
@@ -867,7 +1013,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "3e3c70b6-e11b-44cd-9005-0e7d098bc3c9",
+    "id": "71617937-19c5-4a94-b31c-275054976e8d",
     "kuerzel": "H",
     "name": "HÄVG",
     "url": "https://www.haevg.de",
@@ -882,6 +1028,10 @@
       "Abrechnung",
       "Praxismanagement"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: HZV; Vertrag; Abrechnung; Teilnahme; Einschreibung\nVertragsspezifische Details können im geschlossenen Bereich liegen.",
@@ -890,7 +1040,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "e32b258e-b49b-463f-9e0d-be4c43328dbb",
+    "id": "a3f73504-1491-4f33-adb3-ceaef4c65416",
     "kuerzel": "KBV",
     "name": "Kassenärztliche Bundesvereinigung",
     "url": "https://www.kbv.de",
@@ -942,6 +1092,11 @@
       "MFA/ZFA",
       "Ärztlicher/Zahnärztlicher Dienst"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Praxis; Vertragsarzt; Hausarzt; Abrechnung; Verordnung; Digitalisierung; EBM; Impfung; DMP; ePA; Quartal; Änderung; Frist; GOP; Bewertung; Bewertungsausschuss; Vergütung; Beschluss; Inkrafttreten; Bekanntmachung; Vertrag; Richtlinie; Arzneimittel; Heilmittel; Hilfsmittel; Sprechstundenbedarf; Formular; Impfziffer; STIKO; Schutzimpfung; Impfstoff; Dokumentation; Diabetes; KHK; COPD; Asthma; KIM; E-Rezept; TI; PVS; digitale Anwendung; IT-Sicherheit; Cyber; Anforderungen; Qualitätsmanagement; QM-Richtlinie; QEP; Risiko; Patientensicherheit; Labordiagnostik; Laborpfad; Diagnose\nEine der zentralsten Praxisquellen.",
@@ -950,7 +1105,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "fcfb8453-fec5-4752-b3cb-0c0d799ce82b",
+    "id": "7f3ee973-98c1-4748-8350-84dd219f200b",
     "kuerzel": "KVBW",
     "name": "Kassenärztliche Vereinigung Baden-Württemberg",
     "url": "https://www.kvbawue.de",
@@ -973,6 +1128,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -981,7 +1142,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "713e1dce-f307-4d20-bab1-eb67365fa5a0",
+    "id": "5bbe9341-28a1-49fd-b097-f13bd5e8e910",
     "kuerzel": "KVB",
     "name": "Kassenärztliche Vereinigung Bayerns",
     "url": "https://www.kvb.de",
@@ -1004,6 +1165,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1012,7 +1179,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f5cf03a4-465c-485a-9ccc-0a40ca9ab652",
+    "id": "9d40d752-52d1-4135-92f9-8e490885b1b1",
     "kuerzel": "KVB2",
     "name": "Kassenärztliche Vereinigung Berlin",
     "url": "https://www.kvberlin.de",
@@ -1035,6 +1202,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1043,7 +1216,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "913527bd-dc0b-49d0-98fe-151c28fa2d9a",
+    "id": "94715252-393c-4018-a4a5-be5f41aa0de0",
     "kuerzel": "KVB3",
     "name": "Kassenärztliche Vereinigung Brandenburg",
     "url": "https://www.kvbb.de",
@@ -1066,6 +1239,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1074,7 +1253,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "d90f1dae-44dc-4743-98f7-de6f601b43a1",
+    "id": "7dd66305-cd6c-45bf-abf4-887f7c1ced81",
     "kuerzel": "KVB4",
     "name": "Kassenärztliche Vereinigung Bremen",
     "url": "https://www.kvhb.de",
@@ -1097,6 +1276,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1105,7 +1290,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "89125664-4fd6-4dd6-b266-244097d393e1",
+    "id": "0a9af142-07b2-4ad5-8977-9a8d85a810b5",
     "kuerzel": "KVH",
     "name": "Kassenärztliche Vereinigung Hamburg",
     "url": "https://www.kvhh.net",
@@ -1128,6 +1313,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1136,7 +1327,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "d7ab5948-11f1-4bf1-bdb3-29c058e4eb6a",
+    "id": "71514391-d0e5-4cf5-94e3-c05cfea74ce1",
     "kuerzel": "KVH2",
     "name": "Kassenärztliche Vereinigung Hessen",
     "url": "https://www.kvhessen.de",
@@ -1159,6 +1350,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1167,7 +1364,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ccfd767e-c1e3-43ce-a876-d05753565c0c",
+    "id": "62fc63a9-9427-492a-8af6-c9ec982bf58e",
     "kuerzel": "KVMV",
     "name": "Kassenärztliche Vereinigung Mecklenburg-Vorpommern",
     "url": "https://www.kvmv.de",
@@ -1190,6 +1387,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1198,7 +1401,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "3261b994-cd56-4612-b8f1-761d91e2d012",
+    "id": "c97e0ec0-1c39-4867-a191-3e69b353c22f",
     "kuerzel": "KVN",
     "name": "Kassenärztliche Vereinigung Niedersachsen",
     "url": "https://www.kvn.de",
@@ -1221,6 +1424,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1229,7 +1438,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "24d39c7f-23b1-438f-8f3c-4ed22263d616",
+    "id": "5b866f17-2511-43b2-a3d4-3c3cc7a54dc8",
     "kuerzel": "KVN2",
     "name": "Kassenärztliche Vereinigung Nordrhein",
     "url": "https://www.kvno.de",
@@ -1252,6 +1461,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1260,7 +1475,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a2ceaea4-da55-414e-b653-a3a2045c376a",
+    "id": "dde6b274-46fa-4316-9ac3-286c0767779f",
     "kuerzel": "KVRP",
     "name": "Kassenärztliche Vereinigung Rheinland-Pfalz",
     "url": "https://www.kv-rlp.de",
@@ -1283,6 +1498,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1291,7 +1512,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "94570109-3fbb-4214-a9e7-d91e0feb22c7",
+    "id": "932ee993-84be-481a-8061-f5c5f7415421",
     "kuerzel": "KVS",
     "name": "Kassenärztliche Vereinigung Saarland",
     "url": "https://www.kvsaarland.de",
@@ -1314,6 +1535,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1322,7 +1549,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "149df77f-2a95-4124-ae89-28881ebcb73c",
+    "id": "88e89667-1158-4526-a581-771714bcd4c4",
     "kuerzel": "KVS2",
     "name": "Kassenärztliche Vereinigung Sachsen",
     "url": "https://www.kvsachsen.de",
@@ -1345,6 +1572,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1353,7 +1586,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "6abfb817-ef61-4f31-a484-7001581656e8",
+    "id": "a4cdef6a-a53c-4df3-94f0-9ff5c058b184",
     "kuerzel": "KVSA",
     "name": "Kassenärztliche Vereinigung Sachsen-Anhalt",
     "url": "https://www.kvsa.de",
@@ -1376,6 +1609,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1384,7 +1623,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "21f35fcb-a482-4f06-9615-dd5b85ce5490",
+    "id": "d43e8464-08f8-4bc0-a44a-a7d2f6614de2",
     "kuerzel": "KVSH",
     "name": "Kassenärztliche Vereinigung Schleswig-Holstein",
     "url": "https://www.kvsh.de",
@@ -1407,6 +1646,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1415,7 +1660,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ac3e3c21-5f97-49c0-b152-e7cdd47274e4",
+    "id": "4fe3a68f-03a1-4af0-a604-7cedbb74d329",
     "kuerzel": "KVT",
     "name": "Kassenärztliche Vereinigung Thüringen",
     "url": "https://www.kv-thueringen.de",
@@ -1438,6 +1683,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1446,7 +1697,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "fc17d8f6-6202-43d4-9192-86e4b71e06ad",
+    "id": "8f85b31b-2631-4716-bc9a-9dbec0388599",
     "kuerzel": "KVWL",
     "name": "Kassenärztliche Vereinigung Westfalen-Lippe",
     "url": "https://www.kvwl.de",
@@ -1469,6 +1720,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Hausarzt; EBM; Abrechnung; Verordnung; Impfung; DMP; HZV; TI; Frist\nRegionale KV-Quelle ist für den individualisierten Radar zwingend. Geschlossene Rundschreiben ggf. nur über Pilotpraxis/Partnerschaft.",
@@ -1477,7 +1734,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "584773fa-56b7-4029-8bce-149baed7f7a2",
+    "id": "427edd7f-a886-4f91-a565-69e8a603eb93",
     "kuerzel": "KZBV",
     "name": "Kassenzahnärztliche Bundesvereinigung",
     "url": "https://www.kzbv.de",
@@ -1522,6 +1779,11 @@
       "MFA/ZFA",
       "Ärztlicher/Zahnärztlicher Dienst"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Zahnarztpraxis; BEMA; Abrechnung; KZBV; Versorgung; Digitalisierung; Vertragszahnarzt; GKV; Gesetz; GOZ; Gebührenverzeichnis; Punktwert; Richtlinie; PAR; KFO; Zahnersatz; Früherkennung; Behandlung; TI; ePA; KIM; EBZ; PVS; eHBA; SMC-B; Frist; IT-Sicherheit; Cyber; Leitlinie; Zahnmedizin; DGZMK; AWMF; CIRS; Fehler; Patientensicherheit; Risiko; Praxisökonomie; Kosten; Personal",
@@ -1530,7 +1792,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ae7fd7fa-d009-4268-9800-1f9ce8b37624",
+    "id": "f04c16b2-4b3f-4889-9526-8c26d1cbfb47",
     "kuerzel": "KBW",
     "name": "KZV Baden-Württemberg",
     "url": "https://www.kzvbw.de",
@@ -1553,6 +1815,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1561,7 +1829,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "548b2879-729d-4f7a-9227-4e38764ce2fd",
+    "id": "0ca96a5b-d884-44f0-b0bb-bd7fd91954d7",
     "kuerzel": "KB",
     "name": "KZV Bayern",
     "url": "https://www.kzvb.de",
@@ -1584,6 +1852,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1592,7 +1866,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "697840cf-efe8-4c5b-a891-af5e466b2183",
+    "id": "648627c3-6445-48b9-ab31-ad908f78844f",
     "kuerzel": "KB2",
     "name": "KZV Berlin",
     "url": "https://www.kzv-berlin.de",
@@ -1615,6 +1889,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1623,7 +1903,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "0050c0a3-0815-4e0f-b4ae-43351c78d0a9",
+    "id": "8f7a0025-d34f-4e89-ac7d-91273be2a26b",
     "kuerzel": "KB3",
     "name": "KZV Bremen",
     "url": "https://www.kzv-bremen.de",
@@ -1646,6 +1926,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1654,7 +1940,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "31df8af0-488a-42da-b9d1-1071ddc6b689",
+    "id": "78f069eb-aedd-4031-8fe6-b5b762c5585a",
     "kuerzel": "KH",
     "name": "KZV Hamburg",
     "url": "https://www.zahnaerzte-hh.de",
@@ -1677,6 +1963,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1685,7 +1977,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "15fd26d8-4770-465c-b1a3-658791ce8159",
+    "id": "7479d6fd-a17a-4554-aab0-97812dca4330",
     "kuerzel": "KH2",
     "name": "KZV Hessen",
     "url": "https://www.kzvh.de",
@@ -1708,6 +2000,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1716,7 +2014,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "7b33505b-8bbf-4dc8-9200-448f45b360bf",
+    "id": "7f8cf156-e85f-43eb-a24c-7b22730e5b63",
     "kuerzel": "KLB",
     "name": "KZV Land Brandenburg",
     "url": "https://www.kzvlb.de",
@@ -1739,6 +2037,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1747,7 +2051,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "7d800901-a307-4545-9ee7-a25362297978",
+    "id": "dd2a4cca-a5d9-4c1e-929d-f52da2e03870",
     "kuerzel": "KMV",
     "name": "KZV Mecklenburg-Vorpommern",
     "url": "https://www.kzvmv.de",
@@ -1770,6 +2074,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1778,7 +2088,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ac275106-5b9c-4865-91e0-1e90b7b242b0",
+    "id": "b7956111-5a59-4dbc-ba40-a1cd2f1ed593",
     "kuerzel": "KN",
     "name": "KZV Niedersachsen",
     "url": "https://www.kzvn.de",
@@ -1801,6 +2111,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1809,7 +2125,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "2c909150-9b23-4de5-b93d-899d84344b2f",
+    "id": "8f2f8091-9e4c-4b03-b2ee-01a4a9662d94",
     "kuerzel": "KN2",
     "name": "KZV Nordrhein",
     "url": "https://www.kzvnr.de",
@@ -1832,6 +2148,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1840,7 +2162,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "c06d6a2f-e92e-4fbc-8786-e8db8b6fdaa0",
+    "id": "a00418a0-018d-46f3-9f39-8b1551de40bf",
     "kuerzel": "KRP",
     "name": "KZV Rheinland-Pfalz",
     "url": "https://www.kzvrlp.de",
@@ -1863,6 +2185,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1871,7 +2199,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "2b2f4852-aefc-4b74-afed-bb1cff61027d",
+    "id": "8d93ef91-080e-4d2a-a279-6d20af7690b3",
     "kuerzel": "KS",
     "name": "KZV Saarland",
     "url": "https://www.kzv-saarland.de",
@@ -1894,6 +2222,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1902,7 +2236,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "23baa3ea-f25c-4fc1-bcba-431350a8427d",
+    "id": "a24048ca-6679-4232-98c9-db3751981802",
     "kuerzel": "KS2",
     "name": "KZV Sachsen",
     "url": "https://www.zahnaerzte-in-sachsen.de",
@@ -1925,6 +2259,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1933,7 +2273,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "00f707c4-8be9-4dc0-99fa-50322a6acc79",
+    "id": "ca435561-de53-4cbd-bcac-706498244876",
     "kuerzel": "KSA",
     "name": "KZV Sachsen-Anhalt",
     "url": "https://www.kzv-lsa.de",
@@ -1956,6 +2296,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1964,7 +2310,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "368a025c-eb84-4036-89b8-82b960feebc9",
+    "id": "005114e3-56ec-40e6-9d3c-9ad6cbd97f79",
     "kuerzel": "KSH",
     "name": "KZV Schleswig-Holstein",
     "url": "https://www.kzv-sh.de",
@@ -1987,6 +2333,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -1995,7 +2347,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "8d187808-8167-4955-a711-5513feaabc30",
+    "id": "34adabfc-2f25-4c9c-a308-7aafb5c9ee81",
     "kuerzel": "KT",
     "name": "KZV Thüringen",
     "url": "https://www.kzvth.de",
@@ -2018,6 +2370,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -2026,7 +2384,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "af284313-900e-4430-83f4-9c448ce1576f",
+    "id": "ee665815-0a62-43b8-a0eb-27522703e49e",
     "kuerzel": "KWL",
     "name": "KZV Westfalen-Lippe",
     "url": "https://www.zahnaerzte-wl.de",
@@ -2049,6 +2407,12 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf",
+      "search"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: BEMA; Abrechnung; Zahnarztpraxis; KZV; TI; Festzuschuss; Frist\nRegionale KZV-Quelle ist für den personalisierten Radar zwingend. Geschlossene Rundschreiben ggf. über Pilotpraxen/Partnerschaft.",
@@ -2057,7 +2421,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "0598dfcd-322b-4a4a-a439-27a6558e547a",
+    "id": "a46bb662-0901-40e1-b0b0-ca0bdfea063f",
     "kuerzel": "LBW",
     "name": "Landesärztekammer Baden-Württemberg",
     "url": "https://www.laek-bw.de",
@@ -2076,6 +2440,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -2084,7 +2453,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "08c91277-b56b-4f20-ac0f-df9e7ae193cf",
+    "id": "1012df9f-c770-4693-b3d4-70e1525dcd60",
     "kuerzel": "LB",
     "name": "Landesärztekammer Brandenburg",
     "url": "https://www.laekb.de",
@@ -2103,6 +2472,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -2111,7 +2485,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "6de6d7d5-1af0-4beb-9427-97c635b6318e",
+    "id": "1307c907-5d3e-4ab7-9ca9-8728f95527ab",
     "kuerzel": "LH",
     "name": "Landesärztekammer Hessen",
     "url": "https://www.laekh.de",
@@ -2130,6 +2504,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -2138,7 +2517,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a9912daa-6e65-4694-af2f-1e27fa8a0811",
+    "id": "c493b1a8-1d9b-4d5e-945f-9fc12d9bb005",
     "kuerzel": "LRP",
     "name": "Landesärztekammer Rheinland-Pfalz",
     "url": "https://www.laek-rlp.de",
@@ -2157,6 +2536,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -2165,7 +2549,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "35c847f0-00d2-4eff-ac33-7a939ce5bd67",
+    "id": "877b41a5-5aa8-4850-ae37-0253adb2ebfc",
     "kuerzel": "LT",
     "name": "Landesärztekammer Thüringen",
     "url": "https://www.laek-thueringen.de",
@@ -2184,6 +2568,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -2192,7 +2581,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f16c0ad2-6158-4e3e-924f-9a92b655ed01",
+    "id": "2f888a7e-1cfa-4107-972c-c1215a38b2b7",
     "kuerzel": "LBW2",
     "name": "Landeszahnärztekammer Baden-Württemberg",
     "url": "https://www.lzk-bw.de",
@@ -2215,6 +2604,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2223,7 +2617,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "69b624a2-5154-4350-b321-e71fb26e0251",
+    "id": "9760cdf8-13c6-46ad-b2e5-4ab9cbc1a95e",
     "kuerzel": "LB2",
     "name": "Landeszahnärztekammer Brandenburg",
     "url": "https://www.lzkb.de",
@@ -2246,6 +2640,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2254,7 +2653,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "eff5c8cc-b51f-4834-9e52-bba3313cf7ee",
+    "id": "98561e2c-19a2-419b-8001-b4a11c3c65da",
     "kuerzel": "LH2",
     "name": "Landeszahnärztekammer Hessen",
     "url": "https://www.lzkh.de",
@@ -2277,6 +2676,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2285,7 +2689,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "983df125-fee9-4418-bc53-310a40c7a0a1",
+    "id": "27e8e2c3-24ea-40f2-9d35-7da2e53b48bb",
     "kuerzel": "LRP2",
     "name": "Landeszahnärztekammer Rheinland-Pfalz",
     "url": "https://www.lzk.de",
@@ -2308,6 +2712,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2316,7 +2725,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "bc58fe2d-d1d4-4069-aedb-333598a68bad",
+    "id": "937438a8-9a2c-49a5-af77-a938223ee3a1",
     "kuerzel": "LS",
     "name": "Landeszahnärztekammer Sachsen",
     "url": "https://www.zahnaerzte-in-sachsen.de",
@@ -2339,6 +2748,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2347,7 +2761,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f78e0977-d767-4076-9186-d4e0d9b7b76c",
+    "id": "291dff2d-3622-4f1c-a481-72deb0dec68e",
     "kuerzel": "LT2",
     "name": "Landeszahnärztekammer Thüringen",
     "url": "https://www.lzkth.de",
@@ -2370,6 +2784,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2378,7 +2797,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "94d52c1e-b37e-4da2-a806-f4e79fca6a40",
+    "id": "f51a2f15-a4e3-441f-93d4-587c638fd64c",
     "kuerzel": "NV",
     "name": "Nationale VersorgungsLeitlinien",
     "url": "https://www.leitlinien.de",
@@ -2391,6 +2810,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: NVL; Diabetes; KHK; Asthma; COPD; Depression; Hypertonie",
@@ -2399,7 +2822,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "784da214-df5b-43b9-a790-45a73c1331ae",
+    "id": "f37f122e-de56-4d8b-8b43-0caa15a3283a",
     "kuerzel": "PEI",
     "name": "Paul-Ehrlich-Institut",
     "url": "https://www.pei.de",
@@ -2415,6 +2838,11 @@
       "QM/Hygiene",
       "Praxismanagement"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf",
+      "feed"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Impfstoff; Sicherheit; Rückruf; Nebenwirkung; Chargenprüfung; Arzneimittel; Zulassung",
@@ -2423,7 +2851,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a93ee828-5681-4f37-8588-231dc3119e9f",
+    "id": "7c040c64-894a-43be-a821-5fc5b16c669d",
     "kuerzel": "PKV",
     "name": "PKV-Verband",
     "url": "https://www.pkv.de",
@@ -2442,6 +2870,10 @@
       "QM/Hygiene",
       "ZMV/Abrechnung"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOÄ; GOZ; Erstattung; Privatpatient; Beihilfe; ePA; PKV; Gebührenordnung; Beratungsforum",
@@ -2450,7 +2882,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "9dc20fec-63e5-43a5-b900-6f223a2ab4fa",
+    "id": "d9ce7e13-fa97-4e71-8b1a-9d31ef9d8d32",
     "kuerzel": "R",
     "name": "Recht.Bund.de",
     "url": "https://www.recht.bund.de",
@@ -2465,6 +2897,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: SGB V; Ärzte; Zahnärzte; Infektionsschutz; Medizinprodukte; Arzneimittel; Gesundheit; Praxis\nKeyword- und Normenfilter erforderlich; amtliches Inkrafttreten verifizieren.",
@@ -2473,7 +2909,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "e7379fee-03e0-4204-b59c-df5d8865c479",
+    "id": "289c3bd2-3089-4112-a1e3-7af2a2128d92",
     "kuerzel": "RKI",
     "name": "Robert Koch-Institut",
     "url": "https://www.rki.de",
@@ -2501,6 +2937,11 @@
       "Abrechnung",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Infektion; Ausbruch; Empfehlung; Meldepflicht; Impfung; Surveillance; STIKO; Impfkalender; RSV; Influenza; COVID; Reiseimpfung; Infektionsschutz; Hygiene; Infektionsprävention; Desinfektion; Aufbereitung; Praxis",
@@ -2509,7 +2950,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "6e786d54-b058-472e-b029-5c753cde93b6",
+    "id": "72452902-2ab5-4872-b612-327da05b3108",
     "kuerzel": "SL",
     "name": "Sächsische Landesärztekammer",
     "url": "https://www.slaek.de",
@@ -2528,6 +2969,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: Berufsordnung; GOÄ; Fortbildung; Hygiene; Arztpraxis; Dokumentation\nRegionale Berufsrechts- und Kammerquelle.",
@@ -2536,7 +2982,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "2e42eecc-3472-4b0e-8c5c-0fac69907620",
+    "id": "baf54566-b596-4cf2-8eee-c98154dec1e2",
     "kuerzel": "ZB",
     "name": "Zahnärztekammer Berlin",
     "url": "https://www.zaek-berlin.de",
@@ -2559,6 +3005,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2567,7 +3018,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "3c2dcdd2-4b29-432c-8e8e-25541c116302",
+    "id": "2cde8849-0864-40b6-9e76-a07b1415a029",
     "kuerzel": "ZB2",
     "name": "Zahnärztekammer Bremen",
     "url": "https://www.zaek-hb.de",
@@ -2590,6 +3041,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2598,7 +3054,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b49a2028-03e0-45de-b63d-7e49f6648666",
+    "id": "d1f7175f-342f-45f3-9fc0-ca9a054d3069",
     "kuerzel": "ZH",
     "name": "Zahnärztekammer Hamburg",
     "url": "https://www.zahnaerzte-hh.de",
@@ -2621,6 +3077,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2629,7 +3090,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "988422ac-25c9-4ab1-8a05-1f8be51b019c",
+    "id": "ac90090f-c33b-45a4-bac9-ce294493e8c9",
     "kuerzel": "ZMV",
     "name": "Zahnärztekammer Mecklenburg-Vorpommern",
     "url": "https://www.zaekmv.de",
@@ -2652,6 +3113,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2660,7 +3126,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "591ffeab-a30c-4a8d-9f2c-f83b79440519",
+    "id": "9536a14d-212d-41e8-9302-66a5b162a5f8",
     "kuerzel": "ZN",
     "name": "Zahnärztekammer Niedersachsen",
     "url": "https://www.zkn.de",
@@ -2683,6 +3149,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2691,7 +3162,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a1b9a194-1f4b-448f-8c55-25ab57413def",
+    "id": "f31858ae-59ef-463a-bee1-31056eec7f12",
     "kuerzel": "ZN2",
     "name": "Zahnärztekammer Nordrhein",
     "url": "https://www.zahnaerztekammernordrhein.de",
@@ -2714,6 +3185,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2722,7 +3198,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a3e8a305-b142-441a-a002-8872047187f8",
+    "id": "a1a38567-4ad6-46ac-9607-9be5236962b2",
     "kuerzel": "ZSA",
     "name": "Zahnärztekammer Sachsen-Anhalt",
     "url": "https://www.zaek-sa.de",
@@ -2745,6 +3221,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2753,7 +3234,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "da410f37-2fb2-4aa5-9ec0-2c4f0e4191cc",
+    "id": "c507c9d4-3aa3-4e06-ab9c-bcf6501dab5c",
     "kuerzel": "ZSH",
     "name": "Zahnärztekammer Schleswig-Holstein",
     "url": "https://www.zaek-sh.de",
@@ -2776,6 +3257,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2784,7 +3270,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "034c3840-59d6-4924-9fd1-d4a286c2d02b",
+    "id": "0c549d6b-c435-4646-b141-a5e8efdd3c25",
     "kuerzel": "ZWL",
     "name": "Zahnärztekammer Westfalen-Lippe",
     "url": "https://www.zahnaerzte-wl.de",
@@ -2807,6 +3293,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "hoch",
     "status": "",
     "notes": "Keywords: GOZ; Hygiene; Röntgen; ZFA; Berufsrecht; Praxis; Kammer\nRegionale Kammer ist für Berufsrecht, Hygienevollzug und Praxisteam-Themen zwingend.",
@@ -2815,7 +3306,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "4592e593-14e1-4f74-b087-d7f4e77bf8ca",
+    "id": "e4217c1b-f292-4c32-8f53-df604242544d",
     "kuerzel": "AZ",
     "name": "Ärzte Zeitung",
     "url": "https://www.aerztezeitung.de",
@@ -2829,6 +3320,9 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -2837,7 +3331,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ecb38afe-eee0-42a5-9a62-baef97b9046c",
+    "id": "02f33156-8364-45b2-af9a-b3761c552017",
     "kuerzel": "BSGPP",
     "name": "Bayerisches Staatsministerium für Gesundheit, Pflege und Prävention",
     "url": "https://www.stmgp.bayern.de",
@@ -2854,6 +3348,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -2862,7 +3360,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "4b0bc043-bf5b-4043-8197-4edad24d8f8a",
+    "id": "97c70919-ccac-46eb-845a-294bb43ee2ac",
     "kuerzel": "BE",
     "name": "BDIZ EDI",
     "url": "https://www.bdizedi.org",
@@ -2879,6 +3377,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Implantologie/Berufspolitik; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -2887,7 +3390,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "02a5cb63-4cb8-4a63-a06a-d02ab54fc56f",
+    "id": "9e847a46-2c15-4a8f-81e6-48b5adac0da4",
     "kuerzel": "BDK",
     "name": "Berufsverband der Deutschen Kieferorthopäden",
     "url": "https://www.bdk-online.org",
@@ -2904,6 +3407,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Kieferorthopädie/Berufspolitik; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -2912,7 +3420,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "4d7850a9-d71d-4608-b6f4-26e2c4de4682",
+    "id": "dec511fa-fca7-42a1-ad3f-34007712fe30",
     "kuerzel": "BUNDESRAT",
     "name": "Bundesrat",
     "url": "https://www.bundesrat.de",
@@ -2928,6 +3436,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Gesundheit; Ärzte; Zahnärzte; GKV; Infektionsschutz; Medizinprodukte",
@@ -2936,7 +3448,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "2e9201d0-69d2-445a-8ff3-7a1c754fcfdc",
+    "id": "eceeae68-2fca-4535-b4d8-ba6f4ef190db",
     "kuerzel": "CD",
     "name": "CIRS dent",
     "url": "https://www.cirsdent-jzz.de",
@@ -2954,6 +3466,9 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Fehler; Beinahefehler; Praxis; Behandlung; Patientensicherheit\nNicht als Regulierungsquelle; als Trend- und Lernsignal.",
@@ -2962,7 +3477,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f6977f13-9d6e-486f-8df5-b0812142e0cd",
+    "id": "cdac0168-38ec-49a3-905d-52b88fe9ad4d",
     "kuerzel": "C",
     "name": "Cochrane",
     "url": "https://www.cochrane.org",
@@ -2976,6 +3491,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -2984,7 +3503,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "8ab89cf7-80be-41fb-8b39-1851663884ff",
+    "id": "e8bd32ff-8e6f-4576-8271-8895b909c90a",
     "kuerzel": "COH",
     "name": "Cochrane Oral Health",
     "url": "https://oralhealth.cochrane.org",
@@ -2998,6 +3517,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -3006,7 +3529,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "65f79932-b2f1-436b-8671-ec5d89b2a6e6",
+    "id": "75a5ef05-a59b-4804-aa04-33bad5b65e7f",
     "kuerzel": "DW",
     "name": "Dental & Wirtschaft",
     "url": "https://www.dental-wirtschaft.de",
@@ -3025,6 +3548,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -3033,7 +3560,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "6d998a37-1e8e-40c7-9c30-5426625dd708",
+    "id": "99acbcb5-9f61-415f-90cb-2b936c7f994b",
     "kuerzel": "DTD",
     "name": "Dental Tribune Deutschland",
     "url": "https://de.dental-tribune.com",
@@ -3052,6 +3579,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -3060,7 +3591,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "d3e7f60a-b151-42e5-8ffe-e2c1bc78f189",
+    "id": "80d34706-3d8e-4093-bafb-634e8d3680aa",
     "kuerzel": "D20",
     "name": "Dentista",
     "url": "https://dentista.de",
@@ -3077,6 +3608,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis/Berufspolitik; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3085,7 +3621,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "0c9c3105-a826-4889-8797-1d6e9bc3a0a8",
+    "id": "35f14008-ff9a-4612-bb25-e5ac04f664a5",
     "kuerzel": "H2",
     "name": "Der Hausarzt",
     "url": "https://www.hausarzt.digital",
@@ -3099,6 +3635,9 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -3107,7 +3646,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "37fd5010-12d1-4362-8760-f6c051c26239",
+    "id": "0c6e1c13-1820-4dfd-87bd-9cfedee19f70",
     "kuerzel": "DDG2",
     "name": "Deutsche Dermatologische Gesellschaft",
     "url": "https://derma.de",
@@ -3119,6 +3658,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Dermatologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3127,7 +3671,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "22bdb701-996f-4b0e-a274-9976f6203b8e",
+    "id": "458984d4-1c2c-4453-af5d-2387a8f71880",
     "kuerzel": "DDG",
     "name": "Deutsche Diabetes Gesellschaft",
     "url": "https://www.ddg.info",
@@ -3139,6 +3683,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Diabetologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3147,7 +3696,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "eeebf7ac-c8d5-4614-9f59-f73b6c1db315",
+    "id": "46dfff99-154a-48b0-a36b-fef4188c2140",
     "kuerzel": "DGAKI",
     "name": "Deutsche Gesellschaft für Allergologie und klinische Immunologie",
     "url": "https://dgaki.de",
@@ -3159,6 +3708,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Allergologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3167,7 +3721,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "13e05c74-21ca-4cd0-ae49-d7c7c8992a21",
+    "id": "67f25ff7-351b-434c-9020-03e5e43cb3e4",
     "kuerzel": "DGE",
     "name": "Deutsche Gesellschaft für Ernährung",
     "url": "https://www.dge.de",
@@ -3179,6 +3733,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Ernährung/Prävention; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3187,7 +3746,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "bf731106-e3ea-4afa-bd10-003c6d882b38",
+    "id": "6efa5be8-f1f0-47b5-893d-7226783edf19",
     "kuerzel": "DGGVS",
     "name": "Deutsche Gesellschaft für Gastroenterologie, Verdauungs- und Stoffwechselkrankheiten",
     "url": "https://www.dgvs.de",
@@ -3199,6 +3758,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Gastroenterologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3207,7 +3771,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "59e95f0c-2e93-4d26-ac9f-e02cdbcad8c4",
+    "id": "d0db9c76-996f-483e-98d4-f45b7334df0d",
     "kuerzel": "DGG",
     "name": "Deutsche Gesellschaft für Geriatrie",
     "url": "https://www.dggeriatrie.de",
@@ -3219,6 +3783,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Geriatrie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3227,7 +3796,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ecc0ba9f-89b9-4e16-9fc6-fe1a7e20b1d6",
+    "id": "471994a5-6742-42ef-8b61-3dc87c9e0400",
     "kuerzel": "DGHNOH",
     "name": "Deutsche Gesellschaft für Hals-Nasen-Ohren-Heilkunde",
     "url": "https://www.hno.org",
@@ -3239,6 +3808,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: HNO; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3247,7 +3821,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "95243fc9-4f2e-4ace-a650-e62934f0fc9c",
+    "id": "4ae65bef-724b-4999-88a4-849848e45658",
     "kuerzel": "DGHMO",
     "name": "Deutsche Gesellschaft für Hämatologie und Medizinische Onkologie",
     "url": "https://www.dgho.de",
@@ -3259,6 +3833,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Onkologie/Hämatologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3267,7 +3846,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "94848755-656c-49ef-8159-1bdf85a7e561",
+    "id": "e59641f2-c842-4eac-8a38-479abd2c3f35",
     "kuerzel": "DGI",
     "name": "Deutsche Gesellschaft für Infektiologie",
     "url": "https://www.dgi-net.de",
@@ -3279,6 +3858,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Infektiologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3287,7 +3871,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "8c233e4a-2d12-4387-bd1f-5bd0dca32b81",
+    "id": "e47c01aa-e2da-4c37-a486-eef4fa04b5db",
     "kuerzel": "DGIM",
     "name": "Deutsche Gesellschaft für Innere Medizin",
     "url": "https://www.dgim.de",
@@ -3299,6 +3883,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Innere Medizin; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3307,7 +3896,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "79de8698-c69c-4d38-9519-c2df38bae3b0",
+    "id": "dde03bff-dac4-4750-9f54-f5ba6757702e",
     "kuerzel": "DGK",
     "name": "Deutsche Gesellschaft für Kardiologie",
     "url": "https://dgk.org",
@@ -3319,6 +3908,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Kardiologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3327,7 +3921,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "2ddbec7e-06a7-4e8d-b640-5be15e1126ee",
+    "id": "a0fd7430-98a8-46ad-b722-358f8f639c66",
     "kuerzel": "DGKJ",
     "name": "Deutsche Gesellschaft für Kinder- und Jugendmedizin",
     "url": "https://www.dgkj.de",
@@ -3339,6 +3933,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Pädiatrie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3347,7 +3946,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b3f3bc16-f247-4524-8419-6ae9d56faca7",
+    "id": "3b086a8c-403d-47d6-bb25-c00a23251159",
     "kuerzel": "DGKCL",
     "name": "Deutsche Gesellschaft für Klinische Chemie und Laboratoriumsmedizin",
     "url": "https://www.dgkl.de",
@@ -3359,6 +3958,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Labormedizin; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3367,7 +3971,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f73b5889-aac3-4bac-a4b0-5eee78b769d7",
+    "id": "97217970-3ccb-4813-9fa9-982ea43625f3",
     "kuerzel": "DGN2",
     "name": "Deutsche Gesellschaft für Nephrologie",
     "url": "https://www.dgfn.eu",
@@ -3379,6 +3983,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Nephrologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3387,7 +3996,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a726711a-25bc-4af2-847a-859102d36faf",
+    "id": "66279dc3-f3d6-43a0-b713-8440509fb4c0",
     "kuerzel": "DGN",
     "name": "Deutsche Gesellschaft für Neurologie",
     "url": "https://dgn.org",
@@ -3399,6 +4008,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Neurologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3407,7 +4021,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "25f41c69-5442-4328-8f4f-223e58e71962",
+    "id": "f5ee4bc7-a734-4e52-81c5-e2fb45a0ee2d",
     "kuerzel": "DGOU",
     "name": "Deutsche Gesellschaft für Orthopädie und Unfallchirurgie",
     "url": "https://dgou.de",
@@ -3419,6 +4033,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Orthopädie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3427,7 +4046,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "8f3c2dee-4789-44fa-9abd-7c4145879d86",
+    "id": "9c243efb-afaa-4131-a419-d6c86bc04ef6",
     "kuerzel": "DGP",
     "name": "Deutsche Gesellschaft für Palliativmedizin",
     "url": "https://www.dgpalliativmedizin.de",
@@ -3439,6 +4058,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Palliativmedizin; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3447,7 +4071,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "4d1b3c8e-1ff7-4a72-855e-fdc015f74a87",
+    "id": "0ea77acb-650e-4896-befc-ff85a34a8eba",
     "kuerzel": "DGPB",
     "name": "Deutsche Gesellschaft für Pneumologie und Beatmungsmedizin",
     "url": "https://www.pneumologie.de",
@@ -3459,6 +4083,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Pneumologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3467,7 +4096,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "c8da94da-8055-462c-80c7-21587660be45",
+    "id": "1919c1d2-e694-49ad-9b22-8abd2de732ad",
     "kuerzel": "DGPPPN",
     "name": "Deutsche Gesellschaft für Psychiatrie und Psychotherapie, Psychosomatik und Nervenheilkunde",
     "url": "https://www.dgppn.de",
@@ -3479,6 +4108,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Psychiatrie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3487,7 +4121,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "6f7175ac-9b43-4e70-8892-a2485c7f9d69",
+    "id": "4cc96a28-b964-4ce8-8447-5f89565af405",
     "kuerzel": "DGRKI",
     "name": "Deutsche Gesellschaft für Rheumatologie und Klinische Immunologie",
     "url": "https://dgrh.de",
@@ -3499,6 +4133,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Rheumatologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3507,7 +4146,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "3bc07421-bce7-4f18-8687-e091d347e8bc",
+    "id": "43afb17e-0c9a-4b72-94d9-d608db9c1338",
     "kuerzel": "DGSS",
     "name": "Deutsche Gesellschaft für Schlafforschung und Schlafmedizin",
     "url": "https://www.dgsm.de",
@@ -3519,6 +4158,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Schlafmedizin; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3527,7 +4171,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b3d971f4-72d4-458e-89c8-61ca22059c22",
+    "id": "430478e4-0cdd-414d-898c-b97649dd3967",
     "kuerzel": "DGU",
     "name": "Deutsche Gesellschaft für Urologie",
     "url": "https://www.urologenportal.de",
@@ -3539,6 +4183,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Urologie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3547,7 +4196,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "2234679c-b41e-44b1-a5b0-fee413515f72",
+    "id": "1ce4d0d0-d04e-4c5b-9850-47a622c3b548",
     "kuerzel": "DH",
     "name": "Deutsche Hochdruckliga",
     "url": "https://www.hochdruckliga.de",
@@ -3559,6 +4208,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hypertonie; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3567,7 +4221,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "af677fef-a095-4032-b3d4-2a3f35c5d337",
+    "id": "d7eec8ab-286f-4dc6-a531-0c9c83c41b2e",
     "kuerzel": "DS",
     "name": "Deutsche Schmerzgesellschaft",
     "url": "https://www.schmerzgesellschaft.de",
@@ -3579,6 +4233,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Schmerzmedizin; Leitlinie; Empfehlung; Stellungnahme; Hausarzt; Primärversorgung\nSekundärquelle für fachliche Breite; nur praxisrelevante Änderungen priorisieren.",
@@ -3587,7 +4246,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "42892ae9-0437-48ac-a753-168aec9e773c",
+    "id": "f45800c5-4a2d-484a-9b30-d6ff3e309530",
     "kuerzel": "BUNDESTAG",
     "name": "Deutscher Bundestag",
     "url": "https://www.bundestag.de",
@@ -3603,6 +4262,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Gesetzentwurf; Anhörung; Gesundheit; ambulant; Praxis; GKV\nFrühindikator, nicht mit geltendem Recht verwechseln.",
@@ -3611,7 +4274,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "3c25cb7f-4ebc-439a-981e-364970f1074d",
+    "id": "36f5b091-5f9f-448f-8045-97bea04b7c8c",
     "kuerzel": "DÄB",
     "name": "Deutsches Ärzteblatt",
     "url": "https://www.aerzteblatt.de",
@@ -3625,6 +4288,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -3633,7 +4300,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "acdd5a47-61aa-42b7-9be8-4b2fe443f004",
+    "id": "92619373-bb86-4515-b686-ed3da4ff8280",
     "kuerzel": "DP",
     "name": "DG PARO",
     "url": "https://dgparo.de",
@@ -3645,6 +4312,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Parodontologie; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3653,7 +4325,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "e8df68cd-0d0e-4aa9-8b6c-93f85d848f97",
+    "id": "87d6f80c-5b02-4ea2-8d8f-b10e3d754f1f",
     "kuerzel": "D14",
     "name": "DGAZ",
     "url": "https://www.dgaz.org",
@@ -3665,6 +4337,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Alterszahnmedizin; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3673,7 +4350,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f1bdad6f-cc20-4dab-bbd4-629c57f5e2d0",
+    "id": "611e7746-e6e8-4ef9-a6da-dcd5863635fd",
     "kuerzel": "D13",
     "name": "DGÄZ",
     "url": "https://www.dgaez.de",
@@ -3685,6 +4362,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Ästhetische Zahnmedizin; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3693,7 +4375,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "588ba50a-bf16-499f-8575-f61bca87102e",
+    "id": "7ec727ec-6cbb-4c50-8344-d45535e2839b",
     "kuerzel": "D19",
     "name": "DGCZ",
     "url": "https://www.dgc-online.de",
@@ -3705,6 +4387,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Digitale Zahnmedizin/CAD-CAM; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3713,7 +4400,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ba9322b5-770a-4b21-bdc8-c5a1684fd2cf",
+    "id": "e6c4dcb5-70cd-41a4-80c4-87696e09f3cc",
     "kuerzel": "D7",
     "name": "DGET",
     "url": "https://www.dget.de",
@@ -3725,6 +4412,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Endodontologie; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3733,7 +4425,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "38cf7a87-9b1e-488a-b3d0-420ec9fa08b7",
+    "id": "1940c337-af73-4939-9bb6-05ad4182399d",
     "kuerzel": "D16",
     "name": "DGFDT",
     "url": "https://www.dgfdt.de",
@@ -3745,6 +4437,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: CMD/Funktion; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3753,7 +4450,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "e9ffaee5-e7da-4435-9290-ac9ff24fd629",
+    "id": "5b08b5ba-7fc8-4569-965f-3569e7b4179f",
     "kuerzel": "D6",
     "name": "DGI",
     "url": "https://www.dginet.de",
@@ -3765,6 +4462,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Implantologie; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3773,7 +4475,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "db06d901-7f85-4484-9e4d-0e48b5d124ac",
+    "id": "b5fa611b-e2be-48b1-8e6a-5760a5142e6a",
     "kuerzel": "D9",
     "name": "DGKFO",
     "url": "https://www.dgkfo-vorstand.de",
@@ -3785,6 +4487,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Kieferorthopädie; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3793,7 +4500,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "9d9d5290-6dbd-44cb-91c9-b08df07b2fa5",
+    "id": "0568ddaf-db96-4aba-a009-c7c479b92a59",
     "kuerzel": "D8",
     "name": "DGKiZ",
     "url": "https://www.dgkiz.de",
@@ -3805,6 +4512,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Kinderzahnmedizin; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3813,7 +4525,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "8a0ca0df-2dad-464a-9c05-eea04a050780",
+    "id": "e14df22a-93f0-4888-a911-86ce0a7e167d",
     "kuerzel": "D18",
     "name": "DGL",
     "url": "https://www.dgl-online.de",
@@ -3825,6 +4537,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Laserzahnheilkunde; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3833,7 +4550,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "d11c42fc-6113-477c-8315-247889e698c8",
+    "id": "2a7e2f71-8fa1-481c-a60c-a364b56aae15",
     "kuerzel": "D11",
     "name": "DGMKG",
     "url": "https://www.dgmkg.de",
@@ -3845,6 +4562,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: MKG/Oralchirurgie; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3853,7 +4575,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ea31431d-63a6-4789-94bb-05e1b05d8932",
+    "id": "4d6bc316-f444-44bb-8609-5f2193c5c401",
     "kuerzel": "D10",
     "name": "DGPro",
     "url": "https://www.dgpro.de",
@@ -3865,6 +4587,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Prothetik/Biomaterialien; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3873,7 +4600,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "6aa5f778-715b-43e5-90be-f4bf1a59d1f9",
+    "id": "b485fbbe-d533-483b-8ce9-fb3324354645",
     "kuerzel": "D15",
     "name": "DGPZM",
     "url": "https://www.dgpzm.de",
@@ -3885,6 +4612,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Prävention; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3893,7 +4625,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "6e6092b8-3b05-462a-8c10-0e5defc452cf",
+    "id": "b9846bf1-5207-47a6-a6b6-f62d59617fa2",
     "kuerzel": "D2",
     "name": "DGUV",
     "url": "https://publikationen.dguv.de",
@@ -3908,6 +4640,11 @@
       "QM/Hygiene",
       "Praxismanagement"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf",
+      "search"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Gesundheitsdienst; Praxis; Arbeitsschutz; elektrische Anlagen; Unterweisung",
@@ -3916,7 +4653,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "71c6d139-6e1c-4e7d-ab7a-6076e28e2ad8",
+    "id": "fb9bbb23-7af7-4339-986d-e778d853dbb7",
     "kuerzel": "D12",
     "name": "DGZ",
     "url": "https://www.dgz-online.de",
@@ -3928,6 +4665,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnerhaltung; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3936,7 +4678,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "e55c7c7e-9cbb-49eb-8d15-56e7be60c508",
+    "id": "1a79ea11-6ca4-4c78-9787-0778a1e454b3",
     "kuerzel": "D5",
     "name": "DGZMK",
     "url": "https://www.dgzmk.de",
@@ -3948,6 +4690,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin gesamt; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3956,7 +4703,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "45a190a4-9893-43d3-8737-3c8799c2d8fe",
+    "id": "d603609c-4480-45ab-a23e-28f40a0d513d",
     "kuerzel": "D17",
     "name": "DGZS",
     "url": "https://www.dgzs.de",
@@ -3968,6 +4715,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Schlafmedizin; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -3976,7 +4728,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "1dc96af9-845b-4192-ac3b-76561df63090",
+    "id": "21bd1091-7d3c-4f0f-8a0f-86dd7e720fb8",
     "kuerzel": "SGFVB",
     "name": "Die Senatorin für Gesundheit, Frauen und Verbraucherschutz Bremen",
     "url": "https://www.gesundheit.bremen.de",
@@ -3993,6 +4745,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4001,7 +4757,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "bec9f4d7-1853-46e5-9a23-117f4eec8161",
+    "id": "b699a9d2-e1ef-42e2-9a5c-a4163fc77ff0",
     "kuerzel": "DBB",
     "name": "DIP Bundestag/Bundesrat",
     "url": "https://dip.bundestag.de",
@@ -4017,6 +4773,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: SGB V; Gesundheitsversorgung; Vertragsarzt; Vertragszahnarzt; Pflege; Arzneimittel\nSehr nützlich für Status- und Verfahrensverfolgung.",
@@ -4025,7 +4785,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "0402725f-0b94-4ae4-9dca-8a855fb5f813",
+    "id": "7c234e44-0064-4f6d-ae54-95cf3405d75a",
     "kuerzel": "D21",
     "name": "DZW",
     "url": "https://www.dzw.de",
@@ -4044,6 +4804,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -4052,7 +4816,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "0e09f087-587a-4887-9d60-b31e62d71589",
+    "id": "714029ca-28d9-4b80-9cb0-28b3b41563f5",
     "kuerzel": "EKDS",
     "name": "Europäische Kommission – DG SANTE",
     "url": "https://health.ec.europa.eu",
@@ -4068,6 +4832,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: medical devices; health; medicines; digital health; professional qualifications",
@@ -4076,7 +4844,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "6e58c645-5a92-4ba3-84af-78eb33ce0017",
+    "id": "29ae4389-a67c-40f5-a452-5341959711c2",
     "kuerzel": "ECFDPA",
     "name": "European Centre for Disease Prevention and Control",
     "url": "https://www.ecdc.europa.eu",
@@ -4090,6 +4858,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: outbreak; infection; vaccination; surveillance; antimicrobial resistance",
@@ -4098,7 +4870,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b0eb5dd2-5c51-42f8-a62d-888b8de42ce1",
+    "id": "9e54f0d6-f6d8-4c2b-81a9-f27e92a73651",
     "kuerzel": "EMA",
     "name": "European Medicines Agency",
     "url": "https://www.ema.europa.eu",
@@ -4112,6 +4884,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: safety; medicine; PRAC; CHMP; shortage; referral",
@@ -4120,7 +4896,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "fcf87d27-e19c-4366-8e56-07025855c038",
+    "id": "31cf1ab1-4785-41a8-9e91-b4937f144c10",
     "kuerzel": "FVDZ",
     "name": "Freier Verband Deutscher Zahnärzte",
     "url": "https://www.fvdz.de",
@@ -4137,6 +4913,11 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Berufspolitik/Praxis; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -4145,7 +4926,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "eafa84da-f21e-488d-a522-2ee9cc1c3faf",
+    "id": "09989091-1aac-489d-9b91-8e141e84f75f",
     "kuerzel": "GL",
     "name": "Gelbe Liste",
     "url": "https://www.gelbe-liste.de",
@@ -4159,6 +4940,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -4167,7 +4952,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "d64f8b57-9380-43d4-b2ee-bd3d81829e4c",
+    "id": "f2c76c6b-b55b-4ec3-b656-9c5b5d23310d",
     "kuerzel": "G",
     "name": "Gesundheitsministerkonferenz",
     "url": "https://www.gmkonline.de",
@@ -4183,6 +4968,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: ambulante Versorgung; Gesundheitsberufe; Infektionsschutz; Digitalisierung; Bürokratie",
@@ -4191,7 +4980,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "0674df20-2334-4262-aa8d-db46a22fe673",
+    "id": "5d7ad21e-2be2-464e-86ad-b909eca79f30",
     "kuerzel": "HP",
     "name": "Hausärztliche Praxis",
     "url": "https://www.hausaerztlichepraxis.digital",
@@ -4205,6 +4994,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -4213,7 +5006,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "725eeb71-8ec5-4c0a-8ac6-52198f928233",
+    "id": "b52d4767-9b45-4063-afe7-f6649ec37dcc",
     "kuerzel": "HMFSSG",
     "name": "Hessisches Ministerium für Familie, Senioren, Sport, Gesundheit und Pflege",
     "url": "https://familie.hessen.de",
@@ -4230,6 +5023,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4238,7 +5035,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "55ee0ed3-663d-43eb-b806-eb69c1bf2dcb",
+    "id": "c480b8b4-6d61-4c83-a9ad-0e83237c1560",
     "kuerzel": "IDZ",
     "name": "Institut der Deutschen Zahnärzte",
     "url": "https://www.idz.institute",
@@ -4254,6 +5051,11 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Mundgesundheit; Versorgung; Zahnarztpraxis; Ökonomie; DMS",
@@ -4262,7 +5064,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "d9572c07-c28d-4506-960b-76a1a319a982",
+    "id": "af72851c-8095-4ee1-9ad8-7ccb87fe1e77",
     "kuerzel": "I2",
     "name": "IQTIG",
     "url": "https://iqtig.org",
@@ -4277,6 +5079,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Qualitätssicherung; Qualitätsindikator; Dokumentation; Datenübermittlung",
@@ -4285,7 +5091,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f2bf2816-2c98-4a92-8f6e-f0b39d7dfcde",
+    "id": "485216cf-f7e8-446c-810b-79dac3cf0a29",
     "kuerzel": "I",
     "name": "IQWiG",
     "url": "https://www.iqwig.de",
@@ -4299,6 +5105,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Nutzenbewertung; Evidenz; Leitlinie; Diagnose; Therapie",
@@ -4307,7 +5118,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "25c87bb3-8f01-45cd-a1d9-22701dd985a9",
+    "id": "98e49370-bfae-4383-8b20-e79c22c411dc",
     "kuerzel": "MTD",
     "name": "Medical Tribune Deutschland",
     "url": "https://www.medical-tribune.de",
@@ -4321,6 +5132,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -4329,7 +5144,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "99add721-122c-40aa-9421-621e8dedb3fd",
+    "id": "7e669fd1-d2b9-46cc-aaf9-34fcccdfc943",
     "kuerzel": "MD",
     "name": "mgo dental",
     "url": "https://mgo-dental.de",
@@ -4348,6 +5163,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -4356,7 +5175,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "351c2556-f89b-423d-be44-aa782a775384",
+    "id": "aaffc4ec-101f-450f-bfdb-f5ba83733d5c",
     "kuerzel": "MAGSNW",
     "name": "Ministerium für Arbeit, Gesundheit und Soziales Nordrhein-Westfalen",
     "url": "https://www.mags.nrw",
@@ -4373,6 +5192,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4381,7 +5204,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "93f2e50b-8a32-483c-ac17-0c5bba1b1801",
+    "id": "8b6a3aa3-d9e1-48c6-af6c-8468c1b48fe2",
     "kuerzel": "MASFGS",
     "name": "Ministerium für Arbeit, Soziales, Frauen und Gesundheit Saarland",
     "url": "https://www.saarland.de",
@@ -4398,6 +5221,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4406,7 +5233,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "94a38940-f44c-4e1c-ab1c-a74b77d9119f",
+    "id": "8ea28d68-bc16-429a-8836-a9b56862cdee",
     "kuerzel": "MASGGS",
     "name": "Ministerium für Arbeit, Soziales, Gesundheit und Gleichstellung Sachsen-Anhalt",
     "url": "https://ms.sachsen-anhalt.de",
@@ -4423,6 +5250,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4431,7 +5262,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "1399420b-a167-4d3f-b359-841038307da8",
+    "id": "8973272c-5ce3-4a9e-91b1-e2be3dcf3b5f",
     "kuerzel": "MGSB",
     "name": "Ministerium für Gesundheit und Soziales Brandenburg",
     "url": "https://msgiv.brandenburg.de",
@@ -4448,6 +5279,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4456,7 +5291,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b2577323-5afa-4acc-a7c1-cdf7b07ebed0",
+    "id": "72c2f961-61f4-43d7-acd2-8581bc381e2d",
     "kuerzel": "MJGSH",
     "name": "Ministerium für Justiz und Gesundheit Schleswig-Holstein",
     "url": "https://www.schleswig-holstein.de",
@@ -4473,6 +5308,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4481,7 +5320,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "10e1cfa8-b573-4910-8e25-d6db2b74bea7",
+    "id": "78b860e2-c73b-4a93-aa8a-d2dffaff9a17",
     "kuerzel": "MSGIBW",
     "name": "Ministerium für Soziales, Gesundheit und Integration Baden-Württemberg",
     "url": "https://sozialministerium.baden-wuerttemberg.de",
@@ -4498,6 +5337,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4506,7 +5349,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "1edf485b-0a88-440b-a7ef-6f4ad2e38baf",
+    "id": "a2a81932-9eec-4a05-b9a8-74ca216f4b93",
     "kuerzel": "MSGSMV",
     "name": "Ministerium für Soziales, Gesundheit und Sport Mecklenburg-Vorpommern",
     "url": "https://www.regierung-mv.de",
@@ -4523,6 +5366,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4531,7 +5378,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "3b75f4c4-103b-41f2-9fc9-9f7646b629ff",
+    "id": "a068902b-16b7-458b-a6ab-d6c97c7fbbff",
     "kuerzel": "MWGRP",
     "name": "Ministerium für Wissenschaft und Gesundheit Rheinland-Pfalz",
     "url": "https://mwg.rlp.de",
@@ -4548,6 +5395,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4556,7 +5407,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b2f345b5-c31b-43a5-a85b-4fcb07217fd4",
+    "id": "6945d106-7b5d-45dd-a2a4-e11b6eaf9ea8",
     "kuerzel": "NMSAGG",
     "name": "Niedersächsisches Ministerium für Soziales, Arbeit, Gesundheit und Gleichstellung",
     "url": "https://www.ms.niedersachsen.de",
@@ -4573,6 +5424,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4581,7 +5436,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f53206a3-32a2-4ecd-bd28-5cfeea82db9b",
+    "id": "23b1cabb-2ea3-4493-aee6-a1da39ad19d6",
     "kuerzel": "P",
     "name": "PharmNet.Bund",
     "url": "https://www.pharmnet-bund.de",
@@ -4595,6 +5450,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "search"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -4603,7 +5463,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "9069c020-de0d-4ce7-8566-988abed9abac",
+    "id": "4cc6efb8-c752-4bdd-98ad-fc3031453cb9",
     "kuerzel": "P2",
     "name": "proDente",
     "url": "https://www.prodente.de",
@@ -4615,6 +5475,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Patientenkommunikation; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -4623,7 +5488,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "f70bbbc1-8cd0-4927-87e5-c1d5824bea3c",
+    "id": "3957d76a-1fa4-4b24-ad20-410264adf8fe",
     "kuerzel": "PUBMED",
     "name": "PubMed",
     "url": "https://pubmed.ncbi.nlm.nih.gov",
@@ -4639,6 +5504,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "feed",
+      "search"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice; Zahnmedizin; dental; oral health; regulation\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken. Primärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -4647,7 +5516,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b618d8df-b7d3-4ecf-a2aa-ef297d199ca8",
+    "id": "1e63a90a-b04b-4dc3-85a4-cb10bbadfc8d",
     "kuerzel": "QP",
     "name": "Quintessence Publishing",
     "url": "https://www.quintessence-publishing.com",
@@ -4666,6 +5535,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -4674,7 +5547,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ecb1d8ae-507a-4e8c-9c84-9c9bf14084b5",
+    "id": "eda869ec-5029-4b5f-b8ff-e0a0a4ff05b3",
     "kuerzel": "SSSGGZ",
     "name": "Sächsisches Staatsministerium für Soziales, Gesundheit und Gesellschaftlichen Zusammenhalt",
     "url": "https://www.sms.sachsen.de",
@@ -4691,6 +5564,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4699,7 +5576,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "784b3aef-58a9-4717-b65b-c9538d54d43e",
+    "id": "0691f03d-87ea-4764-b32b-3dfa29dce818",
     "kuerzel": "SGPGB",
     "name": "Senatsverwaltung für Gesundheit, Pflege und Gleichstellung Berlin",
     "url": "https://www.berlin.de",
@@ -4716,6 +5593,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4724,7 +5605,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "2d60e238-a951-4ded-b5f2-889072d64f3b",
+    "id": "fbd1651e-fa60-4e7c-aaf6-255e45ac40b4",
     "kuerzel": "SHG",
     "name": "Sozialbehörde Hamburg – Gesundheit",
     "url": "https://www.hamburg.de",
@@ -4741,6 +5622,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4749,7 +5634,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "1120c2a6-499a-4caf-8b2b-4a4006bb06ae",
+    "id": "4ab1850f-b8ab-4e3f-ba84-d486b3b2ef7e",
     "kuerzel": "S",
     "name": "Strahlenschutzkommission",
     "url": "https://www.ssk.de",
@@ -4762,6 +5647,10 @@
       "QM/Hygiene",
       "Praxismanagement"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin; Röntgen; DVT; Strahlenschutz; Empfehlung",
@@ -4770,7 +5659,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "051fdb6e-35e9-4fba-b956-9c39c6c31bb0",
+    "id": "1197b09f-f6b3-48c2-87a3-2f43406acd5c",
     "kuerzel": "TMSGAF",
     "name": "Thüringer Ministerium für Soziales, Gesundheit, Arbeit und Familie",
     "url": "https://www.tmasgff.de",
@@ -4787,6 +5676,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Praxis; Hygiene; Infektionsschutz; Gesundheitsberuf; Erlass; Verordnung\nMinisteriumsressorts und URLs können sich nach Regierungsumbildungen ändern; Source-Health-Monitoring zwingend.",
@@ -4795,7 +5688,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "533b6366-3cc7-4003-a886-95572ffb1046",
+    "id": "1b106328-18a9-4e49-9a31-ea3abed9520f",
     "kuerzel": "V3",
     "name": "VDDI",
     "url": "https://www.vddi.de",
@@ -4807,6 +5700,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Dentalindustrie/Medizinprodukte; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -4815,7 +5713,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "207d0fc3-da45-4cb8-a6de-0851f23431a2",
+    "id": "45640eac-0008-4245-99c0-df9b2966cb25",
     "kuerzel": "V2",
     "name": "VDZI",
     "url": "https://www.vdzi.de",
@@ -4827,6 +5725,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahntechnik/Labor; Zahnmedizin; Leitlinie; Stellungnahme; Empfehlung\nFachliche Sekundärquelle; relevante Aussagen mit Primärquelle/Leitlinie verknüpfen.",
@@ -4835,7 +5738,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "3bc233d9-eeb0-4200-942d-33250af492f1",
+    "id": "20bdccd8-080e-4d5a-8f32-ac5e560a4e9a",
     "kuerzel": "ZKV",
     "name": "Zentralinstitut für die kassenärztliche Versorgung",
     "url": "https://www.zi.de",
@@ -4854,6 +5757,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Kodierung; ICD; Praxis; Versorgung; ZiPP; Leitlinie",
@@ -4862,7 +5769,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b8684134-af44-4d97-acb5-d882a5e4ad47",
+    "id": "69f762d2-6e8d-4355-9a80-88aaf19caf30",
     "kuerzel": "ZLGAM",
     "name": "Zentralstelle der Länder für Gesundheitsschutz bei Arzneimitteln und Medizinprodukten",
     "url": "https://www.zlg.de",
@@ -4877,6 +5784,10 @@
       "QM/Hygiene",
       "Praxismanagement"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Medizinprodukte; Vollzug; Überwachung; Betreiber",
@@ -4885,7 +5796,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "8164e531-163b-42e7-9efa-bc97f1f5648e",
+    "id": "f7a282b1-8916-45ea-9ec1-2ec85164c94c",
     "kuerzel": "ZO",
     "name": "zm-online",
     "url": "https://www.zm-online.de",
@@ -4904,6 +5815,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -4912,7 +5827,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "89ff1ca3-f031-4432-a7cf-624111af7493",
+    "id": "908a8306-5c17-4026-8ba5-86ad6c16eeeb",
     "kuerzel": "ZO2",
     "name": "ZWP online",
     "url": "https://www.zwp-online.info",
@@ -4931,6 +5846,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "mittel",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -4939,7 +5858,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "fc45211e-8e10-4432-b693-8bc0b3c1322a",
+    "id": "315b773c-d250-463a-be56-b6dc9b15e5ff",
     "kuerzel": "A",
     "name": "AMBOSS",
     "url": "https://www.amboss.com",
@@ -4953,6 +5872,11 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed",
+      "search"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -4961,7 +5885,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "b55612ec-032f-479b-a276-9ac789b9d1f4",
+    "id": "9de726b4-2bea-497a-84d9-e1dc2c496601",
     "kuerzel": "CLINTRIALS",
     "name": "ClinicalTrials.gov",
     "url": "https://clinicaltrials.gov",
@@ -4977,6 +5901,9 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "feed"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice; Zahnmedizin; dental; oral health; regulation\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken. Primärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -4985,7 +5912,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "6b74d7e5-cd5e-4ed5-b674-88cc4a38bc44",
+    "id": "9bcbc794-4f35-4bce-81dd-a5e74138e74a",
     "kuerzel": "COED",
     "name": "Council of European Dentists",
     "url": "https://www.cedentists.eu",
@@ -5004,6 +5931,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "pdf"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -5012,7 +5943,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a0f1a32b-d4a3-4dea-b55a-c359c9ff380d",
+    "id": "81a73952-d95f-4e21-92c6-a93fb8e3ce19",
     "kuerzel": "DM",
     "name": "Dental Magazin",
     "url": "https://www.dentalmagazin.de",
@@ -5031,6 +5962,9 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -5039,7 +5973,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "ab8cb0a7-a783-47fb-8470-1d0122d66496",
+    "id": "efbe405b-1ba0-4bd6-8341-b4d3a84b920f",
     "kuerzel": "D3",
     "name": "Destatis",
     "url": "https://www.destatis.de",
@@ -5055,6 +5989,10 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Arztpraxis; Zahnarztpraxis; Gesundheitsausgaben; Personal; Erkrankungen",
@@ -5063,7 +6001,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "c534db2e-dcf5-42d6-b4ab-2d89887794c3",
+    "id": "fbae8ea1-1c9c-4049-90a2-da59b385d926",
     "kuerzel": "D4",
     "name": "Deximed",
     "url": "https://deximed.de",
@@ -5077,6 +6015,9 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "search"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -5085,7 +6026,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "4c8bb63b-889c-4b3a-b653-a2c7f6aa1fb1",
+    "id": "6892b4c6-2930-4881-9e1d-72b87dfc19b9",
     "kuerzel": "EP",
     "name": "Europe PMC",
     "url": "https://europepmc.org",
@@ -5099,6 +6040,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "feed",
+      "search"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -5107,7 +6052,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "a0166be4-ef83-4d43-81af-84aa61bc08ec",
+    "id": "320cbbb2-f45c-48a7-b336-02e4f435603e",
     "kuerzel": "FWDF",
     "name": "FDI World Dental Federation",
     "url": "https://www.fdiworlddental.org",
@@ -5126,6 +6071,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -5134,7 +6083,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "74bb6531-8cea-482b-afb0-f6ee4096988d",
+    "id": "d9d632cf-6cd7-4fdd-ac94-ecdf590b0412",
     "kuerzel": "I3",
     "name": "IADR",
     "url": "https://www.iadr.org",
@@ -5148,6 +6097,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -5156,7 +6109,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "03ff6b16-39a4-4ba3-9fa6-3527c358f6a8",
+    "id": "055004c3-560c-4971-a5d8-e6592cea5493",
     "kuerzel": "I4",
     "name": "IDS",
     "url": "https://www.ids-cologne.de",
@@ -5175,6 +6128,9 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -5183,7 +6139,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "25ab4bc8-2215-4899-84ef-1f858a144bb2",
+    "id": "80a5c240-e636-4db7-bc51-747de44b8aa0",
     "kuerzel": "SM",
     "name": "Springer Medizin",
     "url": "https://www.springermedizin.de",
@@ -5197,6 +6153,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -5205,7 +6165,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "12c258c7-9fb5-4d0d-bebc-d1d1fa34de5d",
+    "id": "92da2c55-2509-4c78-9ee7-940c6d30292b",
     "kuerzel": "T",
     "name": "Thieme",
     "url": "https://www.thieme.de",
@@ -5219,6 +6179,10 @@
       "Ärztlicher/Zahnärztlicher Dienst",
       "Praxisinhaber"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Hausarzt; Allgemeinmedizin; primary care; family medicine; guideline; trial; practice\nNicht als alleinige Handlungsquelle verwenden; Primärquelle verlinken.",
@@ -5227,7 +6191,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "39ebc61f-457a-4bb9-b723-93a5c5f386a6",
+    "id": "50e084d3-a510-498a-ad1b-87127cfe6d63",
     "kuerzel": "V",
     "name": "vdek",
     "url": "https://www.vdek.com",
@@ -5243,6 +6207,9 @@
       "Abrechnung",
       "QM/Hygiene"
     ],
+    "ingestion_methods": [
+      "scrape"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: ambulant; Vertrag; Vergütung; Versorgung",
@@ -5251,7 +6218,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "1096bc63-0096-4167-b536-0dc1e09a5698",
+    "id": "3d9b8a58-18d3-45a3-804b-c5c252bce250",
     "kuerzel": "W",
     "name": "WHO",
     "url": "https://www.who.int",
@@ -5270,6 +6237,10 @@
       "QM/Hygiene",
       "IT"
     ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
+    ],
     "priority": "niedrig",
     "status": "",
     "notes": "Keywords: Zahnmedizin; dental; oral health; guideline; practice; regulation\nPrimärquellen und Herstellerinteressen transparent kennzeichnen.",
@@ -5278,7 +6249,7 @@
     "created_at": "2026-08-03"
   },
   {
-    "id": "69342570-8405-48d9-b9a7-4f50c940d75c",
+    "id": "6425e55b-e78a-4738-a96d-59232b210480",
     "kuerzel": "ZA",
     "name": "ZMK aktuell",
     "url": "https://www.zmk-aktuell.de",
@@ -5296,6 +6267,10 @@
       "Praxismanagement",
       "QM/Hygiene",
       "IT"
+    ],
+    "ingestion_methods": [
+      "scrape",
+      "feed"
     ],
     "priority": "niedrig",
     "status": "",

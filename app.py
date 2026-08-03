@@ -949,6 +949,12 @@ SOURCE_UPDATE_OPTIONS = [
     "quartalsweise/laufend", "quartalsweise", "änderungsbezogen",
     "ereignisbezogen", "jährlich",
 ]
+SOURCE_INGESTION_METHODS = [
+    ("scrape",  "Scrape",       "HTML-Seiten automatisiert abrufen und auslesen"),
+    ("feed",    "Feed / API",   "RSS-, Atom- oder API-Endpunkte abonnieren"),
+    ("pdf",     "PDF",          "Dokumente herunterladen und extrahieren"),
+    ("search",  "Suche / Login","Suche, Login-Bereich oder Partnerschaftszugang"),
+]
 SOURCE_PRIORITIES = ["hoch", "mittel", "niedrig"]
 SOURCE_STATUSES   = ["geplant", "in_recherche", "aktiv", "inaktiv"]
 SOURCE_STATUS_LABELS = {
@@ -975,6 +981,7 @@ def sources():
                 "primary_category":     request.form.get("primary_category", "Sonstiges"),
                 "secondary_categories": request.form.getlist("secondary_categories"),
                 "relevant_roles":       request.form.getlist("relevant_roles"),
+                "ingestion_methods":    request.form.getlist("ingestion_methods"),
                 "priority":             request.form.get("priority", "mittel"),
                 "status":               request.form.get("status", "").strip(),
                 "zugang":               request.form.get("zugang", "").strip(),
@@ -996,6 +1003,7 @@ def sources():
                     s["primary_category"]     = request.form.get("primary_category", "Sonstiges")
                     s["secondary_categories"] = request.form.getlist("secondary_categories")
                     s["relevant_roles"]       = request.form.getlist("relevant_roles")
+                    s["ingestion_methods"]    = request.form.getlist("ingestion_methods")
                     s["priority"]             = request.form.get("priority", "mittel")
                     s["status"]               = request.form.get("status", "").strip()
                     s["zugang"]               = request.form.get("zugang", "").strip()
@@ -1024,6 +1032,7 @@ def sources():
         source_primary_categories=SOURCE_PRIMARY_CATEGORIES,
         source_secondary_categories=SOURCE_SECONDARY_CATEGORIES,
         source_relevant_roles=SOURCE_RELEVANT_ROLES,
+        source_ingestion_methods=SOURCE_INGESTION_METHODS,
         source_zugang_options=SOURCE_ZUGANG_OPTIONS,
         source_update_options=SOURCE_UPDATE_OPTIONS,
         source_priorities=SOURCE_PRIORITIES,
