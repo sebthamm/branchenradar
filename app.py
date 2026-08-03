@@ -1009,6 +1009,13 @@ def sources():
                     s["zugang"]               = request.form.get("zugang", "").strip()
                     s["expected_update"]      = request.form.get("expected_update", "").strip()
                     s["notes"]                = request.form.get("notes", "").strip()
+                    agent_hints = []
+                    for i in ("1", "2"):
+                        agent = request.form.get(f"agent_hint_{i}_agent", "").strip()
+                        text  = request.form.get(f"agent_hint_{i}_text", "").strip()
+                        if agent or text:
+                            agent_hints.append({"agent": agent, "text": text})
+                    s["agent_hints"] = agent_hints
                     break
             save_sources(sources_list)
             flash("Quelle aktualisiert.", "success")

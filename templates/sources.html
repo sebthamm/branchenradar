@@ -241,7 +241,6 @@
           <th>Ingestion</th>
           <th>Rollen</th>
           <th>Zugang</th>
-          <th>Hinweise</th>
           <th>URL</th>
           <th></th>
         </tr>
@@ -267,11 +266,6 @@
             {% else %}<span class="muted">—</span>{% endif %}
           </td>
           <td style="font-size:12px;color:var(--muted)">{{ src.zugang or '—' }}</td>
-          <td style="max-width:200px">
-            {% if src.notes %}
-              <span class="cell-clamp" title="{{ src.notes }}">{{ src.notes }}</span>
-            {% else %}<span class="muted">—</span>{% endif %}
-          </td>
           <td>
             {% if src.url %}
               <a href="{{ src.url }}" target="_blank" class="url-link" title="{{ src.url }}" onclick="event.stopPropagation()">↗ Link</a>
@@ -291,7 +285,7 @@
 
         {# Expand: Edit #}
         <tr class="expand-row">
-          <td colspan="10">
+          <td colspan="9">
             <div class="expand-panel" id="panel-edit-{{ uid }}">
               <form method="post" action="{{ url_for('sources') }}">
                 <input type="hidden" name="action" value="edit">
@@ -376,8 +370,28 @@
                     </div>
                   </div>
                   <div class="full">
-                    <label>Hinweise für die KI</label>
+                    <label>Allgemeine Hinweise für die KI</label>
                     <textarea name="notes">{{ src.notes or '' }}</textarea>
+                  </div>
+                  <div class="half">
+                    <label>Agenten-spezifischer Hinweis 1</label>
+                    <select name="agent_hint_1_agent" style="margin-bottom:6px">
+                      <option value="">— Agent wählen —</option>
+                      {% for key, label, _ in source_ingestion_methods %}
+                      <option value="{{ key }}" {{ 'selected' if src.get('agent_hints', [{}])[0].get('agent','') == key else '' }}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                    <textarea name="agent_hint_1_text" placeholder="Hinweis nur für diesen Agenten…">{{ src.get('agent_hints', [{},''])[0].get('text','') if src.get('agent_hints') else '' }}</textarea>
+                  </div>
+                  <div class="half">
+                    <label>Agenten-spezifischer Hinweis 2</label>
+                    <select name="agent_hint_2_agent" style="margin-bottom:6px">
+                      <option value="">— Agent wählen —</option>
+                      {% for key, label, _ in source_ingestion_methods %}
+                      <option value="{{ key }}" {{ 'selected' if src.get('agent_hints', [{},{}])[1].get('agent','') == key else '' }}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                    <textarea name="agent_hint_2_text" placeholder="Hinweis nur für diesen Agenten…">{{ src.get('agent_hints', [{},{}])[1].get('text','') if src.get('agent_hints') and src.get('agent_hints')|length > 1 else '' }}</textarea>
                   </div>
                   <div class="form-actions">
                     <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
@@ -516,6 +530,8 @@ function buildAgentPrompt(agentKey, srcs) {
     if (s.relevant_roles && s.relevant_roles.length)
                             lines.push('Relevante Rollen: ' + s.relevant_roles.join(', '));
     if (s.notes)            lines.push('Hinweise: ' + s.notes);
+    const ah = (s.agent_hints || []).find(h => h.agent === agentKey && h.text);
+    if (ah)                 lines.push('Agenten-Hinweis: ' + ah.text);
     lines.push('');
   });
 
