@@ -70,13 +70,6 @@
 {% endblock %}
 
 {% block content %}
-<div class="sa-subnav">
-  <div class="sa-subnav-inner">
-    <a href="{{ url_for('sa_dashboard') }}" class="sa-tab active">Nutzerverwaltung</a>
-    <a href="{{ url_for('sa_functions') }}" class="sa-tab">Functions</a>
-    <a href="{{ url_for('sa_logbook') }}"   class="sa-tab">Log-Buch</a>
-  </div>
-</div>
 <div class="main">
   <div class="page-title">Nutzerverwaltung</div>
 
@@ -187,13 +180,20 @@
             <div class="expand-panel" id="panel-users-{{ uid_e }}">
               {% if entity_users %}
               <table class="sub-table">
-                <thead><tr><th>Name</th><th>Benutzername</th><th>Rolle</th><th></th></tr></thead>
+                <thead><tr><th>Name</th><th>Benutzername</th><th>Rolle</th><th>Teams</th><th></th></tr></thead>
                 <tbody>
                   {% for u in entity_users %}
+                  {% set user_teams = [] %}
+                  {% for t in e.get('teams', []) %}{% if u.id in t.get('member_ids', []) %}{% set _ = user_teams.append(t) %}{% endif %}{% endfor %}
                   <tr>
                     <td>{{ u.name }}</td>
                     <td class="muted">{{ u.username }}</td>
                     <td><span class="role-chip role-{{ u.role }}">{{ role_labels.get(u.role, u.role) }}</span></td>
+                    <td style="font-size:12px;color:var(--muted)">
+                      {% if user_teams %}
+                        {{ user_teams | map(attribute='name') | join(', ') }}
+                      {% else %}—{% endif %}
+                    </td>
                     <td>
                       <div class="actions">
                         <a href="{{ url_for('sa_user_edit', uid=u.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>

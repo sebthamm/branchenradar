@@ -92,15 +92,18 @@
           <a href="{{ url_for('todos') }}" class="header-link" style="position:relative">
             ToDos{% if pending_todos %}<span style="position:absolute;top:-5px;right:-8px;background:#B03060;color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 4px;min-width:14px;text-align:center">{{ pending_todos }}</span>{% endif %}
           </a>
+          <a href="{{ url_for('signal_list') }}" class="header-link">Signale</a>
         {% endif %}
         {% if session.role == 'superadmin' %}
+          <span style="width:1px;height:14px;background:rgba(255,255,255,.2);display:inline-block;margin:0 4px"></span>
           <a href="{{ url_for('sa_dashboard') }}" class="header-link">Nutzerverwaltung</a>
-          <a href="{{ url_for('signal_list') }}" class="header-link">Signale</a>
           <a href="{{ url_for('sources') }}" class="header-link">Quellen</a>
+          <a href="{{ url_for('sa_functions') }}" class="header-link">Funktionen</a>
+          <a href="{{ url_for('sa_logbook') }}" class="header-link">Log-Buch</a>
           <a href="{{ url_for('sa_settings') }}" class="header-link">Einstellungen</a>
         {% elif session.role == 'admin' %}
+          <span style="width:1px;height:14px;background:rgba(255,255,255,.2);display:inline-block;margin:0 4px"></span>
           <a href="{{ url_for('admin_dashboard') }}" class="header-link">Nutzerverwaltung</a>
-          <a href="{{ url_for('signal_list') }}" class="header-link">Signale</a>
           <a href="{{ url_for('sources') }}" class="header-link">Quellen</a>
           <a href="{{ url_for('settings') }}" class="header-link">Einstellungen</a>
         {% endif %}

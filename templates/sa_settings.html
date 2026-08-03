@@ -32,16 +32,35 @@
     <div class="info-box">
       💡 Tipp: Halte die Kategorien allgemein genug, um für verschiedene Praxistypen zu passen — z.B. „Abrechnung & Vergütung" statt „GOZ-Abrechnung".
     </div>
-    <form method="post">
+    <form method="post" action="?section=todo">
       <div class="cat-list" id="cat-list">
         {% for cat in categories %}
         <div class="cat-row">
           <input type="text" name="categories" value="{{ cat }}" required>
-          <button type="button" class="del-btn" onclick="removeRow(this)" title="Entfernen">×</button>
+          <button type="button" class="del-btn" onclick="removeRow(this, 'cat-list')" title="Entfernen">×</button>
         </div>
         {% endfor %}
       </div>
-      <button type="button" class="add-btn" onclick="addRow()">+ Kategorie hinzufügen</button>
+      <button type="button" class="add-btn" onclick="addRow('cat-list', 'categories')">+ Kategorie hinzufügen</button>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Speichern</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Standard-Teams</div>
+    <div class="card-sub">Diese Teams werden automatisch beim Anlegen neuer Entities erstellt. Admins können Teams nachträglich in den Entity-Einstellungen umbenennen, erweitern oder löschen.</div>
+    <form method="post" action="?section=teams">
+      <div class="cat-list" id="team-list">
+        {% for team in default_teams %}
+        <div class="cat-row">
+          <input type="text" name="team_names" value="{{ team }}" required>
+          <button type="button" class="del-btn" onclick="removeRow(this, 'team-list')" title="Entfernen">×</button>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="add-btn" onclick="addRow('team-list', 'team_names')">+ Team hinzufügen</button>
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">Speichern</button>
       </div>
@@ -49,16 +68,16 @@
   </div>
 </div>
 <script>
-function addRow() {
-  const list = document.getElementById('cat-list');
+function addRow(listId, fieldName) {
+  const list = document.getElementById(listId);
   const row  = document.createElement('div');
   row.className = 'cat-row';
-  row.innerHTML = '<input type="text" name="categories" required placeholder="Neue Kategorie"><button type="button" class="del-btn" onclick="removeRow(this)">×</button>';
+  row.innerHTML = `<input type="text" name="${fieldName}" required placeholder="Neu"><button type="button" class="del-btn" onclick="removeRow(this, '${listId}')">×</button>`;
   list.appendChild(row);
   row.querySelector('input').focus();
 }
-function removeRow(btn) {
-  const list = document.getElementById('cat-list');
+function removeRow(btn, listId) {
+  const list = document.getElementById(listId);
   if (list.children.length <= 1) return;
   btn.closest('.cat-row').remove();
 }

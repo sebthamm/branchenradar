@@ -331,8 +331,8 @@ def sa_entity_new():
             "section_ids":     request.form.getlist("section_ids"),
             "todo_categories": default_cats,
             "teams": [
-                {"id": str(uuid.uuid4()), "name": "Team Abrechnung", "member_ids": [], "category_ids": ["krankenkassen", "gesetze"]},
-                {"id": str(uuid.uuid4()), "name": "Team Personal",   "member_ids": [], "category_ids": ["personal"]},
+                {"id": str(uuid.uuid4()), "name": tn, "member_ids": [], "category_ids": []}
+                for tn in cfg.get("default_team_names", ["Team Abrechnung", "Team Personal"])
             ],
         }
         entities.append(new_entity)
@@ -691,13 +691,21 @@ def sa_logbook():
 def sa_settings():
     cfg = load_settings()
     if request.method == "POST":
-        cats = [c.strip() for c in request.form.getlist("categories") if c.strip()]
-        cfg["default_todo_categories"] = cats
-        save_settings(cfg)
-        flash("Standard-Kategorien gespeichert.", "success")
+        section = request.args.get("section", "todo")
+        if section == "teams":
+            teams = [t.strip() for t in request.form.getlist("team_names") if t.strip()]
+            cfg["default_team_names"] = teams
+            save_settings(cfg)
+            flash("Standard-Teams gespeichert.", "success")
+        else:
+            cats = [c.strip() for c in request.form.getlist("categories") if c.strip()]
+            cfg["default_todo_categories"] = cats
+            save_settings(cfg)
+            flash("Standard-Kategorien gespeichert.", "success")
         return redirect(url_for("sa_settings"))
-    cats = cfg.get("default_todo_categories", DEFAULT_TODO_CATEGORIES)
-    return render_template("sa_settings.html", categories=cats)
+    cats  = cfg.get("default_todo_categories", DEFAULT_TODO_CATEGORIES)
+    teams = cfg.get("default_team_names", ["Team Abrechnung", "Team Personal"])
+    return render_template("sa_settings.html", categories=cats, default_teams=teams)
 
 
 @app.route("/admin/signals/import", methods=["GET", "POST"])

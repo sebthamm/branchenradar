@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Functions — Branchenradar{% endblock %}
+{% block title %}Funktionen — Branchenradar{% endblock %}
 {% block head %}
 <style>
   .sa-subnav { background: var(--surface); border-bottom: 1px solid var(--border); }
@@ -33,16 +33,9 @@
 </style>
 {% endblock %}
 {% block content %}
-<div class="sa-subnav">
-  <div class="sa-subnav-inner">
-    <a href="{{ url_for('sa_dashboard') }}" class="sa-tab">Nutzerverwaltung</a>
-    <a href="{{ url_for('sa_functions') }}" class="sa-tab active">Functions</a>
-    <a href="{{ url_for('sa_logbook') }}"   class="sa-tab">Log-Buch</a>
-  </div>
-</div>
 <div class="main">
   <div class="page-head">
-    <div class="page-title">Functions</div>
+    <div class="page-title">Funktionen</div>
     <div class="timestamp">Stand: {{ now }}</div>
   </div>
 
@@ -162,6 +155,37 @@
       <div class="feature-card">
         <div class="feature-name">Teams <span class="role-tag tag-adm">Admin</span></div>
         <div class="feature-desc">Nutzer können Teams zugewiesen werden (Standard: Team Abrechnung, Team Personal). Teams erhalten zugewiesene Signal-Kategorien.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUELLEN -->
+  <div class="module">
+    <div class="module-title"><span class="module-icon">📰</span> Quellen-Verwaltung</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-name">Quellen anlegen &amp; bearbeiten <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Kürzel, Name, URL, Kategorie, Priorität, Status (Freitext) und Hinweise je Quelle erfassbar. Klick auf eine Zeile klappt das Bearbeitungsformular auf.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Prompt-Generierung <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Pro Quelle oder für alle aktiven Quellen auf Knopfdruck einen Recherche-Prompt generieren — inklusive allgemeiner KI-Hinweise und quellenspezifischer Hinweise. Copy-Button im Modal.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Batch-Import aus Excel <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Mehrere Quellen gleichzeitig importieren: Einfügen aus Excel oder Google Sheets (TSV), live Vorschau mit editierbaren Zellen, max. 20 Quellen pro Import.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Excel-Vorlage <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Download einer .xls-Vorlage mit korrekten Spaltenköpfen und einer Beispielzeile (Kürzel · Name · URL · Kategorie · Priorität · Status · Hinweise).</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Allgemeine KI-Hinweise <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Freitextbereich für übergreifende Anweisungen an die KI, die in jeden generierten Prompt eingebettet werden.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">Hinweise-Spalte in der Tabelle <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Quellenspezifische KI-Hinweise sind direkt in der Tabellenübersicht sichtbar (gekürzt auf 2 Zeilen, voller Text als Tooltip).</div>
       </div>
     </div>
   </div>

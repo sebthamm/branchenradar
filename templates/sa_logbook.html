@@ -37,17 +37,27 @@
 </style>
 {% endblock %}
 {% block content %}
-<div class="sa-subnav">
-  <div class="sa-subnav-inner">
-    <a href="{{ url_for('sa_dashboard') }}" class="sa-tab">Nutzerverwaltung</a>
-    <a href="{{ url_for('sa_functions') }}" class="sa-tab">Functions</a>
-    <a href="{{ url_for('sa_logbook') }}"   class="sa-tab active">Log-Buch</a>
-  </div>
-</div>
 <div class="main">
   <div class="page-title">Log-Buch</div>
 
   <div class="timeline">
+
+    <div class="entry">
+      <div class="entry-date">3. August 2026</div>
+      <div class="entry-title">Quellen-Verwaltung &amp; Navigation <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>Quellen-Modul: Kürzel, Name, URL, Kategorie, Priorität, Status (Freitext) und KI-Hinweise je Quelle</li>
+        <li>Klick auf eine Tabellenzeile klappt das Bearbeitungsformular direkt auf — kein separater Bearbeiten-Button mehr</li>
+        <li>Hinweise-Spalte in der Tabellenübersicht (Vorschau + Tooltip)</li>
+        <li>Prompt-Generierung: pro Quelle oder für alle aktiven Quellen, inkl. allgemeiner KI-Hinweise</li>
+        <li>Batch-Import aus Excel/Google Sheets (TSV-Paste, live Vorschau, editierbare Zellen)</li>
+        <li>Excel-Vorlage (.xls) mit Spaltenköpfen und Beispielzeile herunterladbar</li>
+        <li>Header-Navigation Superadmin: Produktbereich (Branchenradar · ToDos · Signale) optisch vom Admin-Bereich (Nutzerverwaltung · Quellen · Funktionen · Log-Buch · Einstellungen) getrennt</li>
+        <li>Funktionen und Log-Buch als eigenständige Menüpunkte im Header — nicht mehr als Sub-Tabs unter Nutzerverwaltung</li>
+        <li>Nutzerverwaltung zeigt Team-Zugehörigkeit der Nutzer in der aufgeklappten Entity-Ansicht</li>
+        <li>Standard-Teams in Superadmin-Einstellungen definierbar — werden beim Anlegen neuer Entities automatisch übernommen</li>
+      </ul>
+    </div>
 
     <div class="entry">
       <div class="entry-date">27. Juli 2026</div>
