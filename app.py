@@ -882,14 +882,72 @@ def _signal_from_form(form, existing_id=None):
 
 # ── Sources ───────────────────────────────────────────────────────────────────
 
-SOURCE_CATEGORIES = [
-    "Bundesministerium / Behörde",
-    "Kassenärztliche Vereinigung",
-    "Krankenkassen & GKV",
-    "Berufsverband",
-    "Gesetzgebung / Parlament",
-    "Fachpresse",
+SOURCE_PRIMARY_CATEGORIES = [
+    "Abrechnung & Honorar",
+    "Arzneimittel & Sicherheit",
+    "Berufsrecht & Standespolitik",
+    "DMP & Chronikerversorgung",
+    "Diagnostik & Leitlinien",
+    "Digitalisierung & TI",
+    "EU-Regulatorik",
+    "Evidenz & Nutzenbewertung",
+    "Fachliches & Leitlinien",
+    "Fachmedien & Trends",
+    "GKV, Erstattung & Verträge",
+    "Gesetzgebung & Politik",
+    "Hygiene & Arbeitsschutz",
+    "IT-Sicherheit & Datenschutz",
+    "Impfungen & Prävention",
+    "Infektionsschutz & Public Health",
+    "International & Trends",
+    "Markt & Produkte",
+    "Medizinprodukte",
+    "PKV, Gebühren & Erstattung",
+    "Praxisbetrieb & Selbstverwaltung",
+    "Praxismanagement",
+    "Public Health & Prävention",
+    "Qualität & Patientensicherheit",
+    "Regionalrecht & Vollzug",
+    "Regulatorik & Richtlinien",
+    "Röntgen & Strahlenschutz",
+    "Verordnung & Arzneimittel",
+    "Versorgungsforschung & Daten",
+    "Wissenschaft & Studien",
     "Sonstiges",
+]
+SOURCE_SECONDARY_CATEGORIES = [
+    "Abrechnung", "Arzneimittel", "Bekanntmachungen", "Berichte", "Berufsrecht",
+    "Berufe", "Chroniker", "Datenschutz", "Diagnostik", "Digitalisierung",
+    "DMP", "EU-Recht", "Fachpresse", "GKV", "Gesetz", "Gesetzgebungsverfahren",
+    "GOÄ", "GOZ", "HzV", "Hygiene", "Impfungen", "IT-Sicherheit",
+    "KV-Recht", "Leitlinien", "Markt", "Medizinprodukte", "Nutzenbewertung",
+    "PKV", "Prävention", "Praxismanagement", "Public Health", "Qualität",
+    "Röntgen", "Selbstverwaltung", "Sozialrecht", "Stellungnahmen",
+    "Strategien", "TI", "Tarifrecht", "Vergütung", "Verordnungen",
+    "Versorgung", "Wissenschaft", "Zulassung",
+]
+SOURCE_RELEVANT_ROLES = [
+    "Abrechnung", "IT", "MFA", "MFA/ZFA", "Praxisinhaber",
+    "Praxismanagement", "QM/Hygiene", "ZFA", "ZMV/Abrechnung",
+    "Zahnärztlicher Dienst", "Ärztlicher Dienst", "Ärztlicher/Zahnärztlicher Dienst",
+]
+SOURCE_ZUGANG_OPTIONS = [
+    "öffentlich",
+    "öffentlich/teilweise Login",
+    "öffentlich/teilweise Mitgliederportal",
+    "öffentlich/teilweise Paywall",
+    "öffentlich/teilweise Volltext",
+    "öffentlich/teilweise Lizenz",
+    "öffentlich/Interaktion Login",
+    "teilweise Paywall",
+    "kommerziell",
+    "Login/kommerziell",
+]
+SOURCE_UPDATE_OPTIONS = [
+    "laufend", "täglich", "täglich/wöchentlich", "wöchentlich",
+    "laufend/änderungsbezogen", "monatlich/änderungsbezogen", "monatlich",
+    "quartalsweise/laufend", "quartalsweise", "änderungsbezogen",
+    "ereignisbezogen", "jährlich",
 ]
 SOURCE_PRIORITIES = ["hoch", "mittel", "niedrig"]
 SOURCE_STATUSES   = ["geplant", "in_recherche", "aktiv", "inaktiv"]
@@ -910,15 +968,19 @@ def sources():
 
         if action == "new":
             src = {
-                "id":         str(uuid.uuid4()),
-                "kuerzel":    request.form.get("kuerzel", "").strip(),
-                "name":       request.form.get("name", "").strip(),
-                "url":        request.form.get("url", "").strip(),
-                "category":   request.form.get("category", "Sonstiges"),
-                "priority":   request.form.get("priority", "mittel"),
-                "status":     request.form.get("status", "").strip(),
-                "notes":      request.form.get("notes", "").strip(),
-                "created_at": datetime.now().strftime("%Y-%m-%d"),
+                "id":                   str(uuid.uuid4()),
+                "kuerzel":              request.form.get("kuerzel", "").strip(),
+                "name":                 request.form.get("name", "").strip(),
+                "url":                  request.form.get("url", "").strip(),
+                "primary_category":     request.form.get("primary_category", "Sonstiges"),
+                "secondary_categories": request.form.getlist("secondary_categories"),
+                "relevant_roles":       request.form.getlist("relevant_roles"),
+                "priority":             request.form.get("priority", "mittel"),
+                "status":               request.form.get("status", "").strip(),
+                "zugang":               request.form.get("zugang", "").strip(),
+                "expected_update":      request.form.get("expected_update", "").strip(),
+                "notes":                request.form.get("notes", "").strip(),
+                "created_at":           datetime.now().strftime("%Y-%m-%d"),
             }
             sources_list.append(src)
             save_sources(sources_list)
@@ -928,13 +990,17 @@ def sources():
             sid = request.form.get("source_id", "")
             for s in sources_list:
                 if s["id"] == sid:
-                    s["kuerzel"]  = request.form.get("kuerzel", "").strip()
-                    s["name"]     = request.form.get("name", "").strip()
-                    s["url"]      = request.form.get("url", "").strip()
-                    s["category"] = request.form.get("category", "Sonstiges")
-                    s["priority"] = request.form.get("priority", "mittel")
-                    s["status"]   = request.form.get("status", "").strip()
-                    s["notes"]    = request.form.get("notes", "").strip()
+                    s["kuerzel"]              = request.form.get("kuerzel", "").strip()
+                    s["name"]                 = request.form.get("name", "").strip()
+                    s["url"]                  = request.form.get("url", "").strip()
+                    s["primary_category"]     = request.form.get("primary_category", "Sonstiges")
+                    s["secondary_categories"] = request.form.getlist("secondary_categories")
+                    s["relevant_roles"]       = request.form.getlist("relevant_roles")
+                    s["priority"]             = request.form.get("priority", "mittel")
+                    s["status"]               = request.form.get("status", "").strip()
+                    s["zugang"]               = request.form.get("zugang", "").strip()
+                    s["expected_update"]      = request.form.get("expected_update", "").strip()
+                    s["notes"]                = request.form.get("notes", "").strip()
                     break
             save_sources(sources_list)
             flash("Quelle aktualisiert.", "success")
@@ -955,7 +1021,11 @@ def sources():
     hints = cfg.get("source_prompt_hints", "")
     return render_template("sources.html",
         sources=sources_list, hints=hints,
-        source_categories=SOURCE_CATEGORIES,
+        source_primary_categories=SOURCE_PRIMARY_CATEGORIES,
+        source_secondary_categories=SOURCE_SECONDARY_CATEGORIES,
+        source_relevant_roles=SOURCE_RELEVANT_ROLES,
+        source_zugang_options=SOURCE_ZUGANG_OPTIONS,
+        source_update_options=SOURCE_UPDATE_OPTIONS,
         source_priorities=SOURCE_PRIORITIES,
         source_statuses=SOURCE_STATUSES,
         source_status_labels=SOURCE_STATUS_LABELS)
@@ -973,13 +1043,17 @@ def sources_import():
         if not name:
             continue
         sources_list.append({
-            "id":         str(uuid.uuid4()),
-            "kuerzel":    (row.get("kuerzel") or "").strip(),
-            "name":       name,
-            "url":        (row.get("url") or "").strip(),
-            "category":   row.get("category") or "Sonstiges",
-            "priority":   row.get("priority") or "mittel",
-            "status":     (row.get("status") or "").strip(),
+            "id":                   str(uuid.uuid4()),
+            "kuerzel":              (row.get("kuerzel") or "").strip(),
+            "name":                 name,
+            "url":                  (row.get("url") or "").strip(),
+            "primary_category":     row.get("primary_category") or row.get("category") or "Sonstiges",
+            "secondary_categories": row.get("secondary_categories") if isinstance(row.get("secondary_categories"), list) else [],
+            "relevant_roles":       row.get("relevant_roles") if isinstance(row.get("relevant_roles"), list) else [],
+            "priority":             row.get("priority") or "mittel",
+            "status":               (row.get("status") or "").strip(),
+            "zugang":               (row.get("zugang") or "").strip(),
+            "expected_update":      (row.get("expected_update") or "").strip(),
             "notes":      (row.get("notes") or "").strip(),
             "created_at": datetime.now().strftime("%Y-%m-%d"),
         })

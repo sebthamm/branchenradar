@@ -13,3 +13,5 @@ data/users.json
 data/entities.json
 data/todos.json
 data/settings.json
+# sources.json initial commit done — exclude from future deploys
+# data/sources.json

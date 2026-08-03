@@ -2,7 +2,7 @@
 {% block title %}Quellen — Branchenradar{% endblock %}
 {% block head %}
 <style>
-  .main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 60px; }
+  .main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 60px; }
   .page-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
   .page-title { font-family: Georgia, serif; font-size: 24px; font-weight: normal; }
 
@@ -18,7 +18,7 @@
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 9px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tr.expand-row td { padding: 0; border-bottom: 1px solid var(--border); }
   tr.expand-row:last-child td { border-bottom: none; }
@@ -26,9 +26,11 @@
   .expand-panel.open { display: block; }
 
   /* Inline form */
-  .inline-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
-  .inline-form .full { grid-column: 1 / -1; }
-  .inline-form label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 5px; margin-top: 14px; }
+  .inline-form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 20px; }
+  .inline-form .full  { grid-column: 1 / -1; }
+  .inline-form .half  { grid-column: span 1; }
+  .inline-form .two   { grid-column: span 2; }
+  .inline-form label  { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 5px; margin-top: 14px; }
   .inline-form label:first-child { margin-top: 0; }
   .inline-form input[type="text"], .inline-form input[type="url"], .inline-form select, .inline-form textarea {
     width: 100%; padding: 8px 11px; background: var(--surface); border: 1px solid var(--border);
@@ -38,33 +40,37 @@
   .inline-form textarea { min-height: 80px; resize: vertical; line-height: 1.6; }
   .form-actions { display: flex; gap: 8px; margin-top: 16px; grid-column: 1 / -1; }
 
+  /* Multi-select checkboxes */
+  .multi-checks { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; max-height: 120px; overflow-y: auto; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .multi-check  { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text); cursor: pointer; padding: 3px 7px; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); white-space: nowrap; }
+  .multi-check input { accent-color: var(--navy); cursor: pointer; }
+  .multi-check:has(input:checked) { background: rgba(27,48,80,.08); border-color: var(--navy); color: var(--navy); }
+  @media (prefers-color-scheme: dark) { .multi-check:has(input:checked) { background: rgba(144,184,240,.12); border-color: #90b8f0; color: #90b8f0; } }
+
   /* New-source panel */
   .new-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; display: none; }
   .new-panel.open { display: block; }
-  .new-panel .inline-form label:first-child { margin-top: 0; }
 
   /* Badges */
   .badge { display: inline-flex; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
-  .p-hoch     { background: rgba(176,48,96,.12);  color: var(--s-action); }
-  .p-mittel   { background: rgba(196,120,14,.12); color: var(--s-announced); }
-  .p-niedrig  { background: var(--surface2); color: var(--muted); }
-  .s-aktiv       { background: rgba(37,122,88,.12); color: var(--s-active); }
-  .s-in_recherche{ background: rgba(107,68,168,.12); color: var(--s-develop); }
-  .s-geplant     { background: rgba(46,123,170,.12); color: var(--s-radar); }
-  .s-inaktiv     { background: var(--surface2); color: var(--faint); }
+  .p-hoch    { background: rgba(176,48,96,.12);  color: var(--s-action); }
+  .p-mittel  { background: rgba(196,120,14,.12); color: var(--s-announced); }
+  .p-niedrig { background: var(--surface2); color: var(--muted); }
   @media (prefers-color-scheme: dark) {
-    .p-hoch  { background: rgba(176,48,96,.25); }
-    .p-mittel{ background: rgba(196,120,14,.25); }
-    .s-aktiv { background: rgba(37,122,88,.25); }
-    .s-in_recherche { background: rgba(107,68,168,.25); }
-    .s-geplant { background: rgba(46,123,170,.25); }
+    .p-hoch   { background: rgba(176,48,96,.25); }
+    .p-mittel { background: rgba(196,120,14,.25); }
   }
+
+  /* Tags (secondary cats / roles) */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 3px; }
+  .tag { display: inline-flex; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; background: var(--surface2); color: var(--muted); white-space: nowrap; }
 
   .actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .muted { color: var(--muted); }
   .url-link { color: var(--s-radar); text-decoration: none; font-size: 12px; }
   .url-link:hover { text-decoration: underline; }
   .empty-row td { text-align: center; color: var(--faint); padding: 32px; }
+  .cell-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12px; line-height: 1.4; color: var(--muted); }
 
   /* Prompt modal */
   .prompt-modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index:600; align-items: center; justify-content: center; }
@@ -77,7 +83,8 @@
   .prompt-modal-actions { display: flex; gap: 8px; margin-top: 14px; }
   .copy-feedback { font-size: 12px; color: var(--s-active); display: none; }
 
-  @media (max-width: 700px) { .main { padding: 16px; } .inline-form { grid-template-columns: 1fr; } .inline-form .full { grid-column: 1; } }
+  @media (max-width: 900px) { .main { padding: 16px; } .inline-form { grid-template-columns: 1fr 1fr; } .inline-form .two { grid-column: span 2; } }
+  @media (max-width: 600px) { .inline-form { grid-template-columns: 1fr; } .inline-form .full,.inline-form .two { grid-column: 1; } }
 </style>
 {% endblock %}
 
@@ -87,7 +94,6 @@
     <div class="page-title">Quellen</div>
     <div class="actions">
       <button class="btn btn-secondary btn-sm" onclick="generateAllPrompt()">Prompt für alle Quellen</button>
-      <button class="btn btn-secondary btn-sm" onclick="openImportModal()">+ Mehrere Quellen</button>
       <button class="btn btn-primary btn-sm" onclick="toggleNewPanel()">+ Neue Quelle</button>
     </div>
   </div>
@@ -97,7 +103,7 @@
     <div class="hints-label">Allgemeine Hinweise für die KI</div>
     <form method="post" action="{{ url_for('sources') }}">
       <input type="hidden" name="action" value="hints">
-      <textarea name="source_prompt_hints" placeholder="z.B. Neue Inhalte bitte als Signal im Format: Titel | Status | Kategorie | Zusammenfassung | Quelle | URL ablegen. Nur Inhalte der letzten 30 Tage berücksichtigen.">{{ hints }}</textarea>
+      <textarea name="source_prompt_hints" placeholder="z.B. Neue Inhalte als Signal im Format: Titel | Status | Kategorie | Zusammenfassung | Quelle | URL. Nur Inhalte der letzten 30 Tage.">{{ hints }}</textarea>
       <div class="hints-actions">
         <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
         <span class="hints-desc">Diese Hinweise werden in jeden generierten Prompt eingebettet.</span>
@@ -107,31 +113,31 @@
 
   {# ── Neue Quelle ── #}
   <div class="new-panel" id="new-panel">
-    <div style="font-size:13px;font-weight:600;margin-bottom:16px;color:var(--text)">Neue Quelle anlegen</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:16px">Neue Quelle anlegen</div>
     <form method="post" action="{{ url_for('sources') }}">
       <input type="hidden" name="action" value="new">
       <div class="inline-form">
-        <div>
+        <div class="half">
           <label>Kürzel</label>
           <input type="text" name="kuerzel" placeholder="z.B. BMG">
         </div>
-        <div>
+        <div class="two">
           <label>Name *</label>
           <input type="text" name="name" required placeholder="z.B. Bundesministerium für Gesundheit">
         </div>
-        <div>
+        <div class="full">
           <label>URL</label>
           <input type="text" name="url" placeholder="https://...">
         </div>
-        <div>
-          <label>Kategorie</label>
-          <select name="category">
-            {% for cat in source_categories %}
+        <div class="half">
+          <label>Primärkategorie</label>
+          <select name="primary_category">
+            {% for cat in source_primary_categories %}
             <option value="{{ cat }}">{{ cat }}</option>
             {% endfor %}
           </select>
         </div>
-        <div>
+        <div class="half">
           <label>Priorität</label>
           <select name="priority">
             {% for p in source_priorities %}
@@ -139,13 +145,47 @@
             {% endfor %}
           </select>
         </div>
-        <div>
+        <div class="half">
           <label>Status</label>
-          <input type="text" name="status" placeholder="z.B. aktiv, geplant, in Recherche …">
+          <input type="text" name="status" placeholder="z.B. aktiv, geplant …">
+        </div>
+        <div class="half">
+          <label>Zugang</label>
+          <select name="zugang">
+            <option value="">— bitte wählen —</option>
+            {% for z in source_zugang_options %}
+            <option value="{{ z }}">{{ z }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="full">
+          <label>Erwartete Aktualisierung</label>
+          <select name="expected_update">
+            <option value="">— bitte wählen —</option>
+            {% for u in source_update_options %}
+            <option value="{{ u }}">{{ u }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="full">
+          <label>Sekundärkategorien</label>
+          <div class="multi-checks">
+            {% for cat in source_secondary_categories %}
+            <label class="multi-check"><input type="checkbox" name="secondary_categories" value="{{ cat }}"> {{ cat }}</label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="full">
+          <label>Relevante Rollen</label>
+          <div class="multi-checks">
+            {% for role in source_relevant_roles %}
+            <label class="multi-check"><input type="checkbox" name="relevant_roles" value="{{ role }}"> {{ role }}</label>
+            {% endfor %}
+          </div>
         </div>
         <div class="full">
           <label>Hinweise für die KI</label>
-          <textarea name="notes" placeholder="Was soll die KI bei dieser Quelle besonders beachten? Welche Themen sind relevant?"></textarea>
+          <textarea name="notes" placeholder="Keywords, spezifische Hinweise zum Crawling …"></textarea>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary btn-sm">Anlegen</button>
@@ -162,9 +202,11 @@
         <tr>
           <th>Kürzel</th>
           <th>Name</th>
-          <th>Kategorie</th>
+          <th>Primärkategorie</th>
           <th>Priorität</th>
           <th>Status</th>
+          <th>Rollen</th>
+          <th>Zugang</th>
           <th>Hinweise</th>
           <th>URL</th>
           <th></th>
@@ -175,23 +217,26 @@
         {% set uid = src.id | replace('-','_') %}
         <tr onclick="toggleEdit('{{ uid }}')" style="cursor:pointer" title="Klicken zum Auf-/Zuklappen">
           <td style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap">{{ src.kuerzel or '—' }}</td>
-          <td style="font-weight:500">{{ src.name }}</td>
-          <td class="muted" style="font-size:12px">{{ src.category }}</td>
+          <td style="font-weight:500;min-width:160px">{{ src.name }}</td>
+          <td style="font-size:12px;color:var(--muted);white-space:nowrap">{{ src.primary_category or src.get('category','') or '—' }}</td>
           <td><span class="badge p-{{ src.priority }}">{{ src.priority }}</span></td>
           <td><span class="muted" style="font-size:12px">{{ src.status or '—' }}</span></td>
-          <td style="max-width:260px">
+          <td style="max-width:140px">
+            {% set roles = src.relevant_roles if src.relevant_roles is defined else [] %}
+            {% if roles %}
+              <div class="tag-list">{% for r in roles[:3] %}<span class="tag">{{ r }}</span>{% endfor %}{% if roles|length > 3 %}<span class="tag">+{{ roles|length - 3 }}</span>{% endif %}</div>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td style="font-size:12px;color:var(--muted)">{{ src.zugang or '—' }}</td>
+          <td style="max-width:200px">
             {% if src.notes %}
-              <span class="muted" style="font-size:12px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="{{ src.notes }}">{{ src.notes }}</span>
-            {% else %}
-              <span class="muted">—</span>
-            {% endif %}
+              <span class="cell-clamp" title="{{ src.notes }}">{{ src.notes }}</span>
+            {% else %}<span class="muted">—</span>{% endif %}
           </td>
           <td>
             {% if src.url %}
               <a href="{{ src.url }}" target="_blank" class="url-link" title="{{ src.url }}" onclick="event.stopPropagation()">↗ Link</a>
-            {% else %}
-              <span class="muted">—</span>
-            {% endif %}
+            {% else %}<span class="muted">—</span>{% endif %}
           </td>
           <td onclick="event.stopPropagation()">
             <div class="actions">
@@ -207,33 +252,34 @@
 
         {# Expand: Edit #}
         <tr class="expand-row">
-          <td colspan="8">
-            <div class="expand-panel" id="panel-edit-{{ uid }}" style="">
+          <td colspan="10">
+            <div class="expand-panel" id="panel-edit-{{ uid }}">
               <form method="post" action="{{ url_for('sources') }}">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="source_id" value="{{ src.id }}">
                 <div class="inline-form">
-                  <div>
+                  <div class="half">
                     <label>Kürzel</label>
                     <input type="text" name="kuerzel" value="{{ src.kuerzel or '' }}">
                   </div>
-                  <div>
+                  <div class="two">
                     <label>Name *</label>
                     <input type="text" name="name" value="{{ src.name }}" required>
                   </div>
-                  <div>
+                  <div class="full">
                     <label>URL</label>
-                    <input type="text" name="url" value="{{ src.url }}">
+                    <input type="text" name="url" value="{{ src.url or '' }}">
                   </div>
-                  <div>
-                    <label>Kategorie</label>
-                    <select name="category">
-                      {% for cat in source_categories %}
-                      <option value="{{ cat }}" {{ 'selected' if cat == src.category else '' }}>{{ cat }}</option>
+                  <div class="half">
+                    <label>Primärkategorie</label>
+                    <select name="primary_category">
+                      {% set cur_pcat = src.primary_category if src.primary_category is defined else src.get('category','') %}
+                      {% for cat in source_primary_categories %}
+                      <option value="{{ cat }}" {{ 'selected' if cat == cur_pcat else '' }}>{{ cat }}</option>
                       {% endfor %}
                     </select>
                   </div>
-                  <div>
+                  <div class="half">
                     <label>Priorität</label>
                     <select name="priority">
                       {% for p in source_priorities %}
@@ -241,13 +287,49 @@
                       {% endfor %}
                     </select>
                   </div>
-                  <div>
+                  <div class="half">
                     <label>Status</label>
-                    <input type="text" name="status" value="{{ src.status }}">
+                    <input type="text" name="status" value="{{ src.status or '' }}">
+                  </div>
+                  <div class="half">
+                    <label>Zugang</label>
+                    <select name="zugang">
+                      <option value="">— bitte wählen —</option>
+                      {% for z in source_zugang_options %}
+                      <option value="{{ z }}" {{ 'selected' if z == src.get('zugang','') else '' }}>{{ z }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="full">
+                    <label>Erwartete Aktualisierung</label>
+                    <select name="expected_update">
+                      <option value="">— bitte wählen —</option>
+                      {% for u in source_update_options %}
+                      <option value="{{ u }}" {{ 'selected' if u == src.get('expected_update','') else '' }}>{{ u }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="full">
+                    <label>Sekundärkategorien</label>
+                    {% set cur_sec = src.secondary_categories if src.secondary_categories is defined else [] %}
+                    <div class="multi-checks">
+                      {% for cat in source_secondary_categories %}
+                      <label class="multi-check"><input type="checkbox" name="secondary_categories" value="{{ cat }}" {{ 'checked' if cat in cur_sec else '' }}> {{ cat }}</label>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  <div class="full">
+                    <label>Relevante Rollen</label>
+                    {% set cur_roles = src.relevant_roles if src.relevant_roles is defined else [] %}
+                    <div class="multi-checks">
+                      {% for role in source_relevant_roles %}
+                      <label class="multi-check"><input type="checkbox" name="relevant_roles" value="{{ role }}" {{ 'checked' if role in cur_roles else '' }}> {{ role }}</label>
+                      {% endfor %}
+                    </div>
                   </div>
                   <div class="full">
                     <label>Hinweise für die KI</label>
-                    <textarea name="notes">{{ src.notes }}</textarea>
+                    <textarea name="notes">{{ src.notes or '' }}</textarea>
                   </div>
                   <div class="form-actions">
                     <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
@@ -259,61 +341,10 @@
           </td>
         </tr>
         {% else %}
-        <tr class="empty-row"><td colspan="8">Noch keine Quellen angelegt. <button class="btn btn-secondary btn-sm" onclick="toggleNewPanel()" style="margin-left:8px">Erste Quelle anlegen</button></td></tr>
+        <tr class="empty-row"><td colspan="10">Noch keine Quellen angelegt. <button class="btn btn-secondary btn-sm" onclick="toggleNewPanel()" style="margin-left:8px">Erste Quelle anlegen</button></td></tr>
         {% endfor %}
       </tbody>
     </table>
-  </div>
-</div>
-
-{# ── Import Modal ── #}
-<div class="prompt-modal-backdrop" id="import-modal" onclick="closeImportModal(event)">
-  <div class="prompt-modal" role="dialog" aria-modal="true" style="max-width:820px">
-    <button class="prompt-modal-close" onclick="closeImportModal()" aria-label="Schließen">×</button>
-    <div class="prompt-modal-title">Mehrere Quellen importieren</div>
-
-    <div id="import-step-paste">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
-        Kopiere Zeilen direkt aus Excel oder Google Sheets und füge sie hier ein.
-        Spaltenreihenfolge: <strong>Kürzel · Name · URL · Kategorie · Priorität · Status · Hinweise</strong>
-        <span style="color:var(--faint)"> — nur Name ist Pflicht, max. 20 Zeilen.</span>
-      </p>
-      <textarea id="import-paste-area" placeholder="Hier aus Excel / Google Sheets einfügen (Strg+V) …"
-        style="width:100%;min-height:120px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);font-family:inherit;line-height:1.6;resize:vertical;outline:none"
-        oninput="parseImportPaste()"></textarea>
-      <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
-        <button class="btn btn-secondary btn-sm" onclick="downloadImportTemplate()">Vorlage herunterladen</button>
-        <span style="font-size:12px;color:var(--faint)">Trennzeichen: Tab (Excel/Sheets Standard)</span>
-      </div>
-    </div>
-
-    <div id="import-preview" style="display:none;margin-top:16px;flex:1;overflow:hidden;display:none;flex-direction:column">
-      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:8px">
-        Vorschau — <span id="import-count">0</span> Quellen erkannt
-      </div>
-      <div style="overflow-x:auto;flex:1">
-        <table id="import-table" style="width:100%;border-collapse:collapse;font-size:12px">
-          <thead>
-            <tr style="background:var(--surface2)">
-              <th style="padding:7px 10px;text-align:left;border:1px solid var(--border);white-space:nowrap">Kürzel</th>
-              <th style="padding:7px 10px;text-align:left;border:1px solid var(--border);white-space:nowrap">Name *</th>
-              <th style="padding:7px 10px;text-align:left;border:1px solid var(--border)">URL</th>
-              <th style="padding:7px 10px;text-align:left;border:1px solid var(--border)">Kategorie</th>
-              <th style="padding:7px 10px;text-align:left;border:1px solid var(--border)">Priorität</th>
-              <th style="padding:7px 10px;text-align:left;border:1px solid var(--border)">Status</th>
-              <th style="padding:7px 10px;text-align:left;border:1px solid var(--border)">Hinweise</th>
-            </tr>
-          </thead>
-          <tbody id="import-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="prompt-modal-actions" style="margin-top:14px">
-      <button class="btn btn-primary btn-sm" id="import-confirm-btn" onclick="confirmImport()" disabled>Importieren</button>
-      <span class="copy-feedback" id="import-feedback" style="display:none"></span>
-      <button class="btn btn-secondary btn-sm" onclick="closeImportModal()">Abbrechen</button>
-    </div>
   </div>
 </div>
 
@@ -336,53 +367,47 @@ const SOURCES = {{ sources | tojson }};
 const HINTS   = {{ hints | tojson }};
 
 function toggleNewPanel() {
-  const p = document.getElementById('new-panel');
-  p.classList.toggle('open');
+  document.getElementById('new-panel').classList.toggle('open');
 }
 
 function toggleEdit(uid) {
   const panel = document.getElementById('panel-edit-' + uid);
-  const btn   = document.getElementById('btn-edit-' + uid);
-  const isOpen = panel.classList.contains('open');
-  panel.classList.toggle('open', !isOpen);
-  if (btn) btn.classList.toggle('active', !isOpen);
+  panel.classList.toggle('open');
 }
 
 function buildPrompt(srcs, title) {
-  let lines = [];
-  lines.push('# ' + title);
+  const lines = ['# ' + title, ''];
+  lines.push('Bitte prüfe die folgenden Quellen auf neue regulatorische Informationen für Zahnarztpraxen, Allgemeinmediziner und andere Gesundheitseinrichtungen in Deutschland.');
   lines.push('');
-  lines.push('Bitte prüfe die folgenden Quellen auf neue regulatorische Informationen, die für Zahnarztpraxen, Allgemeinmediziner und andere Gesundheitseinrichtungen in Deutschland relevant sind.');
-  lines.push('');
-
   srcs.forEach((s, i) => {
-    lines.push('## Quelle ' + (i + 1) + ': ' + s.name);
-    if (s.url)   lines.push('URL: ' + s.url);
-    if (s.notes) lines.push('Hinweise: ' + s.notes);
+    lines.push('## Quelle ' + (i + 1) + ': ' + (s.kuerzel ? '[' + s.kuerzel + '] ' : '') + s.name);
+    if (s.url)             lines.push('URL: ' + s.url);
+    if (s.primary_category) lines.push('Kategorie: ' + s.primary_category);
+    if (s.zugang)          lines.push('Zugang: ' + s.zugang);
+    if (s.expected_update) lines.push('Aktualisierung: ' + s.expected_update);
+    if (s.relevant_roles && s.relevant_roles.length) lines.push('Relevante Rollen: ' + s.relevant_roles.join(', '));
+    if (s.notes)           lines.push('Hinweise: ' + s.notes);
     lines.push('');
   });
-
   if (HINTS && HINTS.trim()) {
     lines.push('---');
     lines.push('## Allgemeine Hinweise');
     lines.push(HINTS.trim());
   }
-
   return lines.join('\n');
 }
 
 function generateSinglePrompt(sourceId) {
   const src = SOURCES.find(s => s.id === sourceId);
   if (!src) return;
-  const text = buildPrompt([src], 'Recherche-Prompt: ' + src.name);
-  openPromptModal('Prompt — ' + src.name, text);
+  openPromptModal('Prompt — ' + src.name, buildPrompt([src], 'Recherche-Prompt: ' + src.name));
 }
 
 function generateAllPrompt() {
   if (!SOURCES.length) { alert('Noch keine Quellen vorhanden.'); return; }
   const active = SOURCES.filter(s => s.status !== 'inaktiv');
-  const text = buildPrompt(active.length ? active : SOURCES, 'Recherche-Prompt: Alle Quellen');
-  openPromptModal('Prompt — Alle Quellen (' + (active.length || SOURCES.length) + ')', text);
+  const list = active.length ? active : SOURCES;
+  openPromptModal('Prompt — Alle Quellen (' + list.length + ')', buildPrompt(list, 'Recherche-Prompt: Alle Quellen'));
 }
 
 function openPromptModal(title, text) {
@@ -400,165 +425,13 @@ function closePromptModal(e) {
 }
 
 function copyPrompt() {
-  const text = document.getElementById('prompt-output').textContent;
-  navigator.clipboard.writeText(text).then(() => {
+  navigator.clipboard.writeText(document.getElementById('prompt-output').textContent).then(() => {
     const fb = document.getElementById('copy-feedback');
     fb.style.display = 'inline';
     setTimeout(() => { fb.style.display = 'none'; }, 2000);
   });
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePromptModal(); closeImportModal(); } });
-
-// ── Import Modal ──────────────────────────────────────────────────────────────
-
-const PRIORITY_MAP = { 'hoch': 'hoch', 'high': 'hoch', 'mittel': 'mittel', 'medium': 'mittel', 'niedrig': 'niedrig', 'low': 'niedrig' };
-const STATUS_MAP   = { 'geplant': 'geplant', 'planned': 'geplant', 'in_recherche': 'in_recherche', 'in recherche': 'in_recherche', 'recherche': 'in_recherche', 'aktiv': 'aktiv', 'active': 'aktiv', 'inaktiv': 'inaktiv', 'inactive': 'inaktiv' };
-
-let importRows = [];
-
-function openImportModal() {
-  document.getElementById('import-modal').classList.add('open');
-  document.getElementById('import-paste-area').value = '';
-  document.getElementById('import-preview').style.display = 'none';
-  document.getElementById('import-confirm-btn').disabled = true;
-  document.getElementById('import-feedback').style.display = 'none';
-  document.body.style.overflow = 'hidden';
-  setTimeout(() => document.getElementById('import-paste-area').focus(), 100);
-}
-
-function closeImportModal(e) {
-  if (e && e.target !== document.getElementById('import-modal')) return;
-  document.getElementById('import-modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function parseImportPaste() {
-  const raw = document.getElementById('import-paste-area').value.trim();
-  if (!raw) {
-    document.getElementById('import-preview').style.display = 'none';
-    document.getElementById('import-confirm-btn').disabled = true;
-    importRows = [];
-    return;
-  }
-
-  const lines = raw.split('\n').map(l => l.trimEnd()).filter(l => l);
-  const rows = [];
-
-  for (const line of lines.slice(0, 20)) {
-    const cols = line.split('\t');
-    const kuerzel = (cols[0] || '').trim();
-    const name = (cols[1] || '').trim();
-    if (!name) continue;
-    rows.push({
-      kuerzel:  kuerzel,
-      name:     name,
-      url:      (cols[2] || '').trim(),
-      category: (cols[3] || '').trim() || 'Sonstiges',
-      priority: PRIORITY_MAP[(cols[4] || '').trim().toLowerCase()] || 'mittel',
-      status:   (cols[5] || '').trim(),
-      notes:    (cols[6] || '').trim(),
-    });
-  }
-
-  importRows = rows;
-  renderImportPreview();
-}
-
-function renderImportPreview() {
-  const tbody = document.getElementById('import-tbody');
-  tbody.innerHTML = '';
-
-  importRows.forEach((r, i) => {
-    const tr = document.createElement('tr');
-    tr.style.background = i % 2 === 0 ? 'var(--surface)' : 'var(--surface2)';
-    const cell = (val, field) => {
-      const td = document.createElement('td');
-      td.style.cssText = 'padding:6px 10px;border:1px solid var(--border);max-width:200px';
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.value = val;
-      input.style.cssText = 'width:100%;background:transparent;border:none;outline:none;font-size:12px;color:var(--text);font-family:inherit';
-      input.oninput = e => { importRows[i][field] = e.target.value; };
-      td.appendChild(input);
-      return td;
-    };
-    tr.appendChild(cell(r.kuerzel,  'kuerzel'));
-    tr.appendChild(cell(r.name,     'name'));
-    tr.appendChild(cell(r.url,      'url'));
-    tr.appendChild(cell(r.category, 'category'));
-    tr.appendChild(cell(r.priority, 'priority'));
-    tr.appendChild(cell(r.status,   'status'));
-    tr.appendChild(cell(r.notes,    'notes'));
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById('import-count').textContent = importRows.length;
-  document.getElementById('import-preview').style.display = importRows.length ? 'flex' : 'none';
-  document.getElementById('import-confirm-btn').disabled = importRows.length === 0;
-}
-
-async function confirmImport() {
-  const btn = document.getElementById('import-confirm-btn');
-  const fb  = document.getElementById('import-feedback');
-  const valid = importRows.filter(r => r.name.trim());
-  if (!valid.length) return;
-
-  btn.disabled = true;
-  btn.textContent = 'Wird importiert…';
-
-  try {
-    const res = await fetch('{{ url_for("sources_import") }}', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(valid),
-    });
-    const data = await res.json();
-    if (data.ok) {
-      fb.textContent = data.added + ' Quellen importiert ✓';
-      fb.style.display = 'inline';
-      fb.style.color = 'var(--s-active)';
-      setTimeout(() => { window.location.reload(); }, 900);
-    } else {
-      fb.textContent = 'Fehler: ' + data.msg;
-      fb.style.display = 'inline';
-      fb.style.color = 'var(--s-action)';
-      btn.disabled = false;
-      btn.textContent = 'Importieren';
-    }
-  } catch(e) {
-    fb.textContent = 'Netzwerkfehler.';
-    fb.style.display = 'inline';
-    btn.disabled = false;
-    btn.textContent = 'Importieren';
-  }
-}
-
-function downloadImportTemplate() {
-  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
-    xmlns:x="urn:schemas-microsoft-com:office:excel">
-  <head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>
-  <x:ExcelWorksheet><x:Name>Quellen</x:Name>
-  <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-  </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
-  <meta charset="UTF-8"></head>
-  <body><table>
-    <tr><th>Kürzel</th><th>Name</th><th>URL</th><th>Kategorie</th><th>Priorität</th><th>Status</th><th>Hinweise</th></tr>
-    <tr>
-      <td>BMG</td>
-      <td>Bundesministerium für Gesundheit</td>
-      <td>https://bundesgesundheitsministerium.de</td>
-      <td>Bundesministerium / Behörde</td>
-      <td>hoch</td>
-      <td>aktiv</td>
-      <td>Auf neue Gesetze und Verordnungen achten</td>
-    </tr>
-  </table></body></html>`;
-  const blob = new Blob(['﻿' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'quellen-vorlage.xls';
-  a.click();
-}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePromptModal(); });
 </script>
 {% endblock %}
