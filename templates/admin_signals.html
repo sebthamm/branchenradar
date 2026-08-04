@@ -132,14 +132,54 @@
             <label>Zusammenfassung</label>
             <p {% if not s.summary %}class="empty"{% endif %}>{{ s.summary or 'Keine Zusammenfassung' }}</p>
           </div>
-          {% if s.detail %}
+          {% if s.get('naechster_schritt') %}
+          <div class="dp-field dp-full">
+            <label>Nächster Schritt</label>
+            <p>{{ s.naechster_schritt }}</p>
+          </div>
+          {% endif %}
+          {% if s.get('detail') %}
           <div class="dp-field dp-full">
             <label>Detailtext</label>
             <p>{{ s.detail }}</p>
           </div>
           {% endif %}
           <div class="dp-field">
-            <label>Quelle</label>
+            <label>Priorität</label>
+            <p>{{ priority_labels.get(s.get('priority',''), s.get('priority','—')) }}</p>
+          </div>
+          <div class="dp-field">
+            <label>Entwicklungsstand</label>
+            <p>{{ entwicklungsstand_labels.get(s.get('entwicklungsstand',''), '—') }}</p>
+          </div>
+          <div class="dp-field">
+            <label>Handlungszeitpunkt</label>
+            <p>{{ handlungszeitpunkt_labels.get(s.get('handlungszeitpunkt',''), '—') }}</p>
+          </div>
+          <div class="dp-field">
+            <label>Aufwand</label>
+            <p>{{ aufwand_labels.get(s.get('aufwand',''), '—') }}</p>
+          </div>
+          <div class="dp-field">
+            <label>Handlungsfrist</label>
+            <p>{{ s.deadline or '—' }}</p>
+          </div>
+          <div class="dp-field">
+            <label>Betroffene Rollen</label>
+            <p>{{ s.get('betroffene_rollen', []) | join(', ') or '—' }}</p>
+          </div>
+          <div class="dp-field">
+            <label>Themen-ID</label>
+            <p>{{ s.get('themen_id') or '—' }}</p>
+          </div>
+          {% if s.get('quellen_belege') %}
+          <div class="dp-field dp-full">
+            <label>Quellenbelege</label>
+            <p>{{ s.quellen_belege }}</p>
+          </div>
+          {% endif %}
+          <div class="dp-field">
+            <label>Hauptquelle</label>
             <p>{% if s.source_url %}<a href="{{ s.source_url }}" target="_blank" rel="noopener" style="color:var(--navy)" onclick="event.stopPropagation()">{{ s.source or s.source_url }}</a>{% else %}{{ s.source or '—' }}{% endif %}</p>
           </div>
           <div class="dp-field">
@@ -150,7 +190,7 @@
             <a href="{{ url_for('signal_edit', sig_id=s.id) }}" class="btn btn-secondary btn-sm" onclick="event.stopPropagation()">Bearbeiten</a>
             <button class="btn btn-secondary btn-sm"
                     onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href)">
-              + ToDo ableiten
+              + Als Aufgabe übernehmen
             </button>
             <form method="post" action="{{ url_for('signal_delete', sig_id=s.id) }}"
                   onsubmit="return confirm('Signal wirklich löschen?')" onclick="event.stopPropagation()">

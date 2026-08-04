@@ -89,21 +89,67 @@
     .b-action   { background:rgba(176,48,96,.2);  color:#F090B4; }
   }
 
-  .card-title { font-family: Georgia, "Times New Roman", serif; font-size: 15px; font-weight: normal; line-height: 1.4; color: var(--text); text-wrap: balance; margin-bottom: 5px; }
-  .card-summary { font-size: 13px; color: var(--muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* Priority legend */
+  .prio-legend { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+  .prio-dot { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .prio-dot::before { content:''; display:inline-block; width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .prio-dot.muss::before   { background: var(--s-action); }
+  .prio-dot.sollte::before { background: var(--s-announced); }
+  .prio-dot.kann::before   { background: var(--s-active); }
+  .info-btn { background: none; border: none; cursor: pointer; color: var(--faint); font-size: 14px; padding: 0 4px; line-height: 1; vertical-align: middle; transition: color .15s; }
+  .info-btn:hover { color: var(--text); }
+  .info-popup { display: none; position: fixed; inset: 0; z-index: 700; align-items: center; justify-content: center; background: rgba(0,0,0,.45); }
+  .info-popup.open { display: flex; }
+  .info-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 32px rgba(0,0,0,.2); max-width: 440px; width: calc(100% - 32px); padding: 24px 28px; position: relative; }
+  .info-box-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .info-box-text { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .info-box-close { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 18px; color: var(--faint); cursor: pointer; }
+  .info-box-close:hover { color: var(--text); }
+
+  /* Action cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); display: flex; overflow: hidden; cursor: pointer; transition: box-shadow .15s, transform .1s; }
+  .card:hover { box-shadow: 0 2px 8px rgba(27,48,80,.1), 0 8px 24px rgba(27,48,80,.08); transform: translateY(-1px); }
+  .card-stripe { width: 5px; flex-shrink: 0; border-radius: 10px 0 0 10px; }
+  .card-stripe.muss   { background: var(--s-action); }
+  .card-stripe.sollte { background: var(--s-announced); }
+  .card-stripe.kann   { background: var(--s-active); }
+  .card-body { flex: 1; padding: 16px 18px; min-width: 0; }
+
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .card-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-top: 2px; }
+  .prio-badge { display: inline-flex; padding: 3px 9px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+  .prio-badge.muss   { background: rgba(176,48,96,.12);  color: var(--s-action); }
+  .prio-badge.sollte { background: rgba(196,120,14,.12); color: var(--s-announced); }
+  .prio-badge.kann   { background: rgba(37,122,88,.12);  color: var(--s-active); }
+  @media (prefers-color-scheme: dark) {
+    .prio-badge.muss   { background: rgba(176,48,96,.28); }
+    .prio-badge.sollte { background: rgba(196,120,14,.28); }
+    .prio-badge.kann   { background: rgba(37,122,88,.28); }
+  }
+
+  .card-title { font-family: Georgia, "Times New Roman", serif; font-size: 16px; font-weight: normal; line-height: 1.4; color: var(--text); text-wrap: balance; margin-bottom: 8px; }
+  .card-summary { font-size: 13px; color: var(--muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
   .card.open .card-summary { -webkit-line-clamp: unset; overflow: visible; display: block; }
-  .card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 11px; padding-top: 9px; border-top: 1px solid var(--border); }
+
+  .card-meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--faint); margin-bottom: 10px; }
+  .card-meta-row .sep { opacity: .35; }
+  .card-deadline { color: var(--s-action); font-weight: 600; }
+
+  .card-action-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--navy); text-decoration: none; }
+  @media (prefers-color-scheme: dark) { .card-action-link { color: #90b8f0; } }
+
+  .card-detail { display: none; font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); white-space: pre-wrap; }
+  .card.open .card-detail { display: block; }
+
+  .card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
   .card-source { font-size: 11px; color: var(--faint); }
-  .card-meta { display: flex; align-items: center; gap: 8px; }
+  .card-foot-right { display: flex; align-items: center; gap: 8px; }
   .card-date { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
   .chevron { font-size: 9px; color: var(--faint); transition: transform .2s; }
   .card.open .chevron { transform: rotate(180deg); }
-  .card-detail { display: none; font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); white-space: pre-wrap; }
-  .card.open .card-detail { display: block; }
   .detail-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 10px; font-size: 12px; color: var(--navy); text-decoration: none; font-weight: 500; }
 
-  .deadline { display: inline-flex; align-items: center; gap: 4px; background: #FCEAEF; color: #8A1A40; border-radius: 3px; padding: 1px 7px; font-size: 10px; font-weight: 600; }
-  @media (prefers-color-scheme: dark) { .deadline { background:rgba(176,48,96,.2); color:#F090B4; } }
+  .entwicklungsstand-tag { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 3px; font-size: 10px; font-weight: 600; background: var(--surface2); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
 
   .empty { text-align: center; padding: 48px 24px; color: var(--faint); font-size: 14px; }
   .update-time { font-size: 11px; color: rgba(255,255,255,.45); }
@@ -149,29 +195,32 @@
   <div class="summary-inner">
     <div class="stat-cell">
       <div class="stat-dot" style="background:var(--s-action)"></div>
-      <div><div class="stat-num">{{ counts.action }}</div><div class="stat-lbl">Handlungsbedarf</div></div>
+      <div><div class="stat-num">{{ prio_counts.muss }}</div><div class="stat-lbl">Muss</div></div>
     </div>
     <div class="stat-cell">
       <div class="stat-dot" style="background:var(--s-announced)"></div>
-      <div><div class="stat-num">{{ counts.announced }}</div><div class="stat-lbl">Angekündigt</div></div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-dot" style="background:var(--s-develop)"></div>
-      <div><div class="stat-num">{{ counts.develop }}</div><div class="stat-lbl">In Entwicklung</div></div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-dot" style="background:var(--s-radar)"></div>
-      <div><div class="stat-num">{{ counts.radar }}</div><div class="stat-lbl">Im Radar</div></div>
+      <div><div class="stat-num">{{ prio_counts.sollte }}</div><div class="stat-lbl">Sollte</div></div>
     </div>
     <div class="stat-cell">
       <div class="stat-dot" style="background:var(--s-active)"></div>
-      <div><div class="stat-num">{{ counts.active }}</div><div class="stat-lbl">Verfügbar / In Kraft</div></div>
+      <div><div class="stat-num">{{ prio_counts.kann }}</div><div class="stat-lbl">Kann</div></div>
+    </div>
+    <div class="stat-cell">
+      <div><div class="stat-num">{{ total }}</div><div class="stat-lbl">Gesamt</div></div>
     </div>
   </div>
 </div>
 
 <main class="main">
 
+
+  {# Legende + Info-Button #}
+  <div class="prio-legend">
+    <span class="prio-dot muss">Muss</span>
+    <span class="prio-dot sollte">Sollte</span>
+    <span class="prio-dot kann">Kann</span>
+    <button class="info-btn" onclick="document.getElementById('prio-info').classList.add('open')" title="Hinweis zur Einstufung">ⓘ</button>
+  </div>
 
   <div class="filter-row">
     <span class="filter-lbl">Kategorie:</span>
@@ -186,53 +235,92 @@
     {% endfor %}
   </div>
 
-  {% set phases = [
-    ('action',    '⚡ Handlungsbedarf'),
-    ('announced', '📅 Angekündigt'),
-    ('develop',   '⚙ In Entwicklung'),
-    ('radar',     '🔭 Im Radar'),
-    ('active',    '✓ Verfügbar / In Kraft'),
+  {% set prio_groups = [
+    ('muss',   'Muss'),
+    ('sollte', 'Sollte'),
+    ('kann',   'Kann'),
   ] %}
 
-  {% for phase_key, phase_label in phases %}
-  {% set phase_signals = signals | selectattr('status', 'equalto', phase_key) | list %}
-  {% if phase_signals %}
-  <div class="sec-group" data-phase="{{ phase_key }}">
+  {% for prio_key, prio_label in prio_groups %}
+  {% set prio_signals = signals | selectattr('priority', 'equalto', prio_key) | list %}
+  {% if prio_signals %}
+  <div class="sec-group" data-prio="{{ prio_key }}">
     <div class="sec">
-      <span class="sec-badge b-{{ phase_key }}">{{ phase_label }}</span>
+      <span class="sec-badge prio-badge {{ prio_key }}" style="font-size:11px;padding:4px 12px">{{ prio_label }}</span>
       <div class="sec-line"></div>
     </div>
     <div class="grid">
-      {% for s in phase_signals %}
+      {% for s in prio_signals %}
+      {% set prio = s.get('priority', 'sollte') %}
+      {% set ezstand = entwicklungsstand_labels.get(s.get('entwicklungsstand',''), '') %}
+      {% set hzpunkt = handlungszeitpunkt_labels.get(s.get('handlungszeitpunkt',''), '') %}
+      {% set aufwand = aufwand_labels.get(s.get('aufwand',''), '') %}
       <div class="card"
            data-cat="{{ s.category }}"
-           data-phase="{{ s.status }}"
+           data-prio="{{ prio }}"
            data-sections="{{ s.get('section_ids', []) | join(',') }}"
-           data-text="{{ (s.title ~ ' ' ~ s.summary ~ ' ' ~ s.detail ~ ' ' ~ s.source) | lower }}"
+           data-text="{{ (s.title ~ ' ' ~ s.summary ~ ' ' ~ s.get('detail','') ~ ' ' ~ s.source) | lower }}"
            onclick="toggleCard(this)">
-        <div class="card-stripe" style="background:var(--s-{{ s.status }})"></div>
+        <div class="card-stripe {{ prio }}"></div>
         <div class="card-body">
-          <div class="card-top">
-            <span class="b b-cat">{{ categories.get(s.category, s.category) }}</span>
-            {% if s.deadline %}
-              <span class="deadline">⏱ Frist {{ s.deadline }}</span>
-            {% endif %}
+          <div class="card-header">
+            <div>
+              <div class="card-eyebrow">{{ categories.get(s.category, s.category) }}</div>
+            </div>
+            <span class="prio-badge {{ prio }}">{{ prio_label }}</span>
           </div>
+
           <div class="card-title">{{ s.title }}</div>
           <div class="card-summary">{{ s.summary }}</div>
-          {% if s.detail %}
-          <div class="card-detail">{{ s.detail }}{% if s.source_url %}
-<a class="detail-link" href="{{ s.source_url }}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Quelle öffnen →</a>{% endif %}</div>
+
+          {# Meta row: Frist · Aufwand · Handlungszeitpunkt #}
+          {% if s.deadline or aufwand or hzpunkt or ezstand %}
+          <div class="card-meta-row">
+            {% if s.deadline %}<span class="card-deadline">⏱ Bis {{ s.deadline }}</span>{% endif %}
+            {% if s.deadline and aufwand %}<span class="sep">·</span>{% endif %}
+            {% if aufwand %}<span>{{ aufwand }}</span>{% endif %}
+            {% if (s.deadline or aufwand) and hzpunkt %}<span class="sep">·</span>{% endif %}
+            {% if hzpunkt %}<span>{{ hzpunkt }}</span>{% endif %}
+            {% if ezstand %}<span class="sep">·</span><span class="entwicklungsstand-tag">{{ ezstand }}</span>{% endif %}
+          </div>
           {% endif %}
+
+          {# Nächster Schritt als Action-Link #}
+          {% if s.get('naechster_schritt') %}
+          <div onclick="event.stopPropagation()">
+            <span class="card-action-link">{{ s.naechster_schritt }} →</span>
+          </div>
+          {% endif %}
+
+          {# Aufgeklappter Detail-Bereich #}
+          {% if s.get('detail') or s.get('betroffene_rollen') or s.get('quellen_belege') %}
+          <div class="card-detail">
+            {% if s.get('detail') %}{{ s.detail }}{% endif %}
+            {% if s.get('betroffene_rollen') %}
+            <div style="margin-top:10px;font-size:12px;color:var(--faint)">
+              <strong style="color:var(--muted)">Betroffene Rollen:</strong> {{ s.betroffene_rollen | join(', ') }}
+            </div>
+            {% endif %}
+            {% if s.get('quellen_belege') %}
+            <div style="margin-top:6px;font-size:12px;color:var(--faint)">
+              <strong style="color:var(--muted)">Quellen:</strong> {{ s.quellen_belege }}
+            </div>
+            {% endif %}
+            {% if s.source_url %}
+            <a class="detail-link" href="{{ s.source_url }}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Quelle öffnen →</a>
+            {% endif %}
+          </div>
+          {% endif %}
+
           <div class="card-foot">
             <span class="card-source">{{ s.source }}</span>
-            <div class="card-meta">
+            <div class="card-foot-right">
               {% if session.get('role') in ('admin', 'superadmin') %}
               <button class="todo-btn" onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href)"
-                      title="ToDo ableiten">+ ToDo</button>
+                      title="Als Aufgabe übernehmen">+ Aufgabe</button>
               {% endif %}
               <span class="card-date">{{ s.date }}</span>
-              {% if s.detail %}<span class="chevron">▼</span>{% endif %}
+              {% if s.get('detail') or s.get('betroffene_rollen') or s.get('quellen_belege') %}<span class="chevron">▼</span>{% endif %}
             </div>
           </div>
         </div>
@@ -255,6 +343,18 @@
     {% endif %}
   </div>
   {% endif %}
+
+{# Rechtlicher Hinweis zur Prioritätseinstufung #}
+<div class="info-popup" id="prio-info" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="info-box">
+    <button class="info-box-close" onclick="document.getElementById('prio-info').classList.remove('open')">×</button>
+    <div class="info-box-title">Hinweis zur Prioritätseinstufung</div>
+    <div class="info-box-text">
+      Die Einstufung von Signalen als <strong>Muss</strong>, <strong>Sollte</strong> oder <strong>Kann</strong> stellt eine redaktionelle Orientierungshilfe dar und ist keine Rechtsberatung. Sie ersetzt nicht die individuelle rechtliche oder fachliche Beratung durch zugelassene Berater, Rechtsanwälte oder Ihren Berufsverband.<br><br>
+      Die Einschätzungen beruhen auf einer allgemeinen Beurteilung der regulatorischen Lage zum Zeitpunkt der Veröffentlichung. Verbindliche Aussagen zur Rechtslage für Ihren konkreten Fall können nur durch qualifizierte Fachleute getroffen werden.
+    </div>
+  </div>
+</div>
 
 </main>
 
