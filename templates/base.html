@@ -141,13 +141,13 @@
 <header class="header">
   <div class="header-inner">
     <div>
-      <a href="{{ url_for('dashboard') }}" class="brand-title">Branchen<span class="brand-amp">&amp;</span>radar</a>
+      <a href="{{ url_for('dashboard') }}" class="brand-title">Ole <span class="brand-amp">&amp;</span> Joy</a>
     </div>
 
     {# Desktop nav #}
     <div class="header-right">
       {% if session.get('user_id') %}
-        <a href="{{ url_for('dashboard') }}" class="header-link">Branchenradar</a>
+        <a href="{{ url_for('dashboard') }}" class="header-link">Dashboard</a>
         {% if session.role in ('admin', 'superadmin') %}
           <a href="{{ url_for('todos') }}" class="header-link" style="position:relative">
             ToDos{% if pending_todos %}<span style="position:absolute;top:-5px;right:-8px;background:#B03060;color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 4px;min-width:14px;text-align:center">{{ pending_todos }}</span>{% endif %}
@@ -198,7 +198,7 @@
       <button class="nav-drawer-close" onclick="closeDrawer()" aria-label="Schließen">×</button>
     </div>
     <div class="nav-drawer-links">
-      <a href="{{ url_for('dashboard') }}" onclick="closeDrawer()">Branchenradar</a>
+      <a href="{{ url_for('dashboard') }}" onclick="closeDrawer()">Dashboard</a>
       {% if session.role in ('admin', 'superadmin') %}
         <a href="{{ url_for('todos') }}" onclick="closeDrawer()">
           ToDos{% if pending_todos %}<span class="nav-badge">{{ pending_todos }}</span>{% endif %}
