@@ -237,91 +237,78 @@
 
 <main class="main">
 
-  {% set prio_groups = [
-    ('muss',   'Muss'),
-    ('sollte', 'Sollte'),
-    ('kann',   'Kann'),
-  ] %}
+  {% set prio_labels_map = {'muss': 'Muss', 'sollte': 'Sollte', 'kann': 'Kann'} %}
+  {% set ordered_signals =
+      (signals | selectattr('priority', 'equalto', 'muss')   | list) +
+      (signals | selectattr('priority', 'equalto', 'sollte') | list) +
+      (signals | selectattr('priority', 'equalto', 'kann')   | list) %}
 
-  {% for prio_key, prio_label in prio_groups %}
-  {% set prio_signals = signals | selectattr('priority', 'equalto', prio_key) | list %}
-  {% if prio_signals %}
-  <div class="sec-group" data-prio="{{ prio_key }}">
-    <div class="grid">
-      {% for s in prio_signals %}
-      {% set prio = s.get('priority', 'sollte') %}
-      {% set ezstand = entwicklungsstand_labels.get(s.get('entwicklungsstand',''), '') %}
-      {% set hzpunkt = handlungszeitpunkt_labels.get(s.get('handlungszeitpunkt',''), '') %}
-      {% set aufwand = aufwand_labels.get(s.get('aufwand',''), '') %}
-      <div class="card"
-           data-cat="{{ s.category }}"
-           data-prio="{{ prio }}"
-           data-sections="{{ s.get('section_ids', []) | join(',') }}"
-           data-text="{{ (s.title ~ ' ' ~ s.summary ~ ' ' ~ s.get('detail','') ~ ' ' ~ s.source) | lower }}"
-           onclick="toggleCard(this)">
-        <div class="card-stripe {{ prio }}"></div>
-        <div class="card-body">
-          <div class="card-header">
-            <div>
-              <div class="card-eyebrow">{{ categories.get(s.category, s.category) }}</div>
-            </div>
-            <span class="prio-badge {{ prio }}">{{ prio_label }}</span>
-          </div>
+  <div class="grid" id="card-grid">
+  {% for s in ordered_signals %}
+  {% set prio = s.get('priority', 'sollte') %}
+  {% set ezstand = entwicklungsstand_labels.get(s.get('entwicklungsstand',''), '') %}
+  {% set hzpunkt = handlungszeitpunkt_labels.get(s.get('handlungszeitpunkt',''), '') %}
+  {% set aufwand = aufwand_labels.get(s.get('aufwand',''), '') %}
+  <div class="card"
+       data-cat="{{ s.category }}"
+       data-prio="{{ prio }}"
+       data-sections="{{ s.get('section_ids', []) | join(',') }}"
+       data-text="{{ (s.title ~ ' ' ~ s.summary ~ ' ' ~ s.get('detail','')) | lower }}"
+       onclick="toggleCard(this)">
+    <div class="card-stripe {{ prio }}"></div>
+    <div class="card-body">
+      <div class="card-header">
+        <div class="card-eyebrow">{{ categories.get(s.category, s.category) }}</div>
+        <span class="prio-badge {{ prio }}">{{ prio_labels_map.get(prio, prio) }}</span>
+      </div>
 
-          <div class="card-title">{{ s.title }}</div>
+      <div class="card-title">{{ s.title }}</div>
 
-          {# Meta row: Frist always visible, rest only when open #}
-          <div class="card-meta-row" style="margin-top:6px;margin-bottom:10px">
-            {% if s.deadline %}<span class="card-deadline">⏱ Bis {{ s.deadline }}</span>{% endif %}
-            {% if s.deadline and aufwand %}<span class="sep card-meta-sep-collapsed">·</span>{% endif %}
-            {% if aufwand %}<span class="card-meta-aufwand">{{ aufwand }}</span>{% endif %}
-            {% if aufwand and hzpunkt %}<span class="sep card-meta-hzpunkt">·</span>{% endif %}
-            {% if hzpunkt %}<span class="card-meta-hzpunkt">{{ hzpunkt }}</span>{% endif %}
-            {% if ezstand %}<span class="sep card-meta-ezstand">·</span><span class="entwicklungsstand-tag card-meta-ezstand">{{ ezstand }}</span>{% endif %}
-          </div>
+      <div class="card-meta-row" style="margin-top:6px;margin-bottom:10px">
+        {% if s.deadline %}<span class="card-deadline">⏱ Bis {{ s.deadline }}</span>{% endif %}
+        {% if s.deadline and aufwand %}<span class="sep card-meta-sep-collapsed">·</span>{% endif %}
+        {% if aufwand %}<span class="card-meta-aufwand">{{ aufwand }}</span>{% endif %}
+        {% if aufwand and hzpunkt %}<span class="sep card-meta-hzpunkt">·</span>{% endif %}
+        {% if hzpunkt %}<span class="card-meta-hzpunkt">{{ hzpunkt }}</span>{% endif %}
+        {% if ezstand %}<span class="sep card-meta-ezstand">·</span><span class="entwicklungsstand-tag card-meta-ezstand">{{ ezstand }}</span>{% endif %}
+      </div>
 
-          {# Summary — only when open #}
-          {% if s.summary %}<div class="card-summary">{{ s.summary }}</div>{% endif %}
+      {% if s.summary %}<div class="card-summary">{{ s.summary }}</div>{% endif %}
 
-          {# Expanded detail #}
-          <div class="card-detail">
-            {% if s.get('detail') %}<p>{{ s.detail }}</p>{% endif %}
-            {% if s.get('betroffene_rollen') %}
-            <div class="detail-row"><strong>Betroffene Rollen:</strong> <span>{{ s.betroffene_rollen | join(', ') }}</span></div>
-            {% endif %}
-            {% for src in s.get('sources', []) %}
-            <div class="src-row">
-              <span class="src-label">Quelle {{ loop.index }}:</span>
-              <span>{% if src.get('url') %}<a href="{{ src.url }}" target="_blank" rel="noopener" style="color:var(--navy)" onclick="event.stopPropagation()">{{ src.get('name') or src.url }}</a>{% else %}{{ src.get('name') or '—' }}{% endif %}{% if src.get('date') %} <span style="color:var(--faint)">· {{ src.date }}</span>{% endif %}</span>
-            </div>
-            {% endfor %}
-          </div>
+      <div class="card-detail">
+        {% if s.get('detail') %}<p>{{ s.detail }}</p>{% endif %}
+        {% if s.get('betroffene_rollen') %}
+        <div class="detail-row"><strong>Betroffene Rollen:</strong> <span>{{ s.betroffene_rollen | join(', ') }}</span></div>
+        {% endif %}
+        {% for src in s.get('sources', []) %}
+        <div class="src-row">
+          <span class="src-label">Quelle {{ loop.index }}:</span>
+          <span>{% if src.get('url') %}<a href="{{ src.url }}" target="_blank" rel="noopener" style="color:var(--navy)" onclick="event.stopPropagation()">{{ src.get('name') or src.url }}</a>{% else %}{{ src.get('name') or '—' }}{% endif %}{% if src.get('date') %} <span style="color:var(--faint)">· {{ src.date }}</span>{% endif %}</span>
+        </div>
+        {% endfor %}
+      </div>
 
-          {# Nächster Schritt — only when open #}
-          {% if s.get('naechster_schritt') %}
-          <span class="card-action-link" onclick="event.stopPropagation()">{{ s.naechster_schritt }} →</span>
+      {% if s.get('naechster_schritt') %}
+      <span class="card-action-link" onclick="event.stopPropagation()">{{ s.naechster_schritt }} →</span>
+      {% endif %}
+
+      <div class="card-foot">
+        <span class="card-source">{{ s.get('sources', [{}])[0].get('name', '') }}</span>
+        <div class="card-foot-right">
+          {% if session.get('role') in ('admin', 'superadmin') %}
+          <span class="todo-btn-wrap">
+            <button class="todo-btn" onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href)"
+                    title="Als Aufgabe übernehmen">+ Aufgabe</button>
+          </span>
           {% endif %}
-
-          <div class="card-foot">
-            <span class="card-source">{{ s.get('sources', [{}])[0].get('name', '') }}</span>
-            <div class="card-foot-right">
-              {% if session.get('role') in ('admin', 'superadmin') %}
-              <span class="todo-btn-wrap">
-                <button class="todo-btn" onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href)"
-                        title="Als Aufgabe übernehmen">+ Aufgabe</button>
-              </span>
-              {% endif %}
-              <span class="card-date">{{ s.date }}</span>
-              <span class="chevron">▼</span>
-            </div>
-          </div>
+          <span class="card-date">{{ s.date }}</span>
+          <span class="chevron">▼</span>
         </div>
       </div>
-      {% endfor %}
     </div>
   </div>
-  {% endif %}
   {% endfor %}
+  </div>
 
   <div id="empty-state" class="empty" style="display:none">
     Keine Signale für diese Auswahl gefunden.
@@ -456,10 +443,7 @@ function updateVisibility() {
       if (p in prioCounts) prioCounts[p]++;
     }
   });
-  document.querySelectorAll('.sec-group').forEach(group => {
-    const has = group.querySelectorAll('.card:not([style*="none"])').length > 0;
-    group.style.display = has ? '' : 'none';
-  });
+
   document.getElementById('count-muss').textContent   = prioCounts.muss;
   document.getElementById('count-sollte').textContent = prioCounts.sollte;
   document.getElementById('count-kann').textContent   = prioCounts.kann;
