@@ -54,10 +54,19 @@
   .section-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 20px 0 8px; }
   .empty { text-align: center; padding: 48px 24px; color: var(--faint); font-size: 14px; }
 
+  @media (max-width: 700px) {
+    .main { padding: 14px 14px 60px; }
+    .todo-card { padding: 12px 12px; gap: 10px; }
+    .todo-actions { flex-direction: column; gap: 4px; }
+    .filter-bar { gap: 6px; }
+    .pill { padding: 5px 10px; font-size: 11px; }
+  }
+
   /* Done-with-comment modal */
   .done-modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:600; align-items:center; justify-content:center; }
   .done-modal-backdrop.open { display:flex; }
   .done-modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 8px 40px rgba(0,0,0,.25); width:100%; max-width:400px; padding:24px 28px; }
+  @media (max-width: 500px) { .done-modal { margin: 16px; padding: 20px 16px; } }
   .done-modal h3 { font-family:Georgia,serif; font-size:16px; font-weight:normal; margin-bottom:12px; }
   .done-modal label { display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:5px; }
   .done-modal textarea { width:100%; padding:8px 11px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); font-size:13px; color:var(--text); outline:none; min-height:70px; resize:vertical; font-family:inherit; }

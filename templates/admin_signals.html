@@ -61,7 +61,14 @@
   tr.data-row.expanded .chevron { transform: rotate(180deg); }
 
   .empty { padding: 48px; text-align: center; color: var(--faint); }
-  @media (max-width: 700px) { .main { padding: 16px; } .detail-panel.open { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) {
+    .main { padding: 14px 14px 60px; }
+    .detail-panel.open { grid-template-columns: 1fr; }
+    .page-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .page-actions { flex-wrap: wrap; }
+    .tbl-wrap { -webkit-overflow-scrolling: touch; }
+    .db-search { max-width: 100%; }
+  }
 </style>
 {% endblock %}
 {% block content %}

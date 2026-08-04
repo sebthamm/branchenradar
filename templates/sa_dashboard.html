@@ -65,7 +65,21 @@
   .btn-toggle.active { background: var(--surface2); border-color: var(--navy); color: var(--navy); }
   @media (prefers-color-scheme: dark) { .btn-toggle.active { color: #90b8f0; border-color: #90b8f0; } }
 
-  @media (max-width: 700px) { .main { padding: 16px; } .form-row { flex-direction: column; gap: 0; } }
+  @media (max-width: 700px) {
+    .main { padding: 14px 14px 60px; }
+    .form-row { flex-direction: column; gap: 0; }
+    .page-title { font-size: 20px; margin-bottom: 20px; }
+    .block-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+    /* Tables scroll horizontally */
+    table { min-width: 520px; }
+    .block { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* Expand panels */
+    .expand-panel { padding: 14px; }
+    .inline-form { flex-direction: column; }
+    .form-actions-inline { flex-wrap: wrap; }
+    /* Sub-table */
+    .sub-table { min-width: 400px; }
+  }
 </style>
 {% endblock %}
 
