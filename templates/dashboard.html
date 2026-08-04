@@ -215,10 +215,6 @@
   {% set prio_signals = signals | selectattr('priority', 'equalto', prio_key) | list %}
   {% if prio_signals %}
   <div class="sec-group" data-prio="{{ prio_key }}">
-    <div class="sec">
-      <span class="sec-badge prio-badge {{ prio_key }}" style="font-size:11px;padding:4px 12px">{{ prio_label }}</span>
-      <div class="sec-line"></div>
-    </div>
     <div class="grid">
       {% for s in prio_signals %}
       {% set prio = s.get('priority', 'sollte') %}

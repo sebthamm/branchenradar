@@ -44,8 +44,9 @@
     /* Header */
     .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; }
     .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 0; }
-    .brand-title { font-family: Georgia, "Times New Roman", serif; font-size: 20px; font-weight: normal; letter-spacing: -0.01em; color: var(--text); text-decoration: none; }
-    .brand-sub { font-size: 10px; color: var(--faint); letter-spacing: .07em; text-transform: uppercase; margin-top: 2px; }
+    .brand-title { font-family: Georgia, "Times New Roman", serif; font-size: 22px; font-weight: bold; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
+    .brand-amp { color: var(--s-announced); font-style: italic; font-weight: normal; }
+    .brand-sub { display: none; }
     .header-right { display: flex; align-items: center; gap: 16px; }
     .header-link { font-size: 13px; color: var(--muted); text-decoration: none; white-space: nowrap; }
     .header-link:hover { color: var(--text); }
@@ -139,19 +140,8 @@
 <body>
 <header class="header">
   <div class="header-inner">
-    <div style="display:flex;align-items:center;gap:13px">
-      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
-        <circle cx="17" cy="17" r="16.5" stroke="rgba(26,43,30,0.12)" stroke-width="1"/>
-        <circle cx="17" cy="17" r="11" stroke="rgba(26,43,30,0.18)" stroke-width="1" fill="none"/>
-        <circle cx="17" cy="17" r="5.5" stroke="rgba(26,43,30,0.28)" stroke-width="1" fill="none"/>
-        <circle cx="17" cy="17" r="2.2" fill="rgba(26,43,30,0.85)"/>
-        <line x1="17" y1="14.8" x2="17" y2="1.5" stroke="rgba(26,43,30,0.5)" stroke-width="1.2" stroke-linecap="round"/>
-        <path d="M17 17 L26.5 9" stroke="rgba(26,43,30,0.35)" stroke-width="1" stroke-linecap="round"/>
-      </svg>
-      <div>
-        <a href="{{ url_for('dashboard') }}" class="brand-title">Branchenradar</a>
-        <div class="brand-sub">Regulatorisches Monitoring · Medizin</div>
-      </div>
+    <div>
+      <a href="{{ url_for('dashboard') }}" class="brand-title">Branchen<span class="brand-amp">&amp;</span>radar</a>
     </div>
 
     {# Desktop nav #}
