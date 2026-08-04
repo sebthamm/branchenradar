@@ -3,16 +3,35 @@
 
 {% block head %}
 <style>
-  /* Search icon in legend bar */
-  .search-toggle { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-  .search-icon-btn { background: none; border: none; cursor: pointer; color: var(--faint); padding: 6px; border-radius: 6px; display: flex; align-items: center; transition: color .15s, background .15s; }
-  .search-icon-btn:hover { color: var(--text); background: var(--surface2); }
-  .search-icon-btn.active { color: var(--navy); background: var(--surface2); }
-  .search-expand { display: flex; align-items: center; gap: 6px; max-width: 0; overflow: hidden; transition: max-width .25s ease; }
-  .search-expand.open { max-width: 280px; }
-  .search-expand input { border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; padding: 5px 10px; outline: none; width: 220px; }
-  .search-expand input:focus { border-color: var(--navy); }
+  /* Legend bar right-side controls */
+  .search-toggle { margin-left: auto; display: flex; align-items: center; gap: 6px; }
   .result-count { font-size: 11px; color: var(--faint); white-space: nowrap; }
+
+  /* Kategorie dropdown */
+  .kat-wrap { position: relative; }
+  .kat-btn { display: inline-flex; align-items: center; gap: 5px; background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all .15s; font-family: inherit; }
+  .kat-btn:hover { border-color: var(--navy); color: var(--text); }
+  .kat-btn.active { border-color: var(--navy); color: var(--navy); background: var(--surface2); }
+  .kat-btn .kat-chevron { font-size: 8px; opacity: .6; transition: transform .2s; }
+  .kat-btn.open .kat-chevron { transform: rotate(180deg); }
+  .kat-badge { background: var(--navy); color: #fff; border-radius: 99px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
+  .kat-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 6px); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,.12); min-width: 220px; z-index: 200; padding: 6px 0; }
+  .kat-dropdown.open { display: block; }
+  .kat-option { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; cursor: pointer; font-size: 13px; color: var(--text); transition: background .1s; user-select: none; }
+  .kat-option:hover { background: var(--surface2); }
+  .kat-option input[type="checkbox"] { accent-color: var(--navy); width: 14px; height: 14px; flex-shrink: 0; cursor: pointer; }
+  .kat-option-label { flex: 1; }
+  .kat-option-count { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .kat-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* Search icon */
+  .search-icon-btn { background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; color: var(--faint); padding: 5px 6px; display: flex; align-items: center; transition: color .15s, background .15s, border-color .15s; }
+  .search-icon-btn:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+  .search-icon-btn.active { color: var(--navy); background: var(--surface2); border-color: var(--border); }
+  .search-expand { display: flex; align-items: center; max-width: 0; overflow: hidden; transition: max-width .25s ease; }
+  .search-expand.open { max-width: 240px; }
+  .search-expand input { border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; padding: 5px 10px; outline: none; width: 220px; margin-left: 6px; }
+  .search-expand input:focus { border-color: var(--navy); }
 
   /* Section tabs — browser tab style */
   .sec-tabs-wrap { background: var(--bg); border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; padding-top: 12px; }
@@ -50,7 +69,7 @@
   .sec-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
 
   /* Grid */
-  .grid { display: flex; flex-direction: column; gap: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-items: start; }
 
   @media (max-width: 820px) {
     .grid { grid-template-columns: 1fr; }
@@ -185,30 +204,38 @@
     <button class="info-btn" onclick="document.getElementById('prio-info').classList.add('open')" title="Hinweis zur Einstufung">ⓘ</button>
     <div class="search-toggle">
       <span class="result-count" id="result-count"></span>
-      <div class="search-expand" id="search-expand">
-        <input type="text" id="search-input" placeholder="Signale durchsuchen…" oninput="doSearch(this.value)" autocomplete="off">
+      {# Kategorie-Dropdown #}
+      <div class="kat-wrap" id="kat-wrap">
+        <button class="kat-btn" id="kat-btn" onclick="toggleKat(event)" title="Nach Kategorie filtern">
+          Kategorie <span class="kat-badge" id="kat-badge" style="display:none">0</span> <span class="kat-chevron">▼</span>
+        </button>
+        <div class="kat-dropdown" id="kat-dropdown">
+          <label class="kat-option" onclick="clearKat()">
+            <input type="checkbox" id="kat-all" checked> <span class="kat-option-label">Alle Kategorien</span>
+          </label>
+          <div class="kat-divider"></div>
+          {% for key, label in categories.items() %}
+          {% set cnt = signals | selectattr('category', 'equalto', key) | list | length %}
+          <label class="kat-option" onclick="event.stopPropagation()">
+            <input type="checkbox" class="kat-check" data-cat="{{ key }}" onchange="toggleKatOption(this)">
+            <span class="kat-option-label">{{ label }}</span>
+            <span class="kat-option-count">{{ cnt }}</span>
+          </label>
+          {% endfor %}
+        </div>
       </div>
+      {# Search: icon first, then expandable input to the right #}
       <button class="search-icon-btn" id="search-icon-btn" onclick="toggleSearch()" title="Suchen">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </button>
+      <div class="search-expand" id="search-expand">
+        <input type="text" id="search-input" placeholder="Signale durchsuchen…" oninput="doSearch(this.value)" autocomplete="off">
+      </div>
     </div>
   </div>
 </div>
 
 <main class="main">
-
-  <div class="filter-row">
-    <span class="filter-lbl">Kategorie:</span>
-    <button class="pill active" data-cat="all" onclick="filterCat(this)">
-      Alle <span class="pill-count">{{ total }}</span>
-    </button>
-    {% for key, label in categories.items() %}
-    {% set cnt = signals | selectattr('category', 'equalto', key) | list | length %}
-    <button class="pill" data-cat="{{ key }}" onclick="filterCat(this)">
-      {{ label }} <span class="pill-count">{{ cnt }}</span>
-    </button>
-    {% endfor %}
-  </div>
 
   {% set prio_groups = [
     ('muss',   'Muss'),
@@ -324,8 +351,8 @@
 </main>
 
 <script>
-let _activeSec = 'all';
-let _activeCat = 'all';
+let _activeSec  = 'all';
+let _activeCats = new Set(); // empty = alle
 
 function toggleCard(card) {
   if (card.querySelector('.card-detail')) card.classList.toggle('open');
@@ -352,6 +379,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     const expand = document.getElementById('search-expand');
     if (expand.classList.contains('open')) toggleSearch();
+    closeKat();
   }
 });
 
@@ -363,14 +391,46 @@ function filterSec(btn) {
   updateVisibility();
 }
 
-// ── Category pills ────────────────────────────────────────────
-function filterCat(btn) {
-  document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  _activeCat = btn.dataset.cat;
+// ── Kategorie dropdown ────────────────────────────────────────
+function toggleKat(e) {
+  e.stopPropagation();
+  const dd  = document.getElementById('kat-dropdown');
+  const btn = document.getElementById('kat-btn');
+  const isOpen = dd.classList.contains('open');
+  if (isOpen) { closeKat(); } else { dd.classList.add('open'); btn.classList.add('open'); }
+}
+function closeKat() {
+  document.getElementById('kat-dropdown').classList.remove('open');
+  document.getElementById('kat-btn').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('kat-wrap').contains(e.target)) closeKat();
+});
+
+function toggleKatOption(cb) {
+  if (cb.checked) _activeCats.add(cb.dataset.cat);
+  else            _activeCats.delete(cb.dataset.cat);
+  _syncKatUI();
   updateVisibility();
 }
+function clearKat() {
+  _activeCats.clear();
+  document.querySelectorAll('.kat-check').forEach(c => c.checked = false);
+  document.getElementById('kat-all').checked = true;
+  _syncKatUI();
+  updateVisibility();
+}
+function _syncKatUI() {
+  const n = _activeCats.size;
+  const badge = document.getElementById('kat-badge');
+  const btn   = document.getElementById('kat-btn');
+  badge.textContent = n;
+  badge.style.display = n > 0 ? '' : 'none';
+  btn.classList.toggle('active', n > 0);
+  document.getElementById('kat-all').checked = n === 0;
+}
 
+// ── Search ────────────────────────────────────────────────────
 function doSearch(q) {
   q = q.toLowerCase().trim();
   document.querySelectorAll('.card').forEach(card => {
@@ -379,13 +439,14 @@ function doSearch(q) {
   updateVisibility();
 }
 
+// ── Visibility ────────────────────────────────────────────────
 function updateVisibility() {
   let visible = 0;
   const prioCounts = {muss: 0, sollte: 0, kann: 0};
   document.querySelectorAll('.card').forEach(card => {
     const cardSecs = (card.dataset.sections || '').split(',').filter(Boolean);
     const secOk  = _activeSec === 'all' || cardSecs.includes(_activeSec);
-    const catOk  = _activeCat === 'all' || card.dataset.cat === _activeCat;
+    const catOk  = _activeCats.size === 0 || _activeCats.has(card.dataset.cat);
     const srchOk = card.dataset.searchHidden !== '1';
     const hide   = !secOk || !catOk || !srchOk;
     card.style.display = hide ? 'none' : '';
@@ -403,7 +464,7 @@ function updateVisibility() {
   document.getElementById('count-sollte').textContent = prioCounts.sollte;
   document.getElementById('count-kann').textContent   = prioCounts.kann;
   const q = document.getElementById('search-input').value.trim();
-  const filtered = _activeSec !== 'all' || _activeCat !== 'all' || q;
+  const filtered = _activeSec !== 'all' || _activeCats.size > 0 || q;
   document.getElementById('result-count').textContent = filtered ? `${visible} Ergebnis${visible !== 1 ? 'se' : ''}` : '';
   document.getElementById('empty-state').style.display = visible === 0 && document.querySelectorAll('.card').length > 0 ? '' : 'none';
 }
