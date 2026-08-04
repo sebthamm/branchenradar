@@ -93,7 +93,7 @@
     <thead>
       <tr>
         <th onclick="sortTable(0)" data-col="0">Titel <span class="sort-arrow"></span></th>
-        <th onclick="sortTable(1)" data-col="1">Status <span class="sort-arrow"></span></th>
+        <th onclick="sortTable(1)" data-col="1">Priorität <span class="sort-arrow"></span></th>
         <th onclick="sortTable(2)" data-col="2">Kategorie <span class="sort-arrow"></span></th>
         <th onclick="sortTable(3)" data-col="3">Fachbereich <span class="sort-arrow"></span></th>
         <th onclick="sortTable(4)" data-col="4">Quelle <span class="sort-arrow"></span></th>
@@ -108,7 +108,13 @@
     <tr class="data-row" onclick="toggleDetail({{ row_id }})"
         data-text="{{ (s.title ~ ' ' ~ s.summary ~ ' ' ~ s.source ~ ' ' ~ s.category) | lower }}">
       <td class="title-cell"><span>{{ s.title }}</span></td>
-      <td><span class="b b-{{ s.status }}">{{ status_labels.get(s.status, s.status) }}</span></td>
+      <td>
+        {% set prio = s.get('priority', '') %}
+        {% if prio == 'muss' %}<span style="display:inline-flex;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(176,48,96,.12);color:var(--s-action)">Muss</span>
+        {% elif prio == 'sollte' %}<span style="display:inline-flex;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(196,120,14,.12);color:var(--s-announced)">Sollte</span>
+        {% elif prio == 'kann' %}<span style="display:inline-flex;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(37,122,88,.12);color:var(--s-active)">Kann</span>
+        {% else %}<span style="color:var(--faint)">—</span>{% endif %}
+      </td>
       <td class="muted">{{ categories.get(s.category, s.category) }}</td>
       <td>
         {% set secs = s.get('section_ids', []) %}
