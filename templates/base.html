@@ -7,48 +7,52 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:       #F4F5F8;
+      --bg:       #F5F1EA;
       --surface:  #FFFFFF;
-      --surface2: #EAECF2;
-      --border:   #D5D9E6;
-      --text:     #1B2540;
-      --muted:    #5A6480;
-      --faint:    #8590A8;
-      --navy:     #1B3050;
+      --surface2: #EDE8DF;
+      --border:   #DDD7CB;
+      --text:     #1A2B1E;
+      --muted:    #4A5E50;
+      --faint:    #8A9C8F;
+      --navy:     #1D3D28;
       --s-radar:     #2E7BAA;
       --s-develop:   #6B44A8;
-      --s-announced: #C4780E;
-      --s-active:    #257A58;
-      --s-action:    #B03060;
-      --radius: 6px;
-      --shadow: 0 1px 3px rgba(27,48,80,.07), 0 4px 12px rgba(27,48,80,.05);
+      --s-announced: #B86B1A;
+      --s-active:    #2A7A52;
+      --s-action:    #C0402A;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(20,40,25,.06), 0 4px 12px rgba(20,40,25,.04);
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg:       #0F141D;
-        --surface:  #172030;
-        --surface2: #1D2840;
-        --border:   #2A3654;
-        --text:     #E0E6F0;
-        --muted:    #8896B2;
-        --faint:    #5C6E8A;
+        --bg:       #141A12;
+        --surface:  #1C2419;
+        --surface2: #222C1E;
+        --border:   #2E3D28;
+        --text:     #DDE8D8;
+        --muted:    #7A9480;
+        --faint:    #4A6050;
+        --navy:     #4A9E66;
+        --s-action:    #E06040;
+        --s-active:    #4AAA78;
+        --s-announced: #D08040;
         --shadow:   0 1px 4px rgba(0,0,0,.3), 0 6px 16px rgba(0,0,0,.2);
       }
     }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
 
     /* Header */
-    .header { background: var(--navy); color: #fff; padding: 0 32px; }
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; }
     .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 0; }
-    .brand-title { font-family: "Optima", "Segoe UI", "Gill Sans MT", "Gill Sans", Tahoma, sans-serif; font-size: 21px; font-weight: 300; letter-spacing: 0.06em; color: #fff; text-decoration: none; text-transform: uppercase; }
-    .brand-sub { font-size: 11px; color: rgba(255,255,255,.45); letter-spacing: .07em; text-transform: uppercase; margin-top: 1px; }
+    .brand-title { font-family: Georgia, "Times New Roman", serif; font-size: 20px; font-weight: normal; letter-spacing: -0.01em; color: var(--text); text-decoration: none; }
+    .brand-sub { font-size: 10px; color: var(--faint); letter-spacing: .07em; text-transform: uppercase; margin-top: 2px; }
     .header-right { display: flex; align-items: center; gap: 16px; }
-    .header-link { font-size: 12px; color: rgba(255,255,255,.55); text-decoration: none; white-space: nowrap; }
-    .header-link:hover { color: #fff; }
+    .header-link { font-size: 13px; color: var(--muted); text-decoration: none; white-space: nowrap; }
+    .header-link:hover { color: var(--text); }
 
     /* Hamburger */
-    .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 6px; color: rgba(255,255,255,.75); flex-shrink: 0; }
-    .nav-toggle:hover { color: #fff; }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 6px; color: var(--muted); flex-shrink: 0; }
+    .nav-toggle:hover { color: var(--text); }
     .nav-drawer { display: none; }
 
     @media (max-width: 760px) {
@@ -74,7 +78,7 @@
       .nav-drawer-panel {
         position: absolute; top: 0; right: 0; bottom: 0;
         width: min(280px, 85vw);
-        background: var(--navy);
+        background: var(--text);
         transform: translateX(100%); transition: transform .22s ease;
         display: flex; flex-direction: column;
         overflow-y: auto; -webkit-overflow-scrolling: touch;
@@ -137,12 +141,12 @@
   <div class="header-inner">
     <div style="display:flex;align-items:center;gap:13px">
       <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
-        <circle cx="17" cy="17" r="16.5" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-        <circle cx="17" cy="17" r="11" stroke="rgba(255,255,255,0.18)" stroke-width="1" fill="none"/>
-        <circle cx="17" cy="17" r="5.5" stroke="rgba(255,255,255,0.28)" stroke-width="1" fill="none"/>
-        <circle cx="17" cy="17" r="2.2" fill="rgba(255,255,255,0.85)"/>
-        <line x1="17" y1="14.8" x2="17" y2="1.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" stroke-linecap="round"/>
-        <path d="M17 17 L26.5 9" stroke="rgba(255,255,255,0.35)" stroke-width="1" stroke-linecap="round"/>
+        <circle cx="17" cy="17" r="16.5" stroke="rgba(26,43,30,0.12)" stroke-width="1"/>
+        <circle cx="17" cy="17" r="11" stroke="rgba(26,43,30,0.18)" stroke-width="1" fill="none"/>
+        <circle cx="17" cy="17" r="5.5" stroke="rgba(26,43,30,0.28)" stroke-width="1" fill="none"/>
+        <circle cx="17" cy="17" r="2.2" fill="rgba(26,43,30,0.85)"/>
+        <line x1="17" y1="14.8" x2="17" y2="1.5" stroke="rgba(26,43,30,0.5)" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M17 17 L26.5 9" stroke="rgba(26,43,30,0.35)" stroke-width="1" stroke-linecap="round"/>
       </svg>
       <div>
         <a href="{{ url_for('dashboard') }}" class="brand-title">Branchenradar</a>
