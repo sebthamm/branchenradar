@@ -920,24 +920,29 @@ def _create_user(form, redirect_to, force_entity=None, force_role=None):
     return redirect(redirect_to)
 
 def _signal_from_form(form, existing_id=None):
+    sources = []
+    for i in range(1, 4):
+        name = form.get(f"source_{i}_name", "").strip()
+        url  = form.get(f"source_{i}_url",  "").strip()
+        date = form.get(f"source_{i}_date", "").strip()
+        if name or url:
+            sources.append({"name": name, "url": url, "date": date})
+    primary_date = sources[0]["date"] if sources and sources[0].get("date") else datetime.now().strftime("%Y-%m-%d")
     return {
         "id":                existing_id or str(uuid.uuid4()),
         "title":             form.get("title", "").strip(),
         "summary":           form.get("summary", "").strip(),
         "detail":            form.get("detail", "").strip(),
         "category":          form.get("category", "gesetze"),
-        "status":            form.get("status", "radar"),
         "priority":          form.get("priority", "sollte"),
         "entwicklungsstand": form.get("entwicklungsstand", "beobachtung"),
         "handlungszeitpunkt":form.get("handlungszeitpunkt", ""),
         "naechster_schritt": form.get("naechster_schritt", "").strip(),
         "betroffene_rollen": form.getlist("betroffene_rollen"),
         "aufwand":           form.get("aufwand", ""),
-        "quellen_belege":    form.get("quellen_belege", "").strip(),
         "themen_id":         form.get("themen_id", "").strip(),
-        "source":            form.get("source", "").strip(),
-        "source_url":        form.get("source_url", "").strip(),
-        "date":              form.get("date", datetime.now().strftime("%Y-%m-%d")),
+        "sources":           sources,
+        "date":              primary_date,
         "deadline":          form.get("deadline", "").strip() or None,
         "section_ids":       form.getlist("section_ids"),
     }

@@ -178,16 +178,14 @@
             <label>Themen-ID</label>
             <p>{{ s.get('themen_id') or '—' }}</p>
           </div>
-          {% if s.get('quellen_belege') %}
-          <div class="dp-field dp-full">
-            <label>Quellenbelege</label>
-            <p>{{ s.quellen_belege }}</p>
-          </div>
-          {% endif %}
+          {% for src in s.get('sources', []) %}
           <div class="dp-field">
-            <label>Hauptquelle</label>
-            <p>{% if s.source_url %}<a href="{{ s.source_url }}" target="_blank" rel="noopener" style="color:var(--navy)" onclick="event.stopPropagation()">{{ s.source or s.source_url }}</a>{% else %}{{ s.source or '—' }}{% endif %}</p>
+            <label>Quelle {{ loop.index }}{% if src.get('date') %} · {{ src.date }}{% endif %}</label>
+            <p>{% if src.get('url') %}<a href="{{ src.url }}" target="_blank" rel="noopener" style="color:var(--navy)" onclick="event.stopPropagation()">{{ src.get('name') or src.url }}</a>{% else %}{{ src.get('name') or '—' }}{% endif %}</p>
           </div>
+          {% else %}
+          <div class="dp-field"><label>Quellen</label><p class="empty">Keine Quellen</p></div>
+          {% endfor %}
           <div class="dp-field">
             <label>Fachbereiche</label>
             <p>{% for sid in s.get('section_ids', []) %}{% set sec = sec_map.get(sid) %}{% if sec %}{{ sec.icon }} {{ sec.name }}{% if not loop.last %}, {% endif %}{% endif %}{% else %}—{% endfor %}</p>

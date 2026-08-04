@@ -271,19 +271,18 @@
               <strong style="color:var(--muted)">Betroffene Rollen:</strong> {{ s.betroffene_rollen | join(', ') }}
             </div>
             {% endif %}
-            {% if s.get('quellen_belege') %}
+            {% for src in s.get('sources', []) %}
             <div style="margin-top:6px;font-size:12px;color:var(--faint)">
-              <strong style="color:var(--muted)">Quellen:</strong> {{ s.quellen_belege }}
+              <strong style="color:var(--muted)">Quelle {{ loop.index }}:</strong>
+              {% if src.get('url') %}<a href="{{ src.url }}" target="_blank" rel="noopener" style="color:var(--navy)" onclick="event.stopPropagation()">{{ src.get('name') or src.url }}</a>{% else %}{{ src.get('name') or '—' }}{% endif %}
+              {% if src.get('date') %} · {{ src.date }}{% endif %}
             </div>
-            {% endif %}
-            {% if s.source_url %}
-            <a class="detail-link" href="{{ s.source_url }}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Quelle öffnen →</a>
-            {% endif %}
+            {% endfor %}
           </div>
           {% endif %}
 
           <div class="card-foot">
-            <span class="card-source">{{ s.source }}</span>
+            <span class="card-source">{{ s.get('sources', [{}])[0].get('name', '') }}</span>
             <div class="card-foot-right">
               {% if session.get('role') in ('admin', 'superadmin') %}
               <button class="todo-btn" onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href)"

@@ -96,6 +96,21 @@
       </div>
 
       <div class="field">
+        <label>Fachbereiche (Sektionen)</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:2px">
+          {% for sec in sections %}
+          <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text);font-weight:400;cursor:pointer;padding:5px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg)">
+            <input type="checkbox" name="section_ids" value="{{ sec.id }}"
+                   {{ 'checked' if signal and sec.id in signal.get('section_ids', []) else '' }}
+                   style="accent-color:var(--navy)">
+            {{ sec.icon }} {{ sec.name }}
+          </label>
+          {% endfor %}
+        </div>
+        <div class="hint">Signal einem oder mehreren Fachbereichen zuordnen.</div>
+      </div>
+
+      <div class="field">
         <label>Betroffene Rollen</label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:2px">
           {% for rolle in signal_rollen %}
@@ -128,66 +143,40 @@
         </div>
       </div>
 
-      <div class="field">
-        <label for="quellen_belege">Quellenbelege</label>
-        <input type="text" id="quellen_belege" name="quellen_belege"
-               value="{{ signal.get('quellen_belege','') if signal else '' }}"
-               placeholder="z.B. G-BA Beschluss v. 15.05.2026; BMG Rundschreiben 2026/04">
-        <div class="hint">Mehrere Quellen mit Semikolon trennen.</div>
-      </div>
-
-      <div class="row-2">
-        <div class="field">
-          <label for="status">Status (intern)</label>
-          <select id="status" name="status">
-            {% for key, label in status_labels.items() %}
-            <option value="{{ key }}" {{ 'selected' if signal and signal.status == key else '' }}>{{ label }}</option>
-            {% endfor %}
-          </select>
+      {% set existing_sources = signal.get('sources', []) if signal else [] %}
+      {% for i in range(1, 4) %}
+      {% set src = existing_sources[i-1] if existing_sources|length >= i else {} %}
+      <div style="border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;background:var(--bg)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px">Quelle {{ i }}{% if i == 1 %} *{% endif %}</div>
+        <div class="row-2" style="margin-bottom:12px">
+          <div class="field" style="margin-bottom:0">
+            <label for="source_{{ i }}_name">Name</label>
+            <input type="text" id="source_{{ i }}_name" name="source_{{ i }}_name"
+                   value="{{ src.get('name','') }}"
+                   placeholder="z.B. G-BA, gematik, BZÄK"
+                   {% if i == 1 %}required{% endif %}>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label for="source_{{ i }}_date">Datum</label>
+            <input type="date" id="source_{{ i }}_date" name="source_{{ i }}_date"
+                   value="{{ src.get('date','') }}">
+          </div>
         </div>
-        <div class="field">
-          <label for="themen_id">Themen-ID</label>
-          <input type="text" id="themen_id" name="themen_id"
-                 value="{{ signal.get('themen_id','') if signal else '' }}"
-                 placeholder="z.B. TI-REFORM-2026">
-          <div class="hint">Verbindet mehrere Signale zum gleichen Vorgang.</div>
-        </div>
-      </div>
-
-      <div class="row-2">
-        <div class="field">
-          <label for="source">Hauptquelle (Name)</label>
-          <input type="text" id="source" name="source"
-                 value="{{ signal.source if signal else '' }}"
-                 placeholder="z.B. G-BA, gematik, BZÄK">
-        </div>
-        <div class="field">
-          <label for="source_url">Hauptquelle (URL)</label>
-          <input type="url" id="source_url" name="source_url"
-                 value="{{ signal.source_url if signal else '' }}"
+        <div class="field" style="margin-bottom:0">
+          <label for="source_{{ i }}_url">URL</label>
+          <input type="url" id="source_{{ i }}_url" name="source_{{ i }}_url"
+                 value="{{ src.get('url','') }}"
                  placeholder="https://…">
         </div>
       </div>
+      {% endfor %}
 
       <div class="field">
-        <label for="date">Datum *</label>
-        <input type="date" id="date" name="date" required
-               value="{{ signal.date if signal else '' }}" style="max-width:240px">
-      </div>
-
-      <div class="field">
-        <label>Fachbereiche (Sektionen)</label>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:2px">
-          {% for sec in sections %}
-          <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text);font-weight:400;cursor:pointer;padding:5px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg)">
-            <input type="checkbox" name="section_ids" value="{{ sec.id }}"
-                   {{ 'checked' if signal and sec.id in signal.get('section_ids', []) else '' }}
-                   style="accent-color:var(--navy)">
-            {{ sec.icon }} {{ sec.name }}
-          </label>
-          {% endfor %}
-        </div>
-        <div class="hint">Signal einem oder mehreren Fachbereichen zuordnen.</div>
+        <label for="themen_id">Themen-ID</label>
+        <input type="text" id="themen_id" name="themen_id"
+               value="{{ signal.get('themen_id','') if signal else '' }}"
+               placeholder="z.B. TI-REFORM-2026">
+        <div class="hint">Verbindet mehrere Signale zum gleichen Vorgang.</div>
       </div>
 
       <div class="form-actions">
