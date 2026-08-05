@@ -163,6 +163,20 @@ DEFAULT_AGENT_CONFIGS = {
             "persona": "Du bist ein spezialisierter Recherche-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, Quellen mit Login-Pflicht, Datenbanken oder kostenpflichtigen Inhalten auf neue regulatorische Informationen zu prüfen.",
             "method": "Du verwendest gespeicherte Zugangsdaten oder öffentliche Suchfunktionen, um in geschützten Bereichen oder Datenbanken nach neuen relevanten Inhalten zu suchen.",
             "hint": "Falls kein direkter Zugang möglich ist, suche nach öffentlichen Zusammenfassungen, Pressemitteilungen oder alternativen Zugangswegen zur gleichen Information."
+        },
+        "group": {
+            "label": "Gruppierungs-Agent",
+            "persona": "",
+            "method": "",
+            "hint": "",
+            "output_format": ""
+        },
+        "bewertung": {
+            "label": "Bewertungs-Agent",
+            "persona": "",
+            "method": "",
+            "hint": "",
+            "output_format": ""
         }
     }
 }
