@@ -132,11 +132,7 @@
   <div class="page-head">
     <div class="page-title">Quellen</div>
     <div class="actions">
-      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('scrape')">Scrape-Agent</button>
-      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('feed')">Feed-Agent</button>
-      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('pdf')">PDF-Agent</button>
-      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('search')">Search-Agent</button>
-      <button class="btn btn-secondary btn-sm" onclick="openAgentPrompt('all')">Alle Quellen</button>
+      <a href="{{ url_for('agents') }}" class="btn btn-secondary btn-sm">→ Agenten</a>
       <button class="btn btn-primary btn-sm" onclick="toggleNewPanel()">+ Neue Quelle</button>
     </div>
   </div>

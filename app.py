@@ -26,7 +26,8 @@ ENTITIES_FILE = os.path.join(DATA_DIR, "entities.json")
 SECTIONS_FILE = os.path.join(DATA_DIR, "sections.seed.json")  # sections are static
 TODOS_FILE    = os.path.join(DATA_DIR, "todos.json")
 SETTINGS_FILE = os.path.join(DATA_DIR, "settings.json")
-SOURCES_FILE  = os.path.join(DATA_DIR, "sources.json")
+SOURCES_FILE       = os.path.join(DATA_DIR, "sources.json")
+AGENT_CONFIGS_FILE = os.path.join(DATA_DIR, "agent_configs.json")
 
 DEFAULT_TODO_CATEGORIES = [
     "Abrechnung & Vergütung",
@@ -135,6 +136,50 @@ def load_todos():     return _load(TODOS_FILE)
 def save_todos(d):    _save(TODOS_FILE, d)
 def load_sources():   return _load(SOURCES_FILE)
 def save_sources(d):  _save(SOURCES_FILE, d)
+
+DEFAULT_AGENT_CONFIGS = {
+    "output_format": "## Ausgabeformat\nFür jede gefundene neue Information erstelle einen Eintrag im folgenden Format:\n\n**[KÜRZEL] Quelle:** Name der Quelle\n**Datum:** TT.MM.JJJJ (soweit bekannt)\n**Titel:** Kurzer beschreibender Titel\n**Zusammenfassung:** 2–4 Sätze, die den Inhalt und die Relevanz für Gesundheitseinrichtungen erklären\n**Betroffene Rollen:** (z.B. Praxisinhaber, Abrechnung, QM, Datenschutz)\n**Priorität:** Hoch / Mittel / Niedrig\n**Link:** Direkter Link zur Quelle\n\n---",
+    "agents": {
+        "scrape": {
+            "label": "Scrape-Agent",
+            "persona": "Du bist ein spezialisierter Web-Scraping-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, öffentlich zugängliche Webseiten von Behörden, Verbänden und Institutionen systematisch auf neue regulatorische Inhalte zu prüfen.",
+            "method": "Du rufst jede URL direkt ab (HTTP GET), analysierst den HTML-Inhalt und extrahierst relevante neue Dokumente, Meldungen oder Änderungen.",
+            "hint": "Achte besonders auf Neuigkeiten, Pressemitteilungen, aktuelle Meldungen und Änderungen im Bereich der Gesundheitsversorgung. Vergleiche mit bekannten Inhalten und melde nur tatsächlich neue Informationen."
+        },
+        "feed": {
+            "label": "Feed-Agent",
+            "persona": "Du bist ein spezialisierter Feed- und API-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, strukturierte Datenquellen (RSS-Feeds, Atom-Feeds, Newsletter-Archive, APIs) auf neue regulatorische Inhalte zu prüfen.",
+            "method": "Du liest RSS/Atom-Feeds, verarbeitest Newsletter-Inhalte oder rufst APIs ab und analysierst die zurückgegebenen Einträge auf Relevanz für Gesundheitseinrichtungen in Deutschland.",
+            "hint": "Filtere nach Einträgen der letzten 7 Tage. Fokussiere auf Themen wie Abrechnung, Datenschutz, Hygiene, Qualitätsmanagement und regulatorische Änderungen."
+        },
+        "pdf": {
+            "label": "PDF-Agent",
+            "persona": "Du bist ein spezialisierter PDF-Analyse-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, verlinkte Dokumente (PDFs, Word-Dateien) von Quellen-Webseiten zu finden, herunterzuladen und auf regulatorisch relevante Inhalte zu analysieren.",
+            "method": "Du durchsuchst die Quellen-URLs nach verlinkten Dokumenten, lädst diese herunter und extrahierst relevante Inhalte aus PDFs und anderen Dokumentformaten.",
+            "hint": "Priorisiere aktuelle Leitlinien, Rundschreiben, Beschlüsse und offizielle Bekanntmachungen. Achte auf Versionsnummern und Datumsangaben, um neue von bekannten Dokumenten zu unterscheiden."
+        },
+        "search": {
+            "label": "Search-Agent",
+            "persona": "Du bist ein spezialisierter Recherche-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, Quellen mit Login-Pflicht, Datenbanken oder kostenpflichtigen Inhalten auf neue regulatorische Informationen zu prüfen.",
+            "method": "Du verwendest gespeicherte Zugangsdaten oder öffentliche Suchfunktionen, um in geschützten Bereichen oder Datenbanken nach neuen relevanten Inhalten zu suchen.",
+            "hint": "Falls kein direkter Zugang möglich ist, suche nach öffentlichen Zusammenfassungen, Pressemitteilungen oder alternativen Zugangswegen zur gleichen Information."
+        }
+    }
+}
+
+def load_agent_configs():
+    if not os.path.exists(AGENT_CONFIGS_FILE):
+        return DEFAULT_AGENT_CONFIGS
+    data = _load(AGENT_CONFIGS_FILE)
+    # Merge with defaults so new agents/fields are always present
+    cfg = dict(DEFAULT_AGENT_CONFIGS)
+    cfg["output_format"] = data.get("output_format", cfg["output_format"])
+    for key, defaults in DEFAULT_AGENT_CONFIGS["agents"].items():
+        saved = data.get("agents", {}).get(key, {})
+        cfg["agents"][key] = {**defaults, **saved}
+    return cfg
+
+def save_agent_configs(d): _save(AGENT_CONFIGS_FILE, d)
 
 def load_settings():
     if not os.path.exists(SETTINGS_FILE):
@@ -946,6 +991,33 @@ def _signal_from_form(form, existing_id=None):
         "deadline":          form.get("deadline", "").strip() or None,
         "section_ids":       form.getlist("section_ids"),
     }
+
+
+# ── Agents ────────────────────────────────────────────────────────────────────
+
+@app.route("/admin/agents", methods=["GET"])
+@role_required("admin", "superadmin")
+def agents():
+    cfg = load_agent_configs()
+    sources_list = load_sources()
+    hints = load_settings().get("source_prompt_hints", "")
+    return render_template("agents.html",
+        agent_configs=cfg, sources=sources_list, hints=hints,
+        source_ingestion_methods=SOURCE_INGESTION_METHODS)
+
+@app.route("/admin/agents/save", methods=["POST"])
+@role_required("superadmin")
+def agents_save():
+    cfg = load_agent_configs()
+    field = request.form.get("field", "")
+    agent_key = request.form.get("agent_key", "")
+    value = request.form.get("value", "").strip()
+    if field == "output_format":
+        cfg["output_format"] = value
+    elif field in ("persona", "method", "hint") and agent_key in cfg["agents"]:
+        cfg["agents"][agent_key][field] = value
+    save_agent_configs(cfg)
+    return ("", 204)
 
 
 # ── Sources ───────────────────────────────────────────────────────────────────
