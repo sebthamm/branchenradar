@@ -137,15 +137,17 @@
     </div>
   </div>
 
-  {# ── Allgemeine Hinweise ── #}
+  {# ── Quellenspezifische Prompt-Hinweise ── #}
   <div class="hints-box">
-    <div class="hints-label">Allgemeine Hinweise für die KI</div>
     <form method="post" action="{{ url_for('sources') }}">
       <input type="hidden" name="action" value="hints">
-      <textarea name="source_prompt_hints" placeholder="z.B. Neue Inhalte als Signal im Format: Titel | Status | Kategorie | Zusammenfassung | Quelle | URL. Nur Inhalte der letzten 30 Tage.">{{ hints }}</textarea>
+      <div class="hints-label">Allgemeine Hinweise für quellenspezifische Prompts</div>
+      <textarea name="source_prompt_hints" placeholder="Hinweise, die in quellenspezifische Prompts eingebettet werden.">{{ hints }}</textarea>
+      <div style="margin-top:18px;margin-bottom:6px" class="hints-label">Hinweise zum Ausgabeformat für quellenspezifische Prompts</div>
+      <textarea name="source_output_format" style="min-height:130px" placeholder="Ausgabeformat für quellenspezifische Prompts.">{{ source_output_format }}</textarea>
       <div class="hints-actions">
         <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
-        <span class="hints-desc">Diese Hinweise werden in jeden generierten Prompt eingebettet.</span>
+        <span class="hints-desc">Diese Felder werden in quellenspezifisch generierte Prompts eingebettet.</span>
       </div>
     </form>
   </div>

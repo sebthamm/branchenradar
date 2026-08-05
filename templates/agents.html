@@ -59,12 +59,10 @@
   <div class="page-sub">Prompt-Zusammensetzung und Konfiguration der vier Recherche-Agenten. Superadmins können die Felder direkt bearbeiten.</div>
 
   {% set agent_order = ['scrape', 'feed', 'pdf', 'search'] %}
-  {% set ingestion_map = {} %}
-  {% for key, label, desc in source_ingestion_methods %}{% set _ = ingestion_map.update({key: label}) %}{% endfor %}
 
   {% for key in agent_order %}
   {% set ag = agent_configs.agents[key] %}
-  {% set src_count = sources | selectattr('ingestion_methods', 'defined') | selectattr('ingestion_methods', 'containing', key) | list | length %}
+  {% set src_count = src_counts.get(key, 0) %}
   <div class="agent-card" id="card-{{ key }}">
     <div class="agent-card-head">
       <div>

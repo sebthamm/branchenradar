@@ -998,12 +998,16 @@ def _signal_from_form(form, existing_id=None):
 @app.route("/admin/agents", methods=["GET"])
 @role_required("admin", "superadmin")
 def agents():
-    cfg = load_agent_configs()
+    cfg          = load_agent_configs()
     sources_list = load_sources()
-    hints = load_settings().get("source_prompt_hints", "")
+    settings_cfg = load_settings()
+    hints        = settings_cfg.get("source_prompt_hints", "")
+    src_counts   = {}
+    for key, *_ in [("scrape",), ("feed",), ("pdf",), ("search",)]:
+        src_counts[key] = sum(1 for s in sources_list if key in s.get("ingestion_methods", []))
     return render_template("agents.html",
         agent_configs=cfg, sources=sources_list, hints=hints,
-        source_ingestion_methods=SOURCE_INGESTION_METHODS)
+        src_counts=src_counts)
 
 @app.route("/admin/agents/save", methods=["POST"])
 @role_required("superadmin")
@@ -1166,16 +1170,28 @@ def sources():
             flash("Quelle gelöscht.", "success")
 
         elif action == "hints":
-            cfg["source_prompt_hints"] = request.form.get("source_prompt_hints", "").strip()
+            cfg["source_prompt_hints"]      = request.form.get("source_prompt_hints", "").strip()
+            cfg["source_output_format"]     = request.form.get("source_output_format", "").strip()
             save_settings(cfg)
-            flash("Allgemeine Hinweise gespeichert.", "success")
+            flash("Hinweise gespeichert.", "success")
 
         return redirect(url_for("sources"))
 
+    default_output_fmt = (
+        "**[KÜRZEL] Quelle:** Name der Quelle\n"
+        "**Datum:** TT.MM.JJJJ (soweit bekannt)\n"
+        "**Titel:** Kurzer beschreibender Titel\n"
+        "**Zusammenfassung:** 2–4 Sätze, die den Inhalt und die Relevanz für Gesundheitseinrichtungen erklären\n"
+        "**Betroffene Rollen:** (z.B. Praxisinhaber, Abrechnung, QM, Datenschutz)\n"
+        "**Priorität:** Hoch / Mittel / Niedrig\n"
+        "**Link:** Direkter Link zur Quelle\n\n---"
+    )
     sources_list = load_sources()
     hints = cfg.get("source_prompt_hints", "")
+    source_output_format = cfg.get("source_output_format", default_output_fmt)
     return render_template("sources.html",
         sources=sources_list, hints=hints,
+        source_output_format=source_output_format,
         source_primary_categories=SOURCE_PRIMARY_CATEGORIES,
         source_secondary_categories=SOURCE_SECONDARY_CATEGORIES,
         source_relevant_roles=SOURCE_RELEVANT_ROLES,
