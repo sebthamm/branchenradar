@@ -171,12 +171,23 @@
       </div>
       {% endfor %}
 
-      <div class="field">
-        <label for="themen_id">Themen-ID</label>
-        <input type="text" id="themen_id" name="themen_id"
-               value="{{ signal.get('themen_id','') if signal else '' }}"
-               placeholder="z.B. TI-REFORM-2026">
-        <div class="hint">Verbindet mehrere Signale zum gleichen Vorgang.</div>
+      <div class="row-2">
+        <div class="field">
+          <label for="themen_id">Themen-ID</label>
+          <input type="text" id="themen_id" name="themen_id"
+                 value="{{ signal.get('themen_id','') if signal else '' }}"
+                 placeholder="z.B. TI-REFORM-2026">
+          <div class="hint">Verbindet mehrere Signale zum gleichen Vorgang.</div>
+        </div>
+        <div class="field">
+          <label for="reporting_status">Reporting-Status</label>
+          <select id="reporting_status" name="reporting_status">
+            <option value="" {{ 'selected' if not signal or not signal.get('reporting_status') else '' }}>— unverändert / bestehend —</option>
+            <option value="NEU"    {{ 'selected' if signal and signal.get('reporting_status') == 'NEU' else '' }}>NEU</option>
+            <option value="UPDATE" {{ 'selected' if signal and signal.get('reporting_status') == 'UPDATE' else '' }}>UPDATE</option>
+          </select>
+          <div class="hint">Wird vom Gruppierungs-Agenten gesetzt. NEU = erstmals im Reporting. UPDATE = Ergänzung zu bestehendem Signal.</div>
+        </div>
       </div>
 
       <div class="form-actions">

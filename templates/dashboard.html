@@ -126,6 +126,13 @@
     .prio-badge.sollte { background: rgba(196,120,14,.28); }
     .prio-badge.kann   { background: rgba(37,122,88,.28); }
   }
+  .reporting-badge { display: inline-flex; padding: 2px 7px; border-radius: 4px; font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; margin-left: 5px; }
+  .reporting-badge.neu    { background: rgba(29,61,40,.12); color: var(--navy); }
+  .reporting-badge.update { background: rgba(184,107,26,.12); color: var(--s-announced); }
+  @media (prefers-color-scheme: dark) {
+    .reporting-badge.neu    { background: rgba(29,61,40,.3); }
+    .reporting-badge.update { background: rgba(184,107,26,.3); }
+  }
 
   .card-title { font-family: Georgia, "Times New Roman", serif; font-size: 16px; font-weight: normal; line-height: 1.4; color: var(--text); text-wrap: balance; margin-bottom: 8px; }
   /* collapsed: only deadline visible in meta row */
@@ -272,7 +279,14 @@
     <div class="card-body">
       <div class="card-header">
         <div class="card-eyebrow">{{ categories.get(s.category, s.category) }}</div>
-        <span class="prio-badge {{ prio }}">{{ prio_labels_map.get(prio, prio) }}</span>
+        <div style="display:flex;align-items:center;flex-shrink:0;gap:4px">
+          {% if s.get('reporting_status') == 'NEU' %}
+          <span class="reporting-badge neu">Neu</span>
+          {% elif s.get('reporting_status') == 'UPDATE' %}
+          <span class="reporting-badge update">Update</span>
+          {% endif %}
+          <span class="prio-badge {{ prio }}">{{ prio_labels_map.get(prio, prio) }}</span>
+        </div>
       </div>
 
       <div class="card-title">{{ s.title }}</div>

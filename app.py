@@ -137,39 +137,101 @@ def save_todos(d):    _save(TODOS_FILE, d)
 def load_sources():   return _load(SOURCES_FILE)
 def save_sources(d):  _save(SOURCES_FILE, d)
 
+_SEARCH_OUTPUT_FORMAT = (
+    "## Ausgabeformat\n"
+    "Für jedes gefundene Signal erstelle einen Eintrag mit folgenden Feldern:\n\n"
+    "**Titel:** [Sprechender Action-Titel im Stil eines Managementpräsentations-Titels – prägnant, aktiv, handlungsorientiert, 8–12 Wörter]\n"
+    "**Zusammenfassung:** [500–1000 Zeichen. Was passiert konkret, was bedeutet das für Gesundheitseinrichtungen?]\n"
+    "**Datum:** [TT.MM.JJJJ – Datum der Veröffentlichung, des Beschlusses oder des Inkrafttretens]\n"
+    "**Entwicklungsstand:** [Genau eines von: Beobachtung | Veröffentlicht | Beschlossen | In Kraft]\n"
+    "**Quelle 1:** [Name der Quelle, z.B. G-BA, BMG, gematik, BZÄK]\n"
+    "**Quellenlink 1:** [Direkte URL zum Originaldokument oder zur Meldung]\n\n"
+    "Alle anderen Felder (Priorität, Kategorie, Fachbereich, Betroffene Rollen, Aufwand, Nächster Schritt) "
+    "werden von den Such-Agenten nicht befüllt und bleiben leer.\n\n"
+    "---"
+)
+
+_SEARCH_PERSONA_BASE = (
+    "Du bist ein spezialisierter Such-Agent für den Branchenradar Gesundheitswesen. "
+    "Deine Aufgabe ist es, relevante neue regulatorische Inhalte zu finden und als strukturierte Signale aufzubereiten. "
+    "Ein Signal fasst ein regulatorisches Ereignis prägnant zusammen (500–1000 Zeichen) "
+    "und gibt ihm einen sprechenden, handlungsorientierten Titel."
+)
+
 DEFAULT_AGENT_CONFIGS = {
-    "output_format": "## Ausgabeformat\nFür jede gefundene neue Information erstelle einen Eintrag im folgenden Format:\n\n**[KÜRZEL] Quelle:** Name der Quelle\n**Datum:** TT.MM.JJJJ (soweit bekannt)\n**Titel:** Kurzer beschreibender Titel\n**Zusammenfassung:** 2–4 Sätze, die den Inhalt und die Relevanz für Gesundheitseinrichtungen erklären\n**Betroffene Rollen:** (z.B. Praxisinhaber, Abrechnung, QM, Datenschutz)\n**Priorität:** Hoch / Mittel / Niedrig\n**Link:** Direkter Link zur Quelle\n\n---",
+    "output_format": _SEARCH_OUTPUT_FORMAT,
     "agents": {
         "scrape": {
             "label": "Scrape-Agent",
-            "persona": "Du bist ein spezialisierter Web-Scraping-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, öffentlich zugängliche Webseiten von Behörden, Verbänden und Institutionen systematisch auf neue regulatorische Inhalte zu prüfen.",
-            "method": "Du rufst jede URL direkt ab (HTTP GET), analysierst den HTML-Inhalt und extrahierst relevante neue Dokumente, Meldungen oder Änderungen.",
-            "hint": "Achte besonders auf Neuigkeiten, Pressemitteilungen, aktuelle Meldungen und Änderungen im Bereich der Gesundheitsversorgung. Vergleiche mit bekannten Inhalten und melde nur tatsächlich neue Informationen."
+            "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf öffentlich zugängliche Webseiten von Behörden, Verbänden und Institutionen.",
+            "method": "Du rufst jede URL direkt ab (HTTP GET), analysierst den HTML-Inhalt und extrahierst relevante neue Dokumente, Meldungen oder Änderungen. Vergleiche mit bekannten Inhalten und melde nur tatsächlich neue Informationen.",
+            "hint": "Achte besonders auf Neuigkeiten, Pressemitteilungen und aktuelle Meldungen. Ignoriere redaktionelle Artikel ohne konkreten regulatorischen Gehalt. Melde nur Inhalte, die seit der letzten Recherche neu erschienen sind."
         },
         "feed": {
             "label": "Feed-Agent",
-            "persona": "Du bist ein spezialisierter Feed- und API-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, strukturierte Datenquellen (RSS-Feeds, Atom-Feeds, Newsletter-Archive, APIs) auf neue regulatorische Inhalte zu prüfen.",
+            "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf strukturierte Datenquellen: RSS-Feeds, Atom-Feeds, Newsletter-Archive und APIs.",
             "method": "Du liest RSS/Atom-Feeds, verarbeitest Newsletter-Inhalte oder rufst APIs ab und analysierst die zurückgegebenen Einträge auf Relevanz für Gesundheitseinrichtungen in Deutschland.",
-            "hint": "Filtere nach Einträgen der letzten 7 Tage. Fokussiere auf Themen wie Abrechnung, Datenschutz, Hygiene, Qualitätsmanagement und regulatorische Änderungen."
+            "hint": "Filtere nach Einträgen der letzten 7 Tage. Fokussiere auf Themen wie Abrechnung, Datenschutz, Hygiene, Qualitätsmanagement und regulatorische Änderungen. Ignoriere reine Veranstaltungshinweise ohne regulatorischen Inhalt."
         },
         "pdf": {
             "label": "PDF-Agent",
-            "persona": "Du bist ein spezialisierter PDF-Analyse-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, verlinkte Dokumente (PDFs, Word-Dateien) von Quellen-Webseiten zu finden, herunterzuladen und auf regulatorisch relevante Inhalte zu analysieren.",
+            "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf verlinkte Dokumente (PDFs, Word-Dateien) von Quellen-Webseiten.",
             "method": "Du durchsuchst die Quellen-URLs nach verlinkten Dokumenten, lädst diese herunter und extrahierst relevante Inhalte aus PDFs und anderen Dokumentformaten.",
-            "hint": "Priorisiere aktuelle Leitlinien, Rundschreiben, Beschlüsse und offizielle Bekanntmachungen. Achte auf Versionsnummern und Datumsangaben, um neue von bekannten Dokumenten zu unterscheiden."
+            "hint": "Priorisiere aktuelle Leitlinien, Rundschreiben, Beschlüsse und offizielle Bekanntmachungen. Achte auf Versionsnummern und Datumsangaben, um neue von bekannten Dokumenten zu unterscheiden. Ignoriere unveränderte Dokumente."
         },
         "search": {
             "label": "Search-Agent",
-            "persona": "Du bist ein spezialisierter Recherche-Agent für den Branchenradar Gesundheitswesen. Deine Aufgabe ist es, Quellen mit Login-Pflicht, Datenbanken oder kostenpflichtigen Inhalten auf neue regulatorische Informationen zu prüfen.",
+            "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf Quellen mit Login-Pflicht, Datenbanken oder kostenpflichtigen Inhalten.",
             "method": "Du verwendest gespeicherte Zugangsdaten oder öffentliche Suchfunktionen, um in geschützten Bereichen oder Datenbanken nach neuen relevanten Inhalten zu suchen.",
             "hint": "Falls kein direkter Zugang möglich ist, suche nach öffentlichen Zusammenfassungen, Pressemitteilungen oder alternativen Zugangswegen zur gleichen Information."
         },
         "group": {
             "label": "Gruppierungs-Agent",
-            "persona": "",
-            "method": "",
-            "hint": "",
-            "output_format": ""
+            "persona": (
+                "Du bist ein redaktioneller Gruppierungs-Agent für den Branchenradar Gesundheitswesen. "
+                "Du erhältst zwei Input-Datenbanken als Excel-Dateien: "
+                "(1) neue Signale, die von den Such-Agenten in diesem Recherche-Zyklus gefunden wurden, und "
+                "(2) alle Signale aus dem letzten Branchenradar-Bericht. "
+                "Deine Aufgabe ist es, diese Datenbanken zu konsolidieren und ein aktualisiertes, bereinigtes Signal-Set zu erstellen."
+            ),
+            "method": (
+                "Schritt 1 – Neue Signale zusammenführen:\n"
+                "Prüfe alle neuen Signale aus den Such-Agenten auf inhaltliche Überschneidungen. "
+                "Signale, die dasselbe regulatorische Ereignis oder denselben Vorgang beschreiben, werden zu einem Signal zusammengefasst. "
+                "Das zusammengeführte Signal erhält alle Quellen, Quellenlinks und Daten der Einzelsignale "
+                "(Quelle 1 / Quellenlink 1, Quelle 2 / Quellenlink 2, Quelle 3 / Quellenlink 3 etc.). "
+                "Der Titel und die Zusammenfassung werden redaktionell zusammengeführt.\n\n"
+                "Schritt 2 – Abgleich mit bestehendem Reporting:\n"
+                "Vergleiche die konsolidierten neuen Signale mit den Signalen aus dem letzten Branchenradar-Bericht. "
+                "Entscheide für jedes neue Signal:\n"
+                "– Ist es ein Update, eine Ergänzung oder Konkretisierung eines bestehenden Signals? "
+                "→ Status: UPDATE. Hänge die neuen Informationen als separaten Absatz an die bestehende Zusammenfassung an, "
+                "versehen mit dem Datum der Neuerung im Format [TT.MM.JJJJ]: …\n"
+                "– Ist es ein völlig neues Thema, das bisher nicht im Branchenradar war? "
+                "→ Status: NEU.\n"
+                "– Bestehende Signale aus dem alten Bericht ohne jede Neuerung erhalten Status: leer (unverändert). "
+                "Sie werden unverändert in die Ausgabe übernommen."
+            ),
+            "hint": (
+                "Nutze semantisches Verständnis für den Abgleich – nicht nur Stichwortübereinstimmungen. "
+                "Verschiedene Meldungen zur selben Gesetzgebung, zum selben Beschluss oder zum selben Verfahren gehören zusammen. "
+                "Achte besonders auf Datumsangaben: neuere Meldungen zum gleichen Thema sind Update-Kandidaten. "
+                "Im Zweifel lieber zusammenführen als doppelt aufführen. "
+                "Behalte die Originalzusammenfassungen bestehender Signale vollständig – ergänze nur, lösche nicht."
+            ),
+            "output_format": (
+                "## Ausgabeformat\n"
+                "Erstelle eine vollständige Liste aller Signale (neue + aktualisierte + unveränderte bestehende) im folgenden Format:\n\n"
+                "**Status:** NEU | UPDATE | (leer = unverändert)\n"
+                "**Titel:** [Sprechender Action-Titel]\n"
+                "**Zusammenfassung:** [Bestehende Zusammenfassung. Bei UPDATE: Neuer Absatz mit [TT.MM.JJJJ]: Neue Informationen]\n"
+                "**Datum:** [Datum des Signals bzw. aktuellstes Datum bei Updates]\n"
+                "**Entwicklungsstand:** [Beobachtung | Veröffentlicht | Beschlossen | In Kraft]\n"
+                "**Quelle 1:** [Name] | **Quellenlink 1:** [URL]\n"
+                "**Quelle 2:** [Name] | **Quellenlink 2:** [URL] (falls vorhanden)\n"
+                "**Quelle 3:** [Name] | **Quellenlink 3:** [URL] (falls vorhanden)\n\n"
+                "---"
+            )
         },
         "bewertung": {
             "label": "Bewertungs-Agent",
@@ -182,15 +244,19 @@ DEFAULT_AGENT_CONFIGS = {
 }
 
 def load_agent_configs():
+    import copy
+    cfg = copy.deepcopy(DEFAULT_AGENT_CONFIGS)
     if not os.path.exists(AGENT_CONFIGS_FILE):
-        return DEFAULT_AGENT_CONFIGS
+        return cfg
     data = _load(AGENT_CONFIGS_FILE)
-    # Merge with defaults so new agents/fields are always present
-    cfg = dict(DEFAULT_AGENT_CONFIGS)
-    cfg["output_format"] = data.get("output_format", cfg["output_format"])
-    for key, defaults in DEFAULT_AGENT_CONFIGS["agents"].items():
+    # Only override with saved value if it's non-empty
+    if data.get("output_format", "").strip():
+        cfg["output_format"] = data["output_format"]
+    for key in cfg["agents"]:
         saved = data.get("agents", {}).get(key, {})
-        cfg["agents"][key] = {**defaults, **saved}
+        for field in ("persona", "method", "hint", "output_format"):
+            if saved.get(field, "").strip():
+                cfg["agents"][key][field] = saved[field]
     return cfg
 
 def save_agent_configs(d): _save(AGENT_CONFIGS_FILE, d)
@@ -1004,6 +1070,7 @@ def _signal_from_form(form, existing_id=None):
         "date":              primary_date,
         "deadline":          form.get("deadline", "").strip() or None,
         "section_ids":       form.getlist("section_ids"),
+        "reporting_status":  form.get("reporting_status", "").strip(),
     }
 
 
