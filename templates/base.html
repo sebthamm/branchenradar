@@ -50,6 +50,7 @@
     .header-right { display: flex; align-items: center; gap: 16px; }
     .header-link { font-size: 13px; color: var(--muted); text-decoration: none; white-space: nowrap; }
     .header-link:hover { color: var(--text); }
+    .header-link-primary { color: var(--text); font-weight: 500; }
 
     /* Signale dropdown */
     .nav-dropdown { position: relative; display: inline-flex; align-items: center; }
@@ -165,11 +166,17 @@
     {# Desktop nav #}
     <div class="header-right">
       {% if session.get('user_id') %}
-        <a href="{{ url_for('dashboard') }}" class="header-link">Dashboard</a>
+        <a href="{{ url_for('dashboard') }}" class="header-link header-link-primary">Dashboard</a>
         {% if session.role in ('admin', 'superadmin') %}
-          <a href="{{ url_for('todos') }}" class="header-link" style="position:relative">
+          <a href="{{ url_for('todos') }}" class="header-link header-link-primary" style="position:relative">
             ToDos{% if pending_todos %}<span style="position:absolute;top:-5px;right:-8px;background:#B03060;color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 4px;min-width:14px;text-align:center">{{ pending_todos }}</span>{% endif %}
           </a>
+        {% endif %}
+        {% if session.role == 'superadmin' %}
+          <span style="width:1px;height:14px;background:rgba(255,255,255,.2);display:inline-block;margin:0 4px"></span>
+          <a href="{{ url_for('sa_dashboard') }}" class="header-link">Nutzerverwaltung</a>
+          <a href="{{ url_for('sources') }}" class="header-link">Quellen</a>
+          <a href="{{ url_for('agents') }}" class="header-link">Agenten</a>
           <div class="nav-dropdown">
             <span class="header-link" style="cursor:default">Signale ▾</span>
             <div class="nav-dropdown-menu">
@@ -178,12 +185,6 @@
               <a href="{{ url_for('signal_final') }}">Signale (FINAL)</a>
             </div>
           </div>
-        {% endif %}
-        {% if session.role == 'superadmin' %}
-          <span style="width:1px;height:14px;background:rgba(255,255,255,.2);display:inline-block;margin:0 4px"></span>
-          <a href="{{ url_for('sa_dashboard') }}" class="header-link">Nutzerverwaltung</a>
-          <a href="{{ url_for('sources') }}" class="header-link">Quellen</a>
-          <a href="{{ url_for('agents') }}" class="header-link">Agenten</a>
           <a href="{{ url_for('sa_functions') }}" class="header-link">Funktionen</a>
           <a href="{{ url_for('sa_logbook') }}" class="header-link">Log-Buch</a>
           <a href="{{ url_for('sa_settings') }}" class="header-link">Einstellungen</a>
@@ -191,6 +192,14 @@
           <span style="width:1px;height:14px;background:rgba(255,255,255,.2);display:inline-block;margin:0 4px"></span>
           <a href="{{ url_for('admin_dashboard') }}" class="header-link">Nutzerverwaltung</a>
           <a href="{{ url_for('sources') }}" class="header-link">Quellen</a>
+          <div class="nav-dropdown">
+            <span class="header-link" style="cursor:default">Signale ▾</span>
+            <div class="nav-dropdown-menu">
+              <a href="{{ url_for('signal_list') }}">Signale (RAW)</a>
+              <a href="{{ url_for('signal_match') }}">Signale (MATCH)</a>
+              <a href="{{ url_for('signal_final') }}">Signale (FINAL)</a>
+            </div>
+          </div>
           <a href="{{ url_for('settings') }}" class="header-link">Einstellungen</a>
         {% endif %}
         <span style="width:1px;height:14px;background:rgba(255,255,255,.15);display:inline-block"></span>
@@ -224,20 +233,20 @@
       <button class="nav-drawer-close" onclick="closeDrawer()" aria-label="Schließen">×</button>
     </div>
     <div class="nav-drawer-links">
-      <a href="{{ url_for('dashboard') }}" onclick="closeDrawer()">Dashboard</a>
+      <a href="{{ url_for('dashboard') }}" onclick="closeDrawer()" style="color:#fff;font-weight:500">Dashboard</a>
       {% if session.role in ('admin', 'superadmin') %}
-        <a href="{{ url_for('todos') }}" onclick="closeDrawer()">
+        <a href="{{ url_for('todos') }}" onclick="closeDrawer()" style="color:#fff;font-weight:500">
           ToDos{% if pending_todos %}<span class="nav-badge">{{ pending_todos }}</span>{% endif %}
         </a>
-        <a href="{{ url_for('signal_list') }}" onclick="closeDrawer()">Signale (RAW)</a>
-        <a href="{{ url_for('signal_match') }}" onclick="closeDrawer()">Signale (MATCH)</a>
-        <a href="{{ url_for('signal_final') }}" onclick="closeDrawer()">Signale (FINAL)</a>
       {% endif %}
       {% if session.role == 'superadmin' %}
         <div class="nav-drawer-sep"></div>
         <a href="{{ url_for('sa_dashboard') }}" onclick="closeDrawer()">Nutzerverwaltung</a>
         <a href="{{ url_for('sources') }}" onclick="closeDrawer()">Quellen</a>
         <a href="{{ url_for('agents') }}" onclick="closeDrawer()">Agenten</a>
+        <a href="{{ url_for('signal_list') }}" onclick="closeDrawer()">Signale (RAW)</a>
+        <a href="{{ url_for('signal_match') }}" onclick="closeDrawer()">Signale (MATCH)</a>
+        <a href="{{ url_for('signal_final') }}" onclick="closeDrawer()">Signale (FINAL)</a>
         <a href="{{ url_for('sa_functions') }}" onclick="closeDrawer()">Funktionen</a>
         <a href="{{ url_for('sa_logbook') }}" onclick="closeDrawer()">Log-Buch</a>
         <a href="{{ url_for('sa_settings') }}" onclick="closeDrawer()">Einstellungen</a>
@@ -245,6 +254,9 @@
         <div class="nav-drawer-sep"></div>
         <a href="{{ url_for('admin_dashboard') }}" onclick="closeDrawer()">Nutzerverwaltung</a>
         <a href="{{ url_for('sources') }}" onclick="closeDrawer()">Quellen</a>
+        <a href="{{ url_for('signal_list') }}" onclick="closeDrawer()">Signale (RAW)</a>
+        <a href="{{ url_for('signal_match') }}" onclick="closeDrawer()">Signale (MATCH)</a>
+        <a href="{{ url_for('signal_final') }}" onclick="closeDrawer()">Signale (FINAL)</a>
         <a href="{{ url_for('settings') }}" onclick="closeDrawer()">Einstellungen</a>
       {% endif %}
       <div class="nav-drawer-sep"></div>
