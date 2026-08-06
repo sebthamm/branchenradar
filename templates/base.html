@@ -55,9 +55,13 @@
     .nav-dropdown { position: relative; display: inline-flex; align-items: center; }
     .nav-dropdown > .header-link { cursor: default; }
     .nav-dropdown-menu {
-      display: none; position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+      display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
       box-shadow: var(--shadow); min-width: 170px; z-index: 400; padding: 4px 0;
+      margin-top: 6px;
+    }
+    .nav-dropdown::after {
+      content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 10px;
     }
     .nav-dropdown:hover .nav-dropdown-menu { display: block; }
     .nav-dropdown-menu a {
@@ -167,7 +171,7 @@
             ToDos{% if pending_todos %}<span style="position:absolute;top:-5px;right:-8px;background:#B03060;color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 4px;min-width:14px;text-align:center">{{ pending_todos }}</span>{% endif %}
           </a>
           <div class="nav-dropdown">
-            <a href="{{ url_for('signal_list') }}" class="header-link">Signale ▾</a>
+            <span class="header-link" style="cursor:default">Signale ▾</span>
             <div class="nav-dropdown-menu">
               <a href="{{ url_for('signal_list') }}">Signale (RAW)</a>
               <a href="{{ url_for('signal_match') }}">Signale (MATCH)</a>
