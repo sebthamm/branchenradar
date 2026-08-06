@@ -2,31 +2,150 @@
 {% block title %}Signale (FINAL) — Branchenradar{% endblock %}
 {% block head %}
 <style>
-  .main { max-width: 900px; margin: 0 auto; padding: 28px 32px 60px; }
-  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; gap: 12px; flex-wrap: wrap; }
+  .main { max-width: 1300px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
   .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
-  .placeholder { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 48px 40px; text-align: center; }
-  .placeholder-icon { font-size: 40px; margin-bottom: 16px; }
-  .placeholder-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
-  .placeholder-desc { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 500px; margin: 0 auto; }
+  .page-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .ts-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; font-size: 13px; }
+  .ts-label { color: var(--muted); }
+  .ts-value { font-family: monospace; font-weight: 600; color: var(--navy); font-size: 14px; }
+  .ts-empty { color: var(--faint); font-style: italic; }
+
+  /* Import panel */
+  .import-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; }
+  .import-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; cursor: pointer; user-select: none; }
+  .import-panel-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .import-panel-toggle { font-size: 12px; color: var(--muted); }
+  .import-panel-body { padding: 16px 18px; border-top: 1px solid var(--border); display: none; }
+  .import-panel-body.open { display: block; }
+  .import-hint { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+  textarea.csv-input { width: 100%; min-height: 120px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; font-family: monospace; color: var(--text); resize: vertical; outline: none; }
+  textarea.csv-input:focus { border-color: var(--navy); }
+
+  /* Table */
+  .db-meta { font-size: 12px; color: var(--faint); margin-bottom: 10px; }
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; min-width: 900px; }
+  thead th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 9px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .prio-muss   { display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:rgba(192,64,42,.12);color:var(--s-action); }
+  .prio-sollte { display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:rgba(184,107,26,.12);color:var(--s-announced); }
+  .prio-kann   { display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:rgba(46,123,170,.12);color:var(--s-radar); }
+  .rs-neu    { display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;background:rgba(29,61,40,.12);color:var(--navy); }
+  .rs-update { display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;background:rgba(184,107,26,.12);color:var(--s-announced); }
+  .btn-del { background:none;border:none;cursor:pointer;color:var(--faint);font-size:14px;padding:1px 5px;border-radius:3px; }
+  .btn-del:hover { color:var(--s-action); }
+  .empty-state { text-align:center;padding:48px 20px;color:var(--faint);font-size:14px; }
+  @media (max-width:700px) { .main { padding:14px 14px 60px; } }
 </style>
 {% endblock %}
 {% block content %}
 <div class="main">
   <div class="page-head">
-    <div class="page-title">Signale (FINAL)</div>
-    <div>
+    <div class="page-title">Signale (FINAL) <span style="font-size:14px;font-family:inherit;color:var(--faint);font-weight:normal">({{ signals | length }})</span></div>
+    <div class="page-actions">
       <a href="{{ url_for('signal_match') }}" class="btn btn-secondary btn-sm">← MATCH</a>
+      <a href="{{ url_for('signal_archive') }}" class="btn btn-secondary btn-sm">Archiv</a>
     </div>
   </div>
-  <div class="placeholder">
-    <div class="placeholder-icon">🏁</div>
-    <div class="placeholder-title">In Vorbereitung</div>
-    <div class="placeholder-desc">
-      Signale (FINAL) wird die zusammengeführten und redaktionell aufbereiteten Signale enthalten,
-      die für das nächste Branchenradar-Reporting freigegeben sind.
-      Dieser Bereich wird in einem der nächsten Updates eingerichtet.
+
+  <div class="ts-bar">
+    <span class="ts-label">Timestamp:</span>
+    {% if timestamp %}
+    <span class="ts-value">{{ timestamp }}</span>
+    <span style="font-size:12px;color:var(--faint)">
+      ({{ timestamp[:2] }}.{{ timestamp[2:4] }}.20{{ timestamp[:2] }} {{ timestamp[6:8] }}:{{ timestamp[8:10] }})
+    </span>
+    {% else %}
+    <span class="ts-empty">Noch keine FINAL-Version importiert</span>
+    {% endif %}
+  </div>
+
+  <!-- Import panel -->
+  <div class="import-panel">
+    <div class="import-panel-head" onclick="toggleImport()">
+      <span class="import-panel-title">Neue FINAL-Version importieren</span>
+      <span class="import-panel-toggle" id="import-toggle">▶ aufklappen</span>
+    </div>
+    <div class="import-panel-body" id="import-body">
+      <div class="import-hint">
+        CSV/TSV aus dem Ausgabeformat des Bewertungs-Agenten einfügen. Das aktuelle FINAL wird automatisch archiviert.
+        Spalten: <code>titel · zusammenfassung · detail · status · kategorie · priorität · entwicklungsstand · handlungszeitpunkt · fachbereich · quelle · quelle-url · datum · frist</code>
+      </div>
+      <form method="post" action="{{ url_for('signal_final') }}">
+        <input type="hidden" name="action" value="import_csv">
+        <textarea class="csv-input" name="csv_data" placeholder="Titel&#9;Zusammenfassung&#9;Kategorie&#9;…"></textarea>
+        <div style="margin-top:10px">
+          <button type="submit" class="btn btn-primary btn-sm">Importieren &amp; als neue FINAL-Version speichern</button>
+        </div>
+      </form>
     </div>
   </div>
+
+  <div class="db-meta">{{ signals | length }} Signal(e)</div>
+
+  {% if signals %}
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Status</th>
+          <th>Prio</th>
+          <th>Titel</th>
+          <th>Kategorie</th>
+          <th>Entwicklungsstand</th>
+          <th>Handlungszeitpunkt</th>
+          <th>Datum</th>
+          <th style="width:30px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in signals %}
+        <tr>
+          <td style="font-family:monospace;font-size:11px;color:var(--faint)">{{ s.get('id','') }}</td>
+          <td>
+            {% set rs = s.get('reporting_status','') %}
+            {% if rs == 'NEU' %}<span class="rs-neu">NEU</span>
+            {% elif rs == 'UPDATE' %}<span class="rs-update">UPDATE</span>
+            {% endif %}
+          </td>
+          <td>
+            {% set prio = s.get('priority','') %}
+            {% if prio == 'muss' %}<span class="prio-muss">MUSS</span>
+            {% elif prio == 'sollte' %}<span class="prio-sollte">SOLLTE</span>
+            {% elif prio == 'kann' %}<span class="prio-kann">KANN</span>
+            {% endif %}
+          </td>
+          <td style="max-width:280px">{{ s.get('title','') }}</td>
+          <td>{{ categories.get(s.get('category',''), s.get('category','')) }}</td>
+          <td>{{ entwicklungsstand_labels.get(s.get('entwicklungsstand',''), s.get('entwicklungsstand','')) }}</td>
+          <td style="font-size:11px">{{ s.get('handlungszeitpunkt','') }}</td>
+          <td style="font-size:11px;white-space:nowrap">{{ s.get('date','') }}</td>
+          <td>
+            <form method="post" action="{{ url_for('signal_final') }}" style="display:inline">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="sig_id" value="{{ s.get('id','') }}">
+              <button type="submit" class="btn-del" onclick="return confirm('Signal löschen?')">×</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">Noch keine Signale in FINAL. Importiere die Ausgabe des Bewertungs-Agenten.</div>
+  {% endif %}
 </div>
+<script>
+function toggleImport() {
+  const body = document.getElementById('import-body');
+  const tog  = document.getElementById('import-toggle');
+  const open = body.classList.toggle('open');
+  tog.textContent = open ? '▼ zuklappen' : '▶ aufklappen';
+}
+</script>
 {% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Archiv {{ ts }} — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 1300px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
+  .ts-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; font-size: 13px; }
+  .ts-label { color: var(--muted); }
+  .ts-value { font-family: monospace; font-weight: 600; color: var(--navy); font-size: 14px; }
+  .db-meta { font-size: 12px; color: var(--faint); margin-bottom: 10px; }
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; min-width: 900px; }
+  thead th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 9px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .prio-muss   { display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:rgba(192,64,42,.12);color:var(--s-action); }
+  .prio-sollte { display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:rgba(184,107,26,.12);color:var(--s-announced); }
+  .prio-kann   { display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:rgba(46,123,170,.12);color:var(--s-radar); }
+  .archive-badge { display:inline-block;padding:3px 10px;border-radius:3px;font-size:11px;font-weight:600;background:var(--surface2);color:var(--muted);margin-left:10px; }
+  .empty-state { text-align:center;padding:48px 20px;color:var(--faint);font-size:14px; }
+  @media (max-width:700px) { .main { padding:14px 14px 60px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Signale (FINAL) <span class="archive-badge">Archiv</span></div>
+    <a href="{{ url_for('signal_archive') }}" class="btn btn-secondary btn-sm">← Archivliste</a>
+  </div>
+
+  <div class="ts-bar">
+    <span class="ts-label">Timestamp:</span>
+    <span class="ts-value">{{ timestamp }}</span>
+    <span style="font-size:12px;color:var(--faint)">
+      ({{ timestamp[4:6] }}.{{ timestamp[2:4] }}.20{{ timestamp[:2] }} {{ timestamp[6:8] }}:{{ timestamp[8:10] }})
+    </span>
+  </div>
+
+  <div class="db-meta">{{ signals | length }} Signal(e) — schreibgeschützt</div>
+
+  {% if signals %}
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Prio</th>
+          <th>Titel</th>
+          <th>Kategorie</th>
+          <th>Entwicklungsstand</th>
+          <th>Handlungszeitpunkt</th>
+          <th>Datum</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in signals %}
+        <tr>
+          <td style="font-family:monospace;font-size:11px;color:var(--faint)">{{ s.get('id','') }}</td>
+          <td>
+            {% set prio = s.get('priority','') %}
+            {% if prio == 'muss' %}<span class="prio-muss">MUSS</span>
+            {% elif prio == 'sollte' %}<span class="prio-sollte">SOLLTE</span>
+            {% elif prio == 'kann' %}<span class="prio-kann">KANN</span>
+            {% endif %}
+          </td>
+          <td style="max-width:300px">{{ s.get('title','') }}</td>
+          <td>{{ categories.get(s.get('category',''), s.get('category','')) }}</td>
+          <td>{{ s.get('entwicklungsstand','') }}</td>
+          <td style="font-size:11px">{{ s.get('handlungszeitpunkt','') }}</td>
+          <td style="font-size:11px;white-space:nowrap">{{ s.get('date','') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">Keine Signale in dieser Archivversion.</div>
+  {% endif %}
+</div>
+{% endblock %}

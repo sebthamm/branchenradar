@@ -183,6 +183,7 @@
               <a href="{{ url_for('signal_list') }}">Signale (RAW)</a>
               <a href="{{ url_for('signal_match') }}">Signale (MATCH)</a>
               <a href="{{ url_for('signal_final') }}">Signale (FINAL)</a>
+              <a href="{{ url_for('signal_archive') }}">Archiv</a>
             </div>
           </div>
           <a href="{{ url_for('sa_functions') }}" class="header-link">Funktionen</a>
@@ -198,6 +199,7 @@
               <a href="{{ url_for('signal_list') }}">Signale (RAW)</a>
               <a href="{{ url_for('signal_match') }}">Signale (MATCH)</a>
               <a href="{{ url_for('signal_final') }}">Signale (FINAL)</a>
+              <a href="{{ url_for('signal_archive') }}">Archiv</a>
             </div>
           </div>
           <a href="{{ url_for('settings') }}" class="header-link">Einstellungen</a>
@@ -247,6 +249,7 @@
         <a href="{{ url_for('signal_list') }}" onclick="closeDrawer()">Signale (RAW)</a>
         <a href="{{ url_for('signal_match') }}" onclick="closeDrawer()">Signale (MATCH)</a>
         <a href="{{ url_for('signal_final') }}" onclick="closeDrawer()">Signale (FINAL)</a>
+        <a href="{{ url_for('signal_archive') }}" onclick="closeDrawer()">Archiv</a>
         <a href="{{ url_for('sa_functions') }}" onclick="closeDrawer()">Funktionen</a>
         <a href="{{ url_for('sa_logbook') }}" onclick="closeDrawer()">Log-Buch</a>
         <a href="{{ url_for('sa_settings') }}" onclick="closeDrawer()">Einstellungen</a>
@@ -257,6 +260,7 @@
         <a href="{{ url_for('signal_list') }}" onclick="closeDrawer()">Signale (RAW)</a>
         <a href="{{ url_for('signal_match') }}" onclick="closeDrawer()">Signale (MATCH)</a>
         <a href="{{ url_for('signal_final') }}" onclick="closeDrawer()">Signale (FINAL)</a>
+        <a href="{{ url_for('signal_archive') }}" onclick="closeDrawer()">Archiv</a>
         <a href="{{ url_for('settings') }}" onclick="closeDrawer()">Einstellungen</a>
       {% endif %}
       <div class="nav-drawer-sep"></div>

@@ -148,6 +148,10 @@
           {% if key == 'group' %}
             <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm" title="Signale (RAW) als Excel exportieren">↓ RAW</a>
             <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm" title="Signale (FINAL) als Excel exportieren">↓ FINAL</a>
+          {% elif key == 'bewertung' %}
+            <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm" title="Signale (RAW) als Excel exportieren">↓ RAW</a>
+            <a href="{{ url_for('signal_export_match') }}" class="btn btn-secondary btn-sm" title="Signale (MATCH) als Excel exportieren">↓ MATCH</a>
+            <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm" title="Signale (FINAL) als Excel exportieren">↓ FINAL</a>
           {% endif %}
           <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
         </div>

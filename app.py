@@ -26,9 +26,11 @@ ENTITIES_FILE = os.path.join(DATA_DIR, "entities.json")
 SECTIONS_FILE = os.path.join(DATA_DIR, "sections.seed.json")  # sections are static
 TODOS_FILE    = os.path.join(DATA_DIR, "todos.json")
 SETTINGS_FILE = os.path.join(DATA_DIR, "settings.json")
-SOURCES_FILE        = os.path.join(DATA_DIR, "sources.json")
-AGENT_CONFIGS_FILE  = os.path.join(DATA_DIR, "agent_configs.json")
-SIGNAL_MATCHES_FILE = os.path.join(DATA_DIR, "signal_matches.json")
+SOURCES_FILE             = os.path.join(DATA_DIR, "sources.json")
+AGENT_CONFIGS_FILE       = os.path.join(DATA_DIR, "agent_configs.json")
+SIGNAL_MATCHES_FILE      = os.path.join(DATA_DIR, "signal_matches.json")
+SIGNAL_FINAL_FILE        = os.path.join(DATA_DIR, "signal_final.json")
+SIGNAL_FINAL_ARCHIVE_DIR = os.path.join(DATA_DIR, "signal_final_archive")
 
 DEFAULT_TODO_CATEGORIES = [
     "Abrechnung & Vergütung",
@@ -145,6 +147,7 @@ _SEARCH_OUTPUT_FORMAT = (
     "**Zusammenfassung:** [500–1000 Zeichen. Was passiert konkret, was bedeutet das für Gesundheitseinrichtungen?]\n"
     "**Datum:** [TT.MM.JJJJ – Datum der Veröffentlichung, des Beschlusses oder des Inkrafttretens]\n"
     "**Entwicklungsstand:** [Genau eines von: Beobachtung | Veröffentlicht | Beschlossen | In Kraft]\n"
+    "**Handlungszeitpunkt:** [Genau eines von: Sofort | Kurzfristig (< 3 Monate) | Mittelfristig (3–12 Monate) | Langfristig (> 12 Monate) | Beobachten]\n"
     "**Quelle 1:** [Name der Quelle, z.B. G-BA, BMG, gematik, BZÄK]\n"
     "**Quellenlink 1:** [Direkte URL zum Originaldokument oder zur Meldung]\n\n"
     "Alle anderen Felder (Priorität, Kategorie, Fachbereich, Betroffene Rollen, Aufwand, Nächster Schritt) "
@@ -252,10 +255,70 @@ DEFAULT_AGENT_CONFIGS = {
         },
         "bewertung": {
             "label": "Bewertungs-Agent",
-            "persona": "",
-            "method": "",
-            "hint": "",
-            "output_format": ""
+            "persona": (
+                "Du bist ein redaktioneller Bewertungs-Agent für den Branchenradar Gesundheitswesen. "
+                "Du erhältst drei Input-Datenbanken: "
+                "(1) Signale (RAW) – neue, von den Such-Agenten recherchierte Rohdaten, "
+                "(2) Signale (FINAL) – die konsolidierten Signale des letzten Branchenradar-Reportings, "
+                "(3) Signale (MATCH) – die Zuordnungstabelle des Gruppierungs-Agenten, die festlegt, "
+                "welche RAW-Signale zusammengehören und ob sie NEU oder ein UPDATE zu einem bestehenden FINAL-Signal sind. "
+                "Deine Aufgabe ist es, auf dieser Basis den vollständig angereicherten, neuen Signaldatensatz zu erstellen, "
+                "der als nächstes Signale (FINAL) gespeichert wird."
+            ),
+            "method": (
+                "Schritt 1 – Signale zusammenführen:\n"
+                "Nutze die MATCH-Tabelle als Fahrplan. Für jede MATCH-Gruppe:\n"
+                "– Kombiniere alle referenzierten RAW-Signale (NEW) zu einem inhaltlich kohärenten Signal. "
+                "Führe Titel, Zusammenfassung und Quellenangaben zusammen.\n"
+                "– Falls die Gruppe auch OLD-Signale enthält (aus FINAL), erweitere das bestehende FINAL-Signal "
+                "um die neuen Informationen. Hänge neue Absätze mit Datumsmarkierung [TT.MM.JJJJ] an.\n"
+                "– Bestehende FINAL-Signale ohne jede MATCH-Verbindung werden unverändert übernommen.\n\n"
+                "Schritt 2 – Eigenständige neue Signale:\n"
+                "RAW-Signale, die in keiner MATCH-Gruppe auftauchen, sind völlig neue Themen. "
+                "Übernimm sie direkt als neue Signale in den Output.\n\n"
+                "Schritt 3 – Anreicherung aller Signale:\n"
+                "Für jedes Signal – ob neu, aktualisiert oder unverändert – vergib oder überprüfe:\n"
+                "– **Priorität:** MUSS (unmittelbarer Handlungsbedarf, rechtlich verpflichtend oder hohe finanzielle Auswirkung), "
+                "SOLLTE (relevante Entwicklung, Handlung empfohlen), "
+                "KANN (interessant zur Beobachtung, noch kein konkreter Handlungsbedarf)\n"
+                "– **Handlungsempfehlung:** Ein konkreter, umsetzbarer Handlungsschritt im Imperativ (z.B. 'TI-Anbindung bis Q2 prüfen und beauftragen'). "
+                "Nicht allgemein, sondern spezifisch für Gesundheitseinrichtungen.\n"
+                "– **Umsetzungszeit:** Realistische Einschätzung des Zeitaufwands für eine typische Praxis "
+                "(z.B. '1–2 Stunden', '1 Tag', '1–2 Wochen', '1–3 Monate').\n"
+                "– **Betroffene Rollen:** Wer in der Praxis ist konkret betroffen? "
+                "Auswahl aus: Praxisleitung, Ärzt:innen, MFA / ZFA, Abrechnung, Praxismanagement, Datenschutz, QM\n"
+                "– **Handlungszeitpunkt:** Sofort | Kurzfristig (< 3 Monate) | Mittelfristig (3–12 Monate) | Langfristig (> 12 Monate) | Beobachten\n"
+                "– **Kategorie:** Krankenkassen & GKV | Digitalisierung & TI | Gesetze & Regulatorien | Personal & Tarife | Praxismanagement\n"
+                "– **Reporting-Status:** NEU | UPDATE | (leer = unverändert)"
+            ),
+            "hint": (
+                "Sei bei der Prioritätsvergabe streng: MUSS ist nur für wirklich zwingende, "
+                "fristgebundene oder sanktionsbewehrte Verpflichtungen. Nicht jede neue Entwicklung ist ein MUSS. "
+                "Die Handlungsempfehlung soll dem Praxisinhaber oder -manager sofort klar machen, was jetzt konkret zu tun ist – "
+                "keine vagen Formulierungen wie 'informieren' oder 'beobachten' bei MUSS-Signalen. "
+                "Betroffene Rollen sparsam vergeben – nur die Rollen, die tatsächlich direkt handeln müssen."
+            ),
+            "output_format": (
+                "## Ausgabeformat – Signale (FINAL)\n\n"
+                "Erstelle eine vollständige Liste aller Signale im folgenden Format. "
+                "Jedes Signal auf einer neuen Sektion, getrennt durch ---\n\n"
+                "**ID:** [Übernehmen aus RAW/FINAL – bei vollständig neuen Signalen ohne MATCH: neue ID aus RAW]\n"
+                "**Reporting-Status:** NEU | UPDATE | (leer)\n"
+                "**Priorität:** MUSS | SOLLTE | KANN\n"
+                "**Titel:** [Sprechender Action-Titel]\n"
+                "**Zusammenfassung:** [Vollständige Zusammenfassung. Bei UPDATE: bestehende Zusammenfassung + [TT.MM.JJJJ]: neue Informationen]\n"
+                "**Kategorie:** [Krankenkassen & GKV | Digitalisierung & TI | Gesetze & Regulatorien | Personal & Tarife | Praxismanagement]\n"
+                "**Entwicklungsstand:** [Beobachtung | Veröffentlicht | Beschlossen | In Kraft]\n"
+                "**Handlungsempfehlung:** [Konkreter Handlungsschritt im Imperativ]\n"
+                "**Umsetzungszeit:** [z.B. 1–2 Stunden | 1 Tag | 1–2 Wochen | 1–3 Monate]\n"
+                "**Betroffene Rollen:** [Kommagetrennte Liste aus: Praxisleitung, Ärzt:innen, MFA / ZFA, Abrechnung, Praxismanagement, Datenschutz, QM]\n"
+                "**Handlungszeitpunkt:** [Sofort | Kurzfristig (< 3 Monate) | Mittelfristig (3–12 Monate) | Langfristig (> 12 Monate) | Beobachten]\n"
+                "**Datum:** [Datum des Signals / aktuellstes Datum bei Updates]\n"
+                "**Quelle 1:** [Name] | **Quellenlink 1:** [URL]\n"
+                "**Quelle 2:** [Name] | **Quellenlink 2:** [URL] (falls vorhanden)\n"
+                "**Quelle 3:** [Name] | **Quellenlink 3:** [URL] (falls vorhanden)\n\n"
+                "---"
+            )
         }
     }
 }
@@ -292,6 +355,41 @@ def load_signal_matches():
     return _load(SIGNAL_MATCHES_FILE) or []
 
 def save_signal_matches(data): _save(SIGNAL_MATCHES_FILE, data)
+
+def load_signal_final():
+    if not os.path.exists(SIGNAL_FINAL_FILE):
+        return {"timestamp": None, "signals": []}
+    data = _load(SIGNAL_FINAL_FILE)
+    if isinstance(data, list):
+        return {"timestamp": None, "signals": data}
+    return data
+
+def save_signal_final(signals, timestamp):
+    _save(SIGNAL_FINAL_FILE, {"timestamp": timestamp, "signals": signals})
+
+def archive_signal_final():
+    if not os.path.exists(SIGNAL_FINAL_FILE):
+        return
+    os.makedirs(SIGNAL_FINAL_ARCHIVE_DIR, exist_ok=True)
+    data = load_signal_final()
+    ts = data.get("timestamp") or datetime.now().strftime("%y%m%d%H%M")
+    archive_path = os.path.join(SIGNAL_FINAL_ARCHIVE_DIR, f"{ts}.json")
+    _save(archive_path, data)
+
+def list_signal_final_archives():
+    if not os.path.exists(SIGNAL_FINAL_ARCHIVE_DIR):
+        return []
+    files = sorted(
+        [f[:-5] for f in os.listdir(SIGNAL_FINAL_ARCHIVE_DIR) if f.endswith(".json")],
+        reverse=True
+    )
+    return files
+
+def load_signal_final_archive(ts):
+    path = os.path.join(SIGNAL_FINAL_ARCHIVE_DIR, f"{ts}.json")
+    if not os.path.exists(path):
+        return None
+    return _load(path)
 
 def next_signal_raw_id():
     cfg = load_settings()
@@ -1142,10 +1240,54 @@ def signal_match():
     sig_map = {s["id"]: s.get("title", s["id"]) for s in signals}
     return render_template("admin_signal_matches.html", matches=matches, sig_map=sig_map)
 
-@app.route("/admin/signals/final")
+@app.route("/admin/signals/final", methods=["GET", "POST"])
 @role_required("admin", "superadmin")
 def signal_final():
-    return render_template("admin_signal_final.html")
+    if request.method == "POST":
+        action = request.form.get("action", "")
+        if action == "import_csv":
+            raw = request.form.get("csv_data", "").strip()
+            if raw:
+                sections = load_sections()
+                imported, errors = _parse_signal_csv(raw, sections)
+                if imported:
+                    archive_signal_final()
+                    ts = datetime.now().strftime("%y%m%d%H%M")
+                    save_signal_final(imported, ts)
+                    flash(f"{len(imported)} Signale als neue FINAL-Version gespeichert (Timestamp: {ts}).", "success")
+                if errors:
+                    for e in errors[:5]:
+                        flash(e, "error")
+        elif action == "delete":
+            sig_id = request.form.get("sig_id", "")
+            data = load_signal_final()
+            data["signals"] = [s for s in data["signals"] if s["id"] != sig_id]
+            save_signal_final(data["signals"], data["timestamp"])
+            flash("Signal gelöscht.", "success")
+        return redirect(url_for("signal_final"))
+    data = load_signal_final()
+    return render_template("admin_signal_final.html",
+        signals=data["signals"], timestamp=data["timestamp"],
+        categories=CATEGORIES, priority_labels=SIGNAL_PRIORITY_LABELS,
+        entwicklungsstand_labels=ENTWICKLUNGSSTAND_LABELS)
+
+@app.route("/admin/signals/archive")
+@role_required("admin", "superadmin")
+def signal_archive():
+    archives = list_signal_final_archives()
+    return render_template("admin_signal_archive.html", archives=archives)
+
+@app.route("/admin/signals/archive/<ts>")
+@role_required("admin", "superadmin")
+def signal_archive_view(ts):
+    data = load_signal_final_archive(ts)
+    if not data:
+        abort(404)
+    signals = data.get("signals", []) if isinstance(data, dict) else data
+    timestamp = data.get("timestamp", ts) if isinstance(data, dict) else ts
+    return render_template("admin_signal_archive_view.html",
+        signals=signals, timestamp=timestamp, ts=ts,
+        categories=CATEGORIES, priority_labels=SIGNAL_PRIORITY_LABELS)
 
 
 # ── Signal Excel-Exports ─────────────────────────────────────────────────────
@@ -1201,6 +1343,35 @@ def _signals_to_xlsx(signals, filename):
     return send_file(buf, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                      as_attachment=True, download_name=filename)
 
+@app.route("/admin/signals/export/match")
+@role_required("admin", "superadmin")
+def signal_export_match():
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill
+    import io
+    matches = load_signal_matches()
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "MATCH"
+    headers = ["sig1", "sig2", "sig2_type", "sig3", "sig3_type", "sig4", "sig4_type", "sig5", "sig5_type"]
+    ws.append(headers)
+    hfill = PatternFill("solid", fgColor="1D3D28")
+    hfont = Font(color="FFFFFF", bold=True, size=10)
+    for cell in ws[1]:
+        cell.fill = hfill; cell.font = hfont
+    for row in matches:
+        r = [row.get("sig1", "")]
+        for p in (row.get("pairs", []) + [{}, {}, {}, {}])[:4]:
+            r += [p.get("id", ""), p.get("type", "")]
+        ws.append(r)
+    for i, w in enumerate([16, 16, 6, 16, 6, 16, 6, 16, 6], 1):
+        ws.column_dimensions[ws.cell(1, i).column_letter].width = w
+    buf = io.BytesIO()
+    wb.save(buf); buf.seek(0)
+    from flask import send_file
+    return send_file(buf, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                     as_attachment=True, download_name=f"signale_match_{datetime.now().strftime('%Y%m%d')}.xlsx")
+
 @app.route("/admin/signals/export/raw")
 @role_required("admin", "superadmin")
 def signal_export_raw():
@@ -1211,8 +1382,8 @@ def signal_export_raw():
 @app.route("/admin/signals/export/final")
 @role_required("admin", "superadmin")
 def signal_export_final():
-    signals = load_signals()
-    signals.sort(key=lambda s: s.get("id", ""))
+    data = load_signal_final()
+    signals = sorted(data["signals"], key=lambda s: s.get("id", ""))
     return _signals_to_xlsx(signals, f"signale_final_{datetime.now().strftime('%Y%m%d')}.xlsx")
 
 
