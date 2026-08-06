@@ -26,8 +26,9 @@ ENTITIES_FILE = os.path.join(DATA_DIR, "entities.json")
 SECTIONS_FILE = os.path.join(DATA_DIR, "sections.seed.json")  # sections are static
 TODOS_FILE    = os.path.join(DATA_DIR, "todos.json")
 SETTINGS_FILE = os.path.join(DATA_DIR, "settings.json")
-SOURCES_FILE       = os.path.join(DATA_DIR, "sources.json")
-AGENT_CONFIGS_FILE = os.path.join(DATA_DIR, "agent_configs.json")
+SOURCES_FILE        = os.path.join(DATA_DIR, "sources.json")
+AGENT_CONFIGS_FILE  = os.path.join(DATA_DIR, "agent_configs.json")
+SIGNAL_MATCHES_FILE = os.path.join(DATA_DIR, "signal_matches.json")
 
 DEFAULT_TODO_CATEGORIES = [
     "Abrechnung & Vergütung",
@@ -220,8 +221,24 @@ DEFAULT_AGENT_CONFIGS = {
                 "Behalte die Originalzusammenfassungen bestehender Signale vollständig – ergänze nur, lösche nicht."
             ),
             "output_format": (
-                "## Ausgabeformat\n"
-                "Erstelle eine vollständige Liste aller Signale (neue + aktualisierte + unveränderte bestehende) im folgenden Format:\n\n"
+                "## Ausgabeformat – Signale (MATCH)\n\n"
+                "Erstelle eine tabellarische Ausgabe im folgenden Format. Jede Zeile beschreibt eine Gruppe zusammengehöriger Signale.\n\n"
+                "**Spalten der MATCH-Tabelle:**\n"
+                "- Spalte 1 (sig1): ID des primären Signals aus Signale (RAW) — das Signal, das die Gruppe anführt\n"
+                "- Spalte 2 (sig2): ID eines weiteren Signals, das mit sig1 zusammengeführt wird (leer = keine weiteren)\n"
+                "- Spalte 3 (sig2_type): NEW wenn sig2 ein neu recherchiertes Signal ist | OLD wenn sig2 aus dem letzten Reporting stammt\n"
+                "- Spalte 4 (sig3): ID eines dritten Signals (optional)\n"
+                "- Spalte 5 (sig3_type): NEW | OLD\n"
+                "- Spalte 6 (sig4): ID eines vierten Signals (optional)\n"
+                "- Spalte 7 (sig4_type): NEW | OLD\n"
+                "- Spalte 8 (sig5): ID eines fünften Signals (optional)\n"
+                "- Spalte 9 (sig5_type): NEW | OLD\n\n"
+                "**Signal-IDs** haben das Format JJMMDDXXXXX (z.B. 260806000042). "
+                "Jedes Signal aus Signale (RAW) hat eine solche ID. Bestehende Signale aus dem letzten Reporting haben ebenfalls IDs in diesem Format.\n\n"
+                "**Beispielzeile:**\n"
+                "sig1=260806000017 | sig2=260806000031 | sig2_type=NEW | sig3=260801000008 | sig3_type=OLD\n\n"
+                "Signale ohne Überschneidung mit anderen Signalen erscheinen als eigenständige Zeilen mit nur sig1 befüllt (alle anderen Spalten leer).\n\n"
+                "Nach der MATCH-Tabelle: Erstelle zusätzlich eine vollständige Signal-Liste für die redaktionelle Weiterbearbeitung:\n\n"
                 "**Status:** NEU | UPDATE | (leer = unverändert)\n"
                 "**Titel:** [Sprechender Action-Titel]\n"
                 "**Zusammenfassung:** [Bestehende Zusammenfassung. Bei UPDATE: Neuer Absatz mit [TT.MM.JJJJ]: Neue Informationen]\n"
@@ -268,6 +285,20 @@ def load_settings():
         return json.load(f)
 
 def save_settings(d): _save(SETTINGS_FILE, d)
+
+def load_signal_matches():
+    if not os.path.exists(SIGNAL_MATCHES_FILE):
+        return []
+    return _load(SIGNAL_MATCHES_FILE) or []
+
+def save_signal_matches(data): _save(SIGNAL_MATCHES_FILE, data)
+
+def next_signal_raw_id():
+    cfg = load_settings()
+    counter = cfg.get("signal_raw_counter", 0) + 1
+    cfg["signal_raw_counter"] = counter
+    save_settings(cfg)
+    return f"{datetime.now().strftime('%y%m%d')}{counter:05d}"
 
 def entity_todo_categories(entity_id):
     if not entity_id:
@@ -624,6 +655,11 @@ def admin_user_delete(uid):
 
 
 # ── Signal management (admin + superadmin) ────────────────────────────────────
+
+@app.route("/admin/signals/raw")
+@role_required("admin", "superadmin")
+def signal_list_raw():
+    return signal_list()
 
 @app.route("/admin/signals")
 @role_required("admin", "superadmin")
@@ -999,7 +1035,7 @@ def _parse_signal_csv(raw, sections):
                 sec_ids.append(sid)
 
         sig = {
-            "id":         str(uuid.uuid4()),
+            "id":         next_signal_raw_id(),
             "title":      title,
             "summary":    mapped.get("summary", ""),
             "detail":     mapped.get("detail", ""),
@@ -1072,6 +1108,44 @@ def _signal_from_form(form, existing_id=None):
         "section_ids":       form.getlist("section_ids"),
         "reporting_status":  form.get("reporting_status", "").strip(),
     }
+
+
+# ── Signal MATCH / FINAL ─────────────────────────────────────────────────────
+
+@app.route("/admin/signals/match", methods=["GET", "POST"])
+@role_required("admin", "superadmin")
+def signal_match():
+    matches = load_signal_matches()
+    if request.method == "POST":
+        action = request.form.get("action", "")
+        if action == "add":
+            row = {
+                "id": str(uuid.uuid4()),
+                "sig1": request.form.get("sig1", "").strip(),
+                "pairs": []
+            }
+            for i in range(2, 6):
+                sig_id = request.form.get(f"sig{i}", "").strip()
+                sig_type = request.form.get(f"sig{i}_type", "").strip()
+                if sig_id:
+                    row["pairs"].append({"id": sig_id, "type": sig_type})
+            matches.append(row)
+            save_signal_matches(matches)
+            flash("Gruppe gespeichert.", "success")
+        elif action == "delete":
+            row_id = request.form.get("row_id", "")
+            matches = [m for m in matches if m["id"] != row_id]
+            save_signal_matches(matches)
+            flash("Gruppe gelöscht.", "success")
+        return redirect(url_for("signal_match"))
+    signals = load_signals()
+    sig_map = {s["id"]: s.get("title", s["id"]) for s in signals}
+    return render_template("admin_signal_matches.html", matches=matches, sig_map=sig_map)
+
+@app.route("/admin/signals/final")
+@role_required("admin", "superadmin")
+def signal_final():
+    return render_template("admin_signal_final.html")
 
 
 # ── Agents ────────────────────────────────────────────────────────────────────

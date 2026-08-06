@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Signale — Branchenradar{% endblock %}
+{% block title %}Signale (RAW) — Branchenradar{% endblock %}
 {% block head %}
 <style>
   .main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 60px; }
@@ -74,7 +74,7 @@
 {% block content %}
 <div class="main">
   <div class="page-head">
-    <div class="page-title">Signale <span style="font-size:14px;font-family:inherit;color:var(--faint);font-weight:normal">({{ signals | length }})</span></div>
+    <div class="page-title">Signale (RAW) <span style="font-size:14px;font-family:inherit;color:var(--faint);font-weight:normal">({{ signals | length }})</span></div>
     <div class="page-actions">
       <a href="{{ url_for('signal_import') }}" class="btn btn-secondary">↑ Importieren</a>
       <a href="{{ url_for('signal_new') }}" class="btn btn-primary">+ Neues Signal</a>

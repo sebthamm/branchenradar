@@ -76,27 +76,31 @@
 
   <!-- SIGNALE -->
   <div class="module">
-    <div class="module-title"><span class="module-icon">📡</span> Signaldatenbank</div>
+    <div class="module-title"><span class="module-icon">📡</span> Signal-Pipeline: RAW → MATCH → FINAL</div>
     <div class="feature-grid">
       <div class="feature-card">
-        <div class="feature-name">Vollständige Tabellenansicht <span class="role-tag tag-adm">Admin</span></div>
-        <div class="feature-desc">Alle Felder tabellarisch: Titel, Status, Kategorie, Fachbereich, Quelle, Datum, Frist. Klapp-Detail mit Zusammenfassung, Detailtext und Aktionen. Spalten sortierbar.</div>
+        <div class="feature-name">Signale (RAW) <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Rohsignale aus dem laufenden Recherche-Zyklus der Such-Agenten. Jedes Signal erhält beim Import automatisch eine eindeutige ID im Format JJMMDDXXXXX (Jahr·Monat·Tag·Zähler).</div>
       </div>
       <div class="feature-card">
-        <div class="feature-name">Signal anlegen &amp; bearbeiten <span class="role-tag tag-adm">Admin</span></div>
-        <div class="feature-desc">Formular mit allen Feldern: Titel, Zusammenfassung, Detailtext, Status, Kategorie, Quelle (Name + URL), Datum, Frist, Fachbereiche.</div>
+        <div class="feature-name">Signal-ID (JJMMDDXXXXX) <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Fortlaufender, systemweiter Zähler — nicht pro Tag, sondern global. Ermöglicht eindeutige Referenzierung in Signale (MATCH) und im Berichtswesen.</div>
       </div>
       <div class="feature-card">
-        <div class="feature-name">Batch-Import per Paste <span class="role-tag tag-adm">Admin</span></div>
-        <div class="feature-desc">Tabelle direkt aus Excel oder Google Sheets einkopieren (TSV). Automatische Erkennung des Trennzeichens (Tab, Semikolon, Komma).</div>
+        <div class="feature-name">Signale (MATCH) <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Dokumentiert die Gruppierungen des Gruppierungs-Agenten. Jede Zeile listet zusammengehörige Signal-IDs: primäres Signal + bis zu 4 weitere mit Typ NEW (neu) oder OLD (aus letztem Reporting).</div>
       </div>
       <div class="feature-card">
-        <div class="feature-name">Batch-Import per Datei-Upload <span class="role-tag tag-adm">Admin</span></div>
-        <div class="feature-desc">CSV-Datei hochladen (UTF-8). Spaltenreferenz und Download-Vorlage auf der Import-Seite verfügbar.</div>
+        <div class="feature-name">Signale (FINAL) <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Zusammengeführte, redaktionell aufbereitete Signale für das nächste Reporting. Wird in einem der nächsten Updates eingerichtet.</div>
       </div>
       <div class="feature-card">
-        <div class="feature-name">Fachbereich-Zuweisung <span class="role-tag tag-adm">Admin</span></div>
-        <div class="feature-desc">Signale können einem oder mehreren Fachbereichen zugewiesen werden. Entities sehen nur Signale, die ihren Fachbereichen entsprechen.</div>
+        <div class="feature-name">RAW – Signal anlegen &amp; bearbeiten <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Formular mit allen Feldern: Titel, Zusammenfassung, Detailtext, Status, Kategorie, Quelle (Name + URL), Datum, Frist, Fachbereiche, Reporting-Status (NEU / UPDATE).</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-name">RAW – Batch-Import <span class="role-tag tag-adm">Admin</span></div>
+        <div class="feature-desc">Tabelle direkt aus Excel oder Google Sheets einkopieren (TSV) oder als CSV-Datei hochladen. Automatische Erkennung des Trennzeichens. IDs werden beim Import automatisch vergeben.</div>
       </div>
     </div>
   </div>

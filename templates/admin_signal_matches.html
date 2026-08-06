@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Signale (MATCH) — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
+  .page-actions { display: flex; gap: 8px; }
+
+  .info-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 24px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .info-box strong { color: var(--text); }
+
+  /* Add form */
+  .add-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px; }
+  .add-card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 14px; }
+  .pair-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .pair-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+  .pair-row.primary { grid-template-columns: 1fr; }
+  label.field-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 4px; }
+  input[type="text"], select {
+    width: 100%; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius); font-size: 13px; color: var(--text); outline: none; font-family: inherit;
+  }
+  input:focus, select:focus { border-color: var(--navy); }
+  select.type-sel { width: auto; min-width: 90px; }
+  .pair-cols { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; margin-top: 10px; }
+  .pair-item { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: end; }
+  .add-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+  /* Table */
+  .tbl-wrap { overflow-x: auto; }
+  .db-meta { font-size: 12px; color: var(--faint); margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; min-width: 900px; }
+  thead th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 9px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .id-chip { font-family: monospace; font-size: 11px; background: var(--surface2); padding: 2px 6px; border-radius: 4px; color: var(--muted); }
+  .type-new { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(37,122,88,.12); color: var(--s-active); }
+  .type-old { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(46,123,170,.12); color: var(--s-radar); }
+  .sig-title { font-size: 12px; color: var(--text); }
+  .sig-id    { font-family: monospace; font-size: 10px; color: var(--faint); }
+  .pair-cell { display: flex; flex-direction: column; gap: 2px; }
+  .btn-del { background: none; border: none; cursor: pointer; color: var(--faint); font-size: 16px; padding: 2px 6px; border-radius: 4px; }
+  .btn-del:hover { color: var(--s-action); background: rgba(192,64,42,.08); }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--faint); font-size: 14px; }
+  @media (max-width: 700px) { .main { padding: 14px 14px 60px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Signale (MATCH)</div>
+    <div class="page-actions">
+      <a href="{{ url_for('signal_list') }}" class="btn btn-secondary btn-sm">← RAW</a>
+      <a href="{{ url_for('signal_final') }}" class="btn btn-secondary btn-sm">FINAL →</a>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>Signale (MATCH)</strong> dokumentiert die Gruppierungsentscheidungen des Gruppierungs-Agenten.
+    Jede Zeile beschreibt, welche Signale aus <strong>Signale (RAW)</strong> zusammengehören.
+    Spalte 1 (sig1) ist das primäre Signal der Gruppe. Spalten 2–9 enthalten weitere Signal-IDs mit
+    Typangabe: <span class="type-new">NEW</span> = neu in diesem Zyklus,
+    <span class="type-old">OLD</span> = aus dem letzten Reporting.
+  </div>
+
+  <!-- Add form -->
+  <div class="add-card">
+    <div class="add-card-title">Neue Gruppe anlegen</div>
+    <form method="post" action="{{ url_for('signal_match') }}">
+      <input type="hidden" name="action" value="add">
+      <div style="margin-bottom:10px">
+        <label class="field-label">Primäres Signal (sig1)</label>
+        <input type="text" name="sig1" placeholder="ID des primären Signals (z.B. 260806000001)" required>
+      </div>
+      <div class="pair-cols">
+        {% for i in range(2, 6) %}
+        <div>
+          <label class="field-label">sig{{ i }}</label>
+          <div class="pair-item">
+            <input type="text" name="sig{{ i }}" placeholder="Signal-ID">
+            <select name="sig{{ i }}_type" class="type-sel">
+              <option value="NEW">NEW</option>
+              <option value="OLD">OLD</option>
+            </select>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="add-actions">
+        <button type="submit" class="btn btn-primary btn-sm">Gruppe speichern</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="db-meta">{{ matches | length }} Gruppe(n)</div>
+
+  {% if matches %}
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>sig1 (primär)</th>
+          <th>sig2</th>
+          <th>sig3</th>
+          <th>sig4</th>
+          <th>sig5</th>
+          <th style="width:40px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in matches %}
+        <tr>
+          <td>
+            <div class="pair-cell">
+              <span class="sig-id">{{ row.sig1 }}</span>
+              {% if row.sig1 in sig_map %}
+              <span class="sig-title">{{ sig_map[row.sig1][:60] }}{% if sig_map[row.sig1]|length > 60 %}…{% endif %}</span>
+              {% endif %}
+            </div>
+          </td>
+          {% for i in range(4) %}
+          {% set pair = row.pairs[i] if row.pairs|length > i else none %}
+          <td>
+            {% if pair %}
+            <div class="pair-cell">
+              <span class="sig-id">{{ pair.id }}</span>
+              {% if pair.id in sig_map %}
+              <span class="sig-title">{{ sig_map[pair.id][:50] }}{% if sig_map[pair.id]|length > 50 %}…{% endif %}</span>
+              {% endif %}
+              <span class="type-{{ pair.type | lower }}">{{ pair.type }}</span>
+            </div>
+            {% else %}
+            <span style="color:var(--faint)">—</span>
+            {% endif %}
+          </td>
+          {% endfor %}
+          <td>
+            <form method="post" action="{{ url_for('signal_match') }}" style="display:inline">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="row_id" value="{{ row.id }}">
+              <button type="submit" class="btn-del" title="Löschen" onclick="return confirm('Gruppe löschen?')">×</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">Noch keine Gruppen angelegt.</div>
+  {% endif %}
+</div>
+{% endblock %}

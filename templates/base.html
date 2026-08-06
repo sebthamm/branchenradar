@@ -51,6 +51,20 @@
     .header-link { font-size: 13px; color: var(--muted); text-decoration: none; white-space: nowrap; }
     .header-link:hover { color: var(--text); }
 
+    /* Signale dropdown */
+    .nav-dropdown { position: relative; display: inline-flex; align-items: center; }
+    .nav-dropdown > .header-link { cursor: default; }
+    .nav-dropdown-menu {
+      display: none; position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); min-width: 170px; z-index: 400; padding: 4px 0;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+    .nav-dropdown-menu a {
+      display: block; padding: 9px 16px; font-size: 13px; color: var(--muted); text-decoration: none; white-space: nowrap;
+    }
+    .nav-dropdown-menu a:hover { color: var(--text); background: var(--surface2); }
+
     /* Hamburger */
     .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 6px; color: var(--muted); flex-shrink: 0; }
     .nav-toggle:hover { color: var(--text); }
@@ -152,7 +166,14 @@
           <a href="{{ url_for('todos') }}" class="header-link" style="position:relative">
             ToDos{% if pending_todos %}<span style="position:absolute;top:-5px;right:-8px;background:#B03060;color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 4px;min-width:14px;text-align:center">{{ pending_todos }}</span>{% endif %}
           </a>
-          <a href="{{ url_for('signal_list') }}" class="header-link">Signale</a>
+          <div class="nav-dropdown">
+            <a href="{{ url_for('signal_list') }}" class="header-link">Signale ▾</a>
+            <div class="nav-dropdown-menu">
+              <a href="{{ url_for('signal_list') }}">Signale (RAW)</a>
+              <a href="{{ url_for('signal_match') }}">Signale (MATCH)</a>
+              <a href="{{ url_for('signal_final') }}">Signale (FINAL)</a>
+            </div>
+          </div>
         {% endif %}
         {% if session.role == 'superadmin' %}
           <span style="width:1px;height:14px;background:rgba(255,255,255,.2);display:inline-block;margin:0 4px"></span>
@@ -204,7 +225,9 @@
         <a href="{{ url_for('todos') }}" onclick="closeDrawer()">
           ToDos{% if pending_todos %}<span class="nav-badge">{{ pending_todos }}</span>{% endif %}
         </a>
-        <a href="{{ url_for('signal_list') }}" onclick="closeDrawer()">Signale</a>
+        <a href="{{ url_for('signal_list') }}" onclick="closeDrawer()">Signale (RAW)</a>
+        <a href="{{ url_for('signal_match') }}" onclick="closeDrawer()">Signale (MATCH)</a>
+        <a href="{{ url_for('signal_final') }}" onclick="closeDrawer()">Signale (FINAL)</a>
       {% endif %}
       {% if session.role == 'superadmin' %}
         <div class="nav-drawer-sep"></div>

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Signale (FINAL) — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 900px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; gap: 12px; flex-wrap: wrap; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
+  .placeholder { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 48px 40px; text-align: center; }
+  .placeholder-icon { font-size: 40px; margin-bottom: 16px; }
+  .placeholder-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .placeholder-desc { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 500px; margin: 0 auto; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Signale (FINAL)</div>
+    <div>
+      <a href="{{ url_for('signal_match') }}" class="btn btn-secondary btn-sm">← MATCH</a>
+    </div>
+  </div>
+  <div class="placeholder">
+    <div class="placeholder-icon">🏁</div>
+    <div class="placeholder-title">In Vorbereitung</div>
+    <div class="placeholder-desc">
+      Signale (FINAL) wird die zusammengeführten und redaktionell aufbereiteten Signale enthalten,
+      die für das nächste Branchenradar-Reporting freigegeben sind.
+      Dieser Bereich wird in einem der nächsten Updates eingerichtet.
+    </div>
+  </div>
+</div>
+{% endblock %}
