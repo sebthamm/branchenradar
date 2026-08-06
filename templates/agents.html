@@ -145,6 +145,10 @@
           <div class="agent-card-title">{{ ag.label }}</div>
         </div>
         <div class="agent-card-actions">
+          {% if key == 'group' %}
+            <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm" title="Signale (RAW) als Excel exportieren">↓ RAW</a>
+            <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm" title="Signale (FINAL) als Excel exportieren">↓ FINAL</a>
+          {% endif %}
           <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
         </div>
       </div>

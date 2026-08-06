@@ -1148,6 +1148,74 @@ def signal_final():
     return render_template("admin_signal_final.html")
 
 
+# ── Signal Excel-Exports ─────────────────────────────────────────────────────
+
+def _signals_to_xlsx(signals, filename):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    import io
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Signale"
+    headers = [
+        "ID", "Titel", "Zusammenfassung", "Detail",
+        "Kategorie", "Priorität", "Entwicklungsstand", "Reporting-Status",
+        "Datum", "Frist",
+        "Quelle 1", "Quellenlink 1", "Datum Q1",
+        "Quelle 2", "Quellenlink 2", "Datum Q2",
+        "Quelle 3", "Quellenlink 3", "Datum Q3",
+    ]
+    ws.append(headers)
+    header_fill = PatternFill("solid", fgColor="1D3D28")
+    header_font = Font(color="FFFFFF", bold=True, size=10)
+    for cell in ws[1]:
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(wrap_text=False)
+    prio_map = {"muss": "MUSS", "sollte": "SOLLTE", "kann": "KANN"}
+    for s in signals:
+        src = s.get("sources", [])
+        def src_f(i, field): return src[i].get(field, "") if len(src) > i else ""
+        ws.append([
+            s.get("id", ""),
+            s.get("title", ""),
+            s.get("summary", ""),
+            s.get("detail", ""),
+            s.get("category", ""),
+            prio_map.get(s.get("priority", ""), s.get("priority", "")),
+            s.get("entwicklungsstand", ""),
+            s.get("reporting_status", ""),
+            s.get("date", ""),
+            s.get("deadline", "") or "",
+            src_f(0, "name"), src_f(0, "url"), src_f(0, "date"),
+            src_f(1, "name"), src_f(1, "url"), src_f(1, "date"),
+            src_f(2, "name"), src_f(2, "url"), src_f(2, "date"),
+        ])
+    col_widths = [14, 40, 60, 60, 14, 10, 18, 14, 12, 12, 20, 40, 12, 20, 40, 12, 20, 40, 12]
+    for i, w in enumerate(col_widths, 1):
+        ws.column_dimensions[ws.cell(1, i).column_letter].width = w
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    from flask import send_file
+    return send_file(buf, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                     as_attachment=True, download_name=filename)
+
+@app.route("/admin/signals/export/raw")
+@role_required("admin", "superadmin")
+def signal_export_raw():
+    signals = load_signals()
+    signals.sort(key=lambda s: s.get("id", ""))
+    return _signals_to_xlsx(signals, f"signale_raw_{datetime.now().strftime('%Y%m%d')}.xlsx")
+
+@app.route("/admin/signals/export/final")
+@role_required("admin", "superadmin")
+def signal_export_final():
+    signals = load_signals()
+    signals.sort(key=lambda s: s.get("id", ""))
+    return _signals_to_xlsx(signals, f"signale_final_{datetime.now().strftime('%Y%m%d')}.xlsx")
+
+
 # ── Agents ────────────────────────────────────────────────────────────────────
 
 @app.route("/admin/agents", methods=["GET"])
