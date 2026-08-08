@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Agent-Reports (RAW) — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
+
+  .import-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; }
+  .import-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; cursor: pointer; user-select: none; }
+  .import-panel-title { font-size: 13px; font-weight: 600; }
+  .import-panel-toggle { font-size: 12px; color: var(--muted); }
+  .import-panel-body { padding: 16px 18px; border-top: 1px solid var(--border); display: none; }
+  .import-panel-body.open { display: block; }
+  .import-hint { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+  textarea.tsv-input { width: 100%; min-height: 120px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; font-family: monospace; color: var(--text); resize: vertical; outline: none; }
+  textarea.tsv-input:focus { border-color: var(--navy); }
+
+  .db-meta { font-size: 12px; color: var(--faint); margin-bottom: 10px; }
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; min-width: 700px; }
+  thead th { background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 9px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .count-badge { display:inline-block;padding:1px 7px;border-radius:3px;font-size:11px;font-weight:700; }
+  .count-high { background:rgba(42,122,82,.12);color:var(--s-active); }
+  .count-mid  { background:rgba(184,107,26,.12);color:var(--s-announced); }
+  .count-low  { background:rgba(46,123,170,.12);color:var(--s-radar); }
+  .count-zero { background:var(--surface2);color:var(--faint); }
+  .count-err  { background:rgba(192,64,42,.12);color:var(--s-action); }
+  .error-text { font-size:11px;color:var(--s-action); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .empty-state { text-align:center;padding:48px 20px;color:var(--faint);font-size:14px; }
+  .bulk-bar { display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap; }
+  .cb-all { cursor:pointer; }
+  @media (max-width:700px) { .main { padding:14px 14px 60px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Agent-Reports (RAW)</div>
+    <a href="{{ url_for('agent_reports') }}" class="btn btn-secondary btn-sm">← Agenten-Reports</a>
+  </div>
+
+  <div class="import-panel">
+    <div class="import-panel-head" onclick="toggleImport()">
+      <span class="import-panel-title">Crawl-Report importieren</span>
+      <span class="import-panel-toggle" id="import-toggle">▶ aufklappen</span>
+    </div>
+    <div class="import-panel-body" id="import-body">
+      <div class="import-hint">
+        TSV aus dem Crawl-Report-Abschnitt der Such-Agenten einfügen. Erwartet 5 Tab-getrennte Spalten:<br>
+        <code>Quelle · Anzahl Signale · Hinweise/Probleme · Timestamp · Agent</code><br>
+        Die Kopfzeile wird automatisch übersprungen.
+      </div>
+      <form method="post">
+        <input type="hidden" name="action" value="import">
+        <textarea class="tsv-input" name="tsv_data" placeholder="Quelle&#9;Anzahl Signale&#9;Hinweise/Probleme&#9;Timestamp&#9;Agent"></textarea>
+        <div style="margin-top:10px">
+          <button type="submit" class="btn btn-primary btn-sm">Importieren</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="db-meta">{{ reports | length }} Einträge</div>
+
+  {% if reports %}
+  <form method="post" id="bulk-form">
+    <input type="hidden" name="action" value="delete_selected">
+    <div class="bulk-bar">
+      <label><input type="checkbox" class="cb-all" onchange="toggleAll(this)"> Alle auswählen</label>
+      <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Ausgewählte löschen?')">Ausgewählte löschen</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th>Quelle</th>
+            <th>Signale</th>
+            <th>Hinweise/Probleme</th>
+            <th>Timestamp</th>
+            <th>Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reports %}
+          <tr>
+            <td><input type="checkbox" name="delete_ids" value="{{ r.id }}"></td>
+            <td>{{ r.source_name }}</td>
+            <td>
+              {% set c = r.signal_count %}
+              {% if r.issues %}<span class="count-badge count-err">{{ c }}</span>
+              {% elif c >= 5 %}<span class="count-badge count-high">{{ c }}</span>
+              {% elif c >= 2 %}<span class="count-badge count-mid">{{ c }}</span>
+              {% elif c == 1 %}<span class="count-badge count-low">{{ c }}</span>
+              {% else %}<span class="count-badge count-zero">0</span>{% endif %}
+            </td>
+            <td class="error-text">{{ r.issues or '—' }}</td>
+            <td style="font-family:monospace;font-size:11px">{{ r.timestamp }}</td>
+            <td style="font-size:11px;color:var(--muted)">{{ r.agent_name or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+  {% else %}
+  <div class="empty-state">Noch keine Crawl-Report-Daten importiert.</div>
+  {% endif %}
+</div>
+<script>
+function toggleImport() {
+  const body = document.getElementById('import-body');
+  const tog  = document.getElementById('import-toggle');
+  const open = body.classList.toggle('open');
+  tog.textContent = open ? '▼ zuklappen' : '▶ aufklappen';
+}
+function toggleAll(cb) {
+  document.querySelectorAll('input[name="delete_ids"]').forEach(c => c.checked = cb.checked);
+}
+</script>
+{% endblock %}

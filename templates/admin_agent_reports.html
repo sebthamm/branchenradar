@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Agenten-Reports — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+  .page-title { font-family: Georgia, serif; font-size: 22px; font-weight: normal; }
+
+  .filter-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .filter-bar label { font-size: 12px; color: var(--muted); }
+  .filter-bar input[type="date"] { padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; background: var(--bg); color: var(--text); outline: none; }
+  .filter-bar input[type="date"]:focus { border-color: var(--navy); }
+
+  .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+  .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .agent-card-head { padding: 12px 16px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .agent-card-label { font-size: 13px; font-weight: 600; }
+  .agent-card-body { padding: 10px 0; }
+
+  .stat-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 16px; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { display: flex; align-items: center; gap: 8px; }
+  .stat-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dot-high  { background: var(--s-active); }
+  .dot-mid   { background: var(--s-announced); }
+  .dot-low   { background: var(--s-radar); }
+  .dot-zero  { background: var(--faint); }
+  .dot-error { background: var(--s-action); }
+  .stat-count { font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; color: var(--navy); }
+  .stat-count:hover { opacity: .7; }
+  .stat-empty { color: var(--faint); }
+
+  /* Detail popup */
+  .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 600; align-items: center; justify-content: center; }
+  .detail-overlay.open { display: flex; }
+  .detail-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); width: min(560px, 92vw); max-height: 80vh; display: flex; flex-direction: column; }
+  .detail-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .detail-title { font-size: 14px; font-weight: 600; }
+  .detail-close { background: none; border: none; cursor: pointer; font-size: 20px; color: var(--muted); line-height: 1; padding: 2px 6px; border-radius: 4px; }
+  .detail-close:hover { color: var(--text); }
+  .detail-body { overflow-y: auto; padding: 12px 18px; }
+  .detail-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .detail-item:last-child { border-bottom: none; }
+  .detail-source { font-weight: 600; }
+  .detail-meta { color: var(--muted); margin-top: 2px; }
+
+  .empty-state { text-align:center;padding:48px 20px;color:var(--faint);font-size:14px; }
+  @media (max-width:700px) { .main { padding:14px 14px 60px; } .agents-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Agenten-Reports</div>
+    <a href="{{ url_for('agent_reports_raw') }}" class="btn btn-secondary btn-sm">RAW-Daten →</a>
+  </div>
+
+  <form class="filter-bar" method="get">
+    <label>Von: <input type="date" name="date_from" value="{{ date_from }}"></label>
+    <label>Bis: <input type="date" name="date_to"   value="{{ date_to }}"></label>
+    <button type="submit" class="btn btn-secondary btn-sm">Filtern</button>
+    {% if date_from or date_to %}
+      <a href="{{ url_for('agent_reports') }}" class="btn btn-secondary btn-sm" style="color:var(--s-action)">✕ Filter zurücksetzen</a>
+    {% endif %}
+  </form>
+
+  <div class="agents-grid">
+    {% for key, s in stats.items() %}
+    <div class="agent-card">
+      <div class="agent-card-head">
+        <div class="agent-card-label">{{ s.label }}</div>
+      </div>
+      <div class="agent-card-body">
+        <div class="stat-row">
+          <span class="stat-label"><span class="stat-dot dot-high"></span>≥ 5 Signale</span>
+          {% if s.high %}
+            <span class="stat-count" onclick="showDetail('{{ key }}_high')">{{ s.high | length }}</span>
+          {% else %}<span class="stat-empty">0</span>{% endif %}
+        </div>
+        <div class="stat-row">
+          <span class="stat-label"><span class="stat-dot dot-mid"></span>2–4 Signale</span>
+          {% if s.mid %}
+            <span class="stat-count" onclick="showDetail('{{ key }}_mid')">{{ s.mid | length }}</span>
+          {% else %}<span class="stat-empty">0</span>{% endif %}
+        </div>
+        <div class="stat-row">
+          <span class="stat-label"><span class="stat-dot dot-low"></span>1 Signal</span>
+          {% if s.low %}
+            <span class="stat-count" onclick="showDetail('{{ key }}_low')">{{ s.low | length }}</span>
+          {% else %}<span class="stat-empty">0</span>{% endif %}
+        </div>
+        <div class="stat-row">
+          <span class="stat-label"><span class="stat-dot dot-zero"></span>0 Signale</span>
+          {% if s.zero %}
+            <span class="stat-count" onclick="showDetail('{{ key }}_zero')">{{ s.zero | length }}</span>
+          {% else %}<span class="stat-empty">0</span>{% endif %}
+        </div>
+        <div class="stat-row">
+          <span class="stat-label"><span class="stat-dot dot-error"></span>Technischer Fehler</span>
+          {% if s.error %}
+            <span class="stat-count" style="color:var(--s-action)" onclick="showDetail('{{ key }}_error')">{{ s.error | length }}</span>
+          {% else %}<span class="stat-empty">0</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# Hidden detail data as JSON #}
+    <script>
+    window._detail = window._detail || {};
+    window._detail['{{ key }}_high']  = {{ s.high  | tojson }};
+    window._detail['{{ key }}_mid']   = {{ s.mid   | tojson }};
+    window._detail['{{ key }}_low']   = {{ s.low   | tojson }};
+    window._detail['{{ key }}_zero']  = {{ s.zero  | tojson }};
+    window._detail['{{ key }}_error'] = {{ s.error | tojson }};
+    </script>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Detail Overlay -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
+  <div class="detail-box">
+    <div class="detail-head">
+      <span class="detail-title" id="detail-title">Quellen</span>
+      <button class="detail-close" onclick="closeDetailBtn()">×</button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
+<script>
+function showDetail(key) {
+  const data = (window._detail || {})[key] || [];
+  const overlay = document.getElementById('detail-overlay');
+  const body    = document.getElementById('detail-body');
+  const title   = document.getElementById('detail-title');
+  title.textContent = key.replace(/_/g, ' ') + ' (' + data.length + ')';
+  body.innerHTML = data.map(e => {
+    const ts = e.timestamps && e.timestamps.length ? e.timestamps.join(', ') : '—';
+    return '<div class="detail-item">'
+      + '<div class="detail-source">' + e.source + '</div>'
+      + '<div class="detail-meta">'
+      + (e.count !== undefined ? e.count + ' Signal(e)' : '')
+      + (e.issues ? ' · <span style="color:var(--s-action)">' + e.issues + '</span>' : '')
+      + ' · ' + ts
+      + '</div></div>';
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">Keine Einträge</div>';
+  overlay.classList.add('open');
+}
+function closeDetail(e) {
+  if (e.target === document.getElementById('detail-overlay')) closeDetailBtn();
+}
+function closeDetailBtn() {
+  document.getElementById('detail-overlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailBtn(); });
+</script>
+{% endblock %}

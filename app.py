@@ -31,6 +31,7 @@ AGENT_CONFIGS_FILE       = os.path.join(DATA_DIR, "agent_configs.json")
 SIGNAL_MATCHES_FILE      = os.path.join(DATA_DIR, "signal_matches.json")
 SIGNAL_FINAL_FILE        = os.path.join(DATA_DIR, "signal_final.json")
 SIGNAL_FINAL_ARCHIVE_DIR = os.path.join(DATA_DIR, "signal_final_archive")
+AGENT_REPORTS_FILE       = os.path.join(DATA_DIR, "agent_reports.json")
 
 DEFAULT_TODO_CATEGORIES = [
     "Abrechnung & Vergütung",
@@ -149,10 +150,19 @@ _SEARCH_OUTPUT_FORMAT = (
     "**Entwicklungsstand:** [Genau eines von: Beobachtung | Veröffentlicht | Beschlossen | In Kraft]\n"
     "**Handlungszeitpunkt:** [Genau eines von: Sofort | Kurzfristig (< 3 Monate) | Mittelfristig (3–12 Monate) | Langfristig (> 12 Monate) | Beobachten]\n"
     "**Quelle 1:** [Name der Quelle, z.B. G-BA, BMG, gematik, BZÄK]\n"
-    "**Quellenlink 1:** [Direkte URL zum Originaldokument oder zur Meldung]\n\n"
+    "**Quellenlink 1:** [Direkte URL zum Originaldokument oder zur Meldung]\n"
+    "**Agent:** [Exakter Name dieses Agenten: scrape | feed | pdf | search]\n\n"
     "Alle anderen Felder (Priorität, Kategorie, Fachbereich, Betroffene Rollen, Aufwand, Nächster Schritt) "
     "werden von den Such-Agenten nicht befüllt und bleiben leer.\n\n"
-    "---"
+    "---\n\n"
+    "## Crawl-Report\n"
+    "Nach allen Signalen: Erstelle eine separate Tabelle im TSV-Format (Tab-getrennt) mit genau diesen 5 Spalten:\n"
+    "Quelle\tAnzahl Signale\tHinweise/Probleme\tTimestamp\tAgent\n\n"
+    "Führe **jede geprüfte Quelle** auf – auch solche ohne neue Signale oder mit technischen Problemen.\n"
+    "– Anzahl Signale: Anzahl der in diesem Lauf für diese Quelle erstellten Signale (0 wenn keine)\n"
+    "– Hinweise/Probleme: z.B. 'Seite nicht erreichbar', 'Login erforderlich', 'Kein neuer Inhalt', leer wenn ok\n"
+    "– Timestamp: aktuelles Datum/Uhrzeit im Format JJMMDDhhmm (z.B. 2608061430)\n"
+    "– Agent: exakter Name dieses Agenten (scrape | feed | pdf | search)"
 )
 
 _SEARCH_PERSONA_BASE = (
@@ -191,6 +201,8 @@ DEFAULT_AGENT_CONFIGS = {
         },
         "group": {
             "label": "Gruppierungs-Agent",
+            "date_from": "", "date_to": "",
+            "last_date_from": "", "last_date_to": "",
             "persona": (
                 "Du bist ein redaktioneller Gruppierungs-Agent für den Branchenradar Gesundheitswesen. "
                 "Du erhältst zwei Input-Datenbanken als Excel-Dateien: "
@@ -337,6 +349,9 @@ def load_agent_configs():
         for field in ("persona", "method", "hint", "output_format"):
             if saved.get(field, "").strip():
                 cfg["agents"][key][field] = saved[field]
+        for field in ("date_from", "date_to", "last_date_from", "last_date_to"):
+            if field in saved:
+                cfg["agents"][key][field] = saved[field]
     return cfg
 
 def save_agent_configs(d): _save(AGENT_CONFIGS_FILE, d)
@@ -348,6 +363,13 @@ def load_settings():
         return json.load(f)
 
 def save_settings(d): _save(SETTINGS_FILE, d)
+
+def load_agent_reports():
+    if not os.path.exists(AGENT_REPORTS_FILE):
+        return []
+    return _load(AGENT_REPORTS_FILE) or []
+
+def save_agent_reports(data): _save(AGENT_REPORTS_FILE, data)
 
 def load_signal_matches():
     if not os.path.exists(SIGNAL_MATCHES_FILE):
@@ -1093,6 +1115,7 @@ def _parse_signal_csv(raw, sections):
         "quelle-url": "source_url", "quellenurl": "source_url", "source_url": "source_url", "url": "source_url",
         "datum": "date", "date": "date",
         "frist": "deadline", "deadline": "deadline",
+        "agent": "agent",
     }
 
     reader = csv.DictReader(io.StringIO(raw), delimiter=sep)
@@ -1134,6 +1157,7 @@ def _parse_signal_csv(raw, sections):
 
         sig = {
             "id":         next_signal_raw_id(),
+            "agent":      mapped.get("agent", ""),
             "title":      title,
             "summary":    mapped.get("summary", ""),
             "detail":     mapped.get("detail", ""),
@@ -1205,6 +1229,7 @@ def _signal_from_form(form, existing_id=None):
         "deadline":          form.get("deadline", "").strip() or None,
         "section_ids":       form.getlist("section_ids"),
         "reporting_status":  form.get("reporting_status", "").strip(),
+        "agent":             form.get("agent", "").strip(),
     }
 
 
@@ -1387,6 +1412,130 @@ def signal_export_final():
     return _signals_to_xlsx(signals, f"signale_final_{datetime.now().strftime('%Y%m%d')}.xlsx")
 
 
+# ── Agent Reports ─────────────────────────────────────────────────────────────
+
+@app.route("/admin/agent-reports/raw", methods=["GET", "POST"])
+@role_required("admin", "superadmin")
+def agent_reports_raw():
+    reports = load_agent_reports()
+    if request.method == "POST":
+        action = request.form.get("action", "")
+        if action == "import":
+            raw = request.form.get("tsv_data", "").strip()
+            imported = 0
+            for line in raw.splitlines():
+                parts = line.split("\t")
+                if len(parts) < 2:
+                    continue
+                source_name   = parts[0].strip()
+                signal_count_s = parts[1].strip()
+                if not source_name or source_name.lower() in ("quelle", "source"):
+                    continue  # header row
+                try:
+                    signal_count = int(signal_count_s)
+                except ValueError:
+                    signal_count = 0
+                issues    = parts[2].strip() if len(parts) > 2 else ""
+                timestamp = parts[3].strip() if len(parts) > 3 else datetime.now().strftime("%y%m%d%H%M")
+                agent_name = parts[4].strip() if len(parts) > 4 else ""
+                reports.append({
+                    "id": str(uuid.uuid4()),
+                    "source_name": source_name,
+                    "signal_count": signal_count,
+                    "issues": issues,
+                    "timestamp": timestamp,
+                    "agent_name": agent_name,
+                })
+                imported += 1
+            save_agent_reports(reports)
+            flash(f"{imported} Einträge importiert.", "success")
+        elif action == "delete_selected":
+            ids_to_delete = set(request.form.getlist("delete_ids"))
+            reports = [r for r in reports if r["id"] not in ids_to_delete]
+            save_agent_reports(reports)
+            flash(f"{len(ids_to_delete)} Einträge gelöscht.", "success")
+        return redirect(url_for("agent_reports_raw"))
+    reports_sorted = sorted(reports, key=lambda r: r.get("timestamp", ""), reverse=True)
+    return render_template("admin_agent_reports_raw.html", reports=reports_sorted)
+
+@app.route("/admin/agent-reports")
+@role_required("admin", "superadmin")
+def agent_reports():
+    reports = load_agent_reports()
+    date_from = request.args.get("date_from", "")
+    date_to   = request.args.get("date_to", "")
+    # Filter by timestamp (JJMMDD prefix comparison)
+    def ts_to_date(ts):
+        if len(ts) >= 6:
+            try:
+                return datetime.strptime("20" + ts[:6], "%Y%m%d").date()
+            except ValueError:
+                pass
+        return None
+    if date_from or date_to:
+        try:
+            df = datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else None
+        except ValueError:
+            df = None
+        try:
+            dt = datetime.strptime(date_to, "%Y-%m-%d").date() if date_to else None
+        except ValueError:
+            dt = None
+        filtered = []
+        for r in reports:
+            rd = ts_to_date(r.get("timestamp", ""))
+            if rd is None:
+                filtered.append(r)
+                continue
+            if df and rd < df:
+                continue
+            if dt and rd > dt:
+                continue
+            filtered.append(r)
+        reports = filtered
+    # Build stats per agent
+    SEARCH_AGENTS = [("scrape", "Scrape-Agent"), ("feed", "Feed-Agent"),
+                     ("pdf", "PDF-Agent"), ("search", "Search-Agent")]
+    stats = {}
+    for key, label in SEARCH_AGENTS:
+        agent_rows = [r for r in reports if r.get("agent_name") == key]
+        by_source = {}
+        for r in agent_rows:
+            sn = r["source_name"]
+            if sn not in by_source:
+                by_source[sn] = {"count": 0, "issues": [], "timestamps": []}
+            by_source[sn]["count"] += r.get("signal_count", 0)
+            if r.get("issues"):
+                by_source[sn]["issues"].append(r["issues"])
+            by_source[sn]["timestamps"].append(r.get("timestamp", ""))
+        high, mid, low, zero, error = [], [], [], [], []
+        for sn, data in by_source.items():
+            entry = {"source": sn, "count": data["count"],
+                     "issues": "; ".join(set(data["issues"])),
+                     "timestamps": data["timestamps"]}
+            if data["issues"]:
+                error.append(entry)
+            elif data["count"] >= 5:
+                high.append(entry)
+            elif data["count"] >= 2:
+                mid.append(entry)
+            elif data["count"] == 1:
+                low.append(entry)
+            else:
+                zero.append(entry)
+        stats[key] = {
+            "label": label,
+            "high": sorted(high, key=lambda x: -x["count"]),
+            "mid":  sorted(mid,  key=lambda x: -x["count"]),
+            "low":  low,
+            "zero": zero,
+            "error": error,
+        }
+    return render_template("admin_agent_reports.html",
+        stats=stats, date_from=date_from, date_to=date_to,
+        search_agents=SEARCH_AGENTS)
+
+
 # ── Agents ────────────────────────────────────────────────────────────────────
 
 @app.route("/admin/agents", methods=["GET"])
@@ -1413,6 +1562,8 @@ def agents_save():
     if field == "output_format":
         cfg["output_format"] = value
     elif field in ("persona", "method", "hint") and agent_key in cfg["agents"]:
+        cfg["agents"][agent_key][field] = value
+    elif field in ("date_from", "date_to", "last_date_from", "last_date_to") and agent_key in cfg["agents"]:
         cfg["agents"][agent_key][field] = value
     save_agent_configs(cfg)
     return ("", 204)

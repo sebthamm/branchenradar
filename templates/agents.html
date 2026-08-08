@@ -156,6 +156,30 @@
           <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
         </div>
       </div>
+      {% if key == 'group' %}
+      <div style="padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2);">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:10px">Zeitraum-Filter für Prompt</div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+            Von:
+            <input type="date" id="group-date-from" value="{{ ag.get('date_from','') }}"
+              style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+          </label>
+          <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+            Bis:
+            <input type="date" id="group-date-to" value="{{ ag.get('date_to','') }}"
+              style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+          </label>
+          <button class="btn btn-secondary btn-sm" onclick="saveDates()">Speichern</button>
+          <span id="dates-ok" style="font-size:11px;color:var(--s-active);display:none">✓ gespeichert</span>
+        </div>
+        {% if ag.get('last_date_from') or ag.get('last_date_to') %}
+        <div style="margin-top:8px;font-size:11px;color:var(--faint)">
+          Zuletzt verwendet: {{ ag.get('last_date_from','—') }} bis {{ ag.get('last_date_to','—') }}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
       <div class="agent-sections">
         {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
         {{ section(key, 'method',  'Methode',           ag.method) }}
@@ -277,6 +301,15 @@ function openPrompt(agentKey, type) {
     });
     document.getElementById('prompt-title').textContent = `${ag.label} — Prompt (${srcs.length} Quellen)`;
   } else {
+    if (agentKey === 'group') {
+      const df = document.getElementById('group-date-from')?.value || ag.date_from || '';
+      const dt = document.getElementById('group-date-to')?.value   || ag.date_to   || '';
+      if (df || dt) {
+        lines.push(`## Zeitraum`);
+        lines.push(`Berücksichtige ausschließlich Signale aus dem Zeitraum: **${df || '(offen)'}** bis **${dt || '(offen)'}**`);
+        lines.push('');
+      }
+    }
     lines.push('## Methode');
     lines.push(ag.method || '');
     lines.push('');
@@ -297,5 +330,23 @@ function openPrompt(agentKey, type) {
 function closePrompt() { document.getElementById('prompt-modal').classList.remove('open'); }
 function copyPrompt()  { navigator.clipboard.writeText(document.getElementById('prompt-output').textContent); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePrompt(); });
+
+function saveDates() {
+  const df = document.getElementById('group-date-from').value;
+  const dt = document.getElementById('group-date-to').value;
+  const ok = document.getElementById('dates-ok');
+  Promise.all([
+    fetch('{{ url_for("agents_save") }}', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({agent_key:'group', field:'date_from', value: df}) }),
+    fetch('{{ url_for("agents_save") }}', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({agent_key:'group', field:'date_to',   value: dt}) })
+  ]).then(() => {
+    if (!AGENT_CONFIGS.agents.group) AGENT_CONFIGS.agents.group = {};
+    AGENT_CONFIGS.agents.group.date_from = df;
+    AGENT_CONFIGS.agents.group.date_to   = dt;
+    ok.style.display = 'inline';
+    setTimeout(() => ok.style.display = 'none', 2000);
+  });
+}
 </script>
 {% endblock %}
