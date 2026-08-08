@@ -3,6 +3,7 @@ import io
 import json
 import os
 import uuid
+import zipfile
 import hashlib
 import hmac
 import subprocess
@@ -1042,6 +1043,51 @@ def sa_settings():
     cats  = cfg.get("default_todo_categories", DEFAULT_TODO_CATEGORIES)
     teams = cfg.get("default_team_names", ["Team Abrechnung", "Team Personal"])
     return render_template("sa_settings.html", categories=cats, default_teams=teams)
+
+
+@app.route("/superadmin/backup/download")
+@role_required("superadmin")
+def backup_download():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        # Code files
+        code_files = ["app.py", "requirements.txt", "init_users.py", ".env.example"]
+        for fname in code_files:
+            fpath = os.path.join(base_dir, fname)
+            if os.path.exists(fpath):
+                zf.write(fpath, os.path.join("code", fname))
+        # Templates
+        tmpl_dir = os.path.join(base_dir, "templates")
+        if os.path.isdir(tmpl_dir):
+            for fname in os.listdir(tmpl_dir):
+                fpath = os.path.join(tmpl_dir, fname)
+                if os.path.isfile(fpath):
+                    zf.write(fpath, os.path.join("code", "templates", fname))
+        # Static files
+        static_dir = os.path.join(base_dir, "static")
+        if os.path.isdir(static_dir):
+            for root, _, files in os.walk(static_dir):
+                for fname in files:
+                    fpath = os.path.join(root, fname)
+                    arcname = os.path.join("code", "static", os.path.relpath(fpath, static_dir))
+                    zf.write(fpath, arcname)
+        # Data files
+        if os.path.isdir(DATA_DIR):
+            for root, _, files in os.walk(DATA_DIR):
+                for fname in files:
+                    fpath = os.path.join(root, fname)
+                    arcname = os.path.join("data", os.path.relpath(fpath, DATA_DIR))
+                    zf.write(fpath, arcname)
+    buf.seek(0)
+    from flask import send_file
+    return send_file(
+        buf,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=f"branchenradar_backup_{ts}.zip"
+    )
 
 
 @app.route("/admin/signals/import", methods=["GET", "POST"])

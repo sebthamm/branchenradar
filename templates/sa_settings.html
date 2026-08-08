@@ -71,6 +71,11 @@
       </div>
     </form>
   </div>
+  <div class="card">
+    <div class="card-title">Backup</div>
+    <div class="card-sub">Erstellt eine ZIP-Datei mit dem gesamten App-Code (templates, app.py, requirements.txt) und allen Datendateien (Signale, Quellen, Agenten-Konfigurationen, Archiv). Kann genutzt werden, um die App auf einem neuen Server vollständig wiederherzustellen.</div>
+    <a href="{{ url_for('backup_download') }}" class="btn btn-secondary">↓ Vollständiges Backup herunterladen</a>
+  </div>
 </div>
 <script>
 function addRow(listId, fieldName) {
