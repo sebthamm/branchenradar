@@ -155,6 +155,9 @@ _SEARCH_OUTPUT_FORMAT = (
     "**Agent:** [Exakter Name dieses Agenten: scrape | feed | pdf | search]\n\n"
     "Alle anderen Felder (Priorität, Kategorie, Fachbereich, Betroffene Rollen, Aufwand, Nächster Schritt) "
     "werden von den Such-Agenten nicht befüllt und bleiben leer.\n\n"
+    "**Granularität:** Erstelle **ein Signal pro eigenständiger Maßnahme**. "
+    "Wenn eine Quelle mehrere unabhängige Regelungen veröffentlicht (unterschiedliche Empfänger, unterschiedliche Fristen, unterschiedliche Handlungen), "
+    "erstelle für jede ein separates Signal. Mehrere Aspekte derselben Maßnahme gehören in ein Signal.\n\n"
     "---\n\n"
     "## Crawl-Report\n"
     "Nach allen Signalen: Erstelle eine separate Tabelle im TSV-Format (Tab-getrennt) mit genau diesen 5 Spalten:\n"
@@ -179,26 +182,26 @@ DEFAULT_AGENT_CONFIGS = {
         "scrape": {
             "label": "Scrape-Agent",
             "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf öffentlich zugängliche Webseiten von Behörden, Verbänden und Institutionen.",
-            "method": "Du rufst jede URL direkt ab (HTTP GET), analysierst den HTML-Inhalt und extrahierst relevante neue Dokumente, Meldungen oder Änderungen. Vergleiche mit bekannten Inhalten und melde nur tatsächlich neue Informationen.",
-            "hint": "Achte besonders auf Neuigkeiten, Pressemitteilungen und aktuelle Meldungen. Ignoriere redaktionelle Artikel ohne konkreten regulatorischen Gehalt. Melde nur Inhalte, die seit der letzten Recherche neu erschienen sind."
+            "method": "Du rufst jede URL direkt ab (HTTP GET), analysierst den HTML-Inhalt und extrahierst relevante neue Dokumente, Meldungen oder Änderungen. Vergleiche mit bekannten Inhalten und melde nur tatsächlich neue Informationen. Wenn die gegebene URL eine Homepage ist (kein direkter Endpunkt wie /news, /aktuelles, /beschluesse), suche zunächst selbstständig nach den relevanten Unterseiten (Newsbereich, Meldungen, Beschlüsse, Pressemitteilungen) und crawle diese — nicht die Homepage selbst.",
+            "hint": "Achte besonders auf Neuigkeiten, Pressemitteilungen und aktuelle Meldungen. Deprioritiere redaktionelle Artikel ohne konkreten regulatorischen Gehalt. Melde nur Inhalte, die seit der letzten Recherche neu erschienen sind. **Wichtig:** Deine Aufgabe ist sammeln, nicht bewerten. Nimm im Zweifel auf — Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent. Nur offensichtlich themenfremde Inhalte (Sportnachrichten, Stellenanzeigen ohne regulatorischen Bezug) weglassen."
         },
         "feed": {
             "label": "Feed-Agent",
             "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf strukturierte Datenquellen: RSS-Feeds, Atom-Feeds, Newsletter-Archive und APIs.",
-            "method": "Du liest RSS/Atom-Feeds, verarbeitest Newsletter-Inhalte oder rufst APIs ab und analysierst die zurückgegebenen Einträge auf Relevanz für Gesundheitseinrichtungen in Deutschland.",
-            "hint": "Filtere nach Einträgen der letzten 7 Tage. Fokussiere auf Themen wie Abrechnung, Datenschutz, Hygiene, Qualitätsmanagement und regulatorische Änderungen. Ignoriere reine Veranstaltungshinweise ohne regulatorischen Inhalt."
+            "method": "Du liest RSS/Atom-Feeds, verarbeitest Newsletter-Inhalte oder rufst APIs ab und analysierst die zurückgegebenen Einträge auf Relevanz für Gesundheitseinrichtungen in Deutschland. Wenn keine direkte Feed-URL angegeben ist, suche auf der Quellen-URL nach verfügbaren RSS/Atom-Feeds (typisch: /feed, /rss.xml, Link-Tags im HTML-Header) und verwende den spezifischsten verfügbaren Feed.",
+            "hint": "Filtere nach Einträgen der letzten 7 Tage. Fokussiere auf Themen wie Abrechnung, Datenschutz, Hygiene, Qualitätsmanagement und regulatorische Änderungen. Deprioritiere reine Veranstaltungshinweise ohne regulatorischen Inhalt. **Wichtig:** Deine Aufgabe ist sammeln, nicht bewerten. Nimm im Zweifel auf — Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent. Nur offensichtlich themenfremde Inhalte (Sportnachrichten, Stellenanzeigen ohne regulatorischen Bezug) weglassen."
         },
         "pdf": {
             "label": "PDF-Agent",
             "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf verlinkte Dokumente (PDFs, Word-Dateien) von Quellen-Webseiten.",
-            "method": "Du durchsuchst die Quellen-URLs nach verlinkten Dokumenten, lädst diese herunter und extrahierst relevante Inhalte aus PDFs und anderen Dokumentformaten.",
-            "hint": "Priorisiere aktuelle Leitlinien, Rundschreiben, Beschlüsse und offizielle Bekanntmachungen. Achte auf Versionsnummern und Datumsangaben, um neue von bekannten Dokumenten zu unterscheiden. Ignoriere unveränderte Dokumente."
+            "method": "Du durchsuchst die Quellen-URLs nach verlinkten Dokumenten, lädst diese herunter und extrahierst relevante Inhalte aus PDFs und anderen Dokumentformaten. Wenn die gegebene URL eine Übersichtsseite ist, navigiere zunächst zu den spezifischen Dokumentverzeichnissen oder Beschlusslisten — crawle nicht die Homepage selbst.",
+            "hint": "Priorisiere aktuelle Leitlinien, Rundschreiben, Beschlüsse und offizielle Bekanntmachungen. Achte auf Versionsnummern und Datumsangaben, um neue von bekannten Dokumenten zu unterscheiden. Ignoriere unveränderte Dokumente. **Wichtig:** Deine Aufgabe ist sammeln, nicht bewerten. Nimm im Zweifel auf — Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent. Nur offensichtlich themenfremde Dokumente weglassen."
         },
         "search": {
             "label": "Search-Agent",
             "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf Quellen mit Login-Pflicht, Datenbanken oder kostenpflichtigen Inhalten.",
-            "method": "Du verwendest gespeicherte Zugangsdaten oder öffentliche Suchfunktionen, um in geschützten Bereichen oder Datenbanken nach neuen relevanten Inhalten zu suchen.",
-            "hint": "Falls kein direkter Zugang möglich ist, suche nach öffentlichen Zusammenfassungen, Pressemitteilungen oder alternativen Zugangswegen zur gleichen Information."
+            "method": "Du verwendest gespeicherte Zugangsdaten oder öffentliche Suchfunktionen, um in geschützten Bereichen oder Datenbanken nach neuen relevanten Inhalten zu suchen. Wenn die gegebene URL eine Einstiegsseite ist, navigiere selbstständig zu den relevanten Inhaltsbereichen (Beschlüsse, Rundschreiben, Neuigkeiten).",
+            "hint": "Falls kein direkter Zugang möglich ist, suche nach öffentlichen Zusammenfassungen, Pressemitteilungen oder alternativen Zugangswegen zur gleichen Information. **Wichtig:** Deine Aufgabe ist sammeln, nicht bewerten. Nimm im Zweifel auf — Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent. Nur offensichtlich themenfremde Inhalte weglassen."
         },
         "group": {
             "label": "Gruppierungs-Agent",
