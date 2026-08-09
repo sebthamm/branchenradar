@@ -152,7 +152,8 @@ _SEARCH_OUTPUT_FORMAT = (
     "**Handlungszeitpunkt:** [Genau eines von: Sofort | Kurzfristig (< 3 Monate) | Mittelfristig (3–12 Monate) | Langfristig (> 12 Monate) | Beobachten]\n"
     "**Quelle 1:** [Name der Quelle, z.B. G-BA, BMG, gematik, BZÄK]\n"
     "**Quellenlink 1:** [Direkte URL zum Originaldokument oder zur Meldung]\n"
-    "**Agent:** [Exakter Name dieses Agenten: scrape | feed | pdf | search]\n\n"
+    "**Agent:** [Exakter Name dieses Agenten: scrape | feed | pdf | search]\n"
+    "**Region:** [Geltungsbereich: Bundesweit | Bayern | Nordrhein-Westfalen | … | EU / International]\n\n"
     "Alle anderen Felder (Priorität, Kategorie, Fachbereich, Betroffene Rollen, Aufwand, Nächster Schritt) "
     "werden von den Such-Agenten nicht befüllt und bleiben leer.\n\n"
     "**Granularität:** Erstelle **ein Signal pro eigenständiger Maßnahme**. "
@@ -919,7 +920,7 @@ def signal_new():
         entwicklungsstand_labels=ENTWICKLUNGSSTAND_LABELS,
         handlungszeitpunkt_labels=HANDLUNGSZEITPUNKT_LABELS,
         aufwand_labels=AUFWAND_LABELS,
-        signal_rollen=SIGNAL_ROLLEN,
+        signal_rollen=SIGNAL_ROLLEN, region_options=REGION_OPTIONS,
         sections=load_sections(), action=url_for("signal_new"))
 
 @app.route("/admin/signals/<sig_id>/edit", methods=["GET", "POST"])
@@ -944,7 +945,7 @@ def signal_edit(sig_id):
         entwicklungsstand_labels=ENTWICKLUNGSSTAND_LABELS,
         handlungszeitpunkt_labels=HANDLUNGSZEITPUNKT_LABELS,
         aufwand_labels=AUFWAND_LABELS,
-        signal_rollen=SIGNAL_ROLLEN,
+        signal_rollen=SIGNAL_ROLLEN, region_options=REGION_OPTIONS,
         sections=load_sections(), action=url_for("signal_edit", sig_id=sig_id))
 
 @app.route("/admin/signals/<sig_id>/delete", methods=["POST"])
@@ -1267,6 +1268,7 @@ def _parse_signal_csv(raw, sections):
         "datum": "date", "date": "date",
         "frist": "deadline", "deadline": "deadline",
         "agent": "agent",
+        "region": "region",
     }
 
     reader = csv.DictReader(io.StringIO(raw), delimiter=sep)
@@ -1309,6 +1311,7 @@ def _parse_signal_csv(raw, sections):
         sig = {
             "id":         next_signal_raw_id(),
             "agent":      mapped.get("agent", ""),
+            "region":     mapped.get("region", "Bundesweit"),
             "title":      title,
             "summary":    mapped.get("summary", ""),
             "detail":     mapped.get("detail", ""),
@@ -1381,6 +1384,7 @@ def _signal_from_form(form, existing_id=None):
         "section_ids":       form.getlist("section_ids"),
         "reporting_status":  form.get("reporting_status", "").strip(),
         "agent":             form.get("agent", "").strip(),
+        "region":            form.get("region", "Bundesweit").strip(),
     }
 
 
@@ -1573,7 +1577,7 @@ def sources_export():
     ws = wb.active
     ws.title = "Quellen"
     headers = [
-        "Kürzel", "Name", "URL", "Feed-URL", "Primärkategorie", "Relevante Rollen",
+        "Kürzel", "Name", "URL", "Region", "Endpoints", "Primärkategorie", "Relevante Rollen",
         "Agenten", "Priorität", "Zugang", "Aktualisierung", "Status", "Hinweise",
         "Agenten-Hinweis (scrape)", "Agenten-Hinweis (feed)",
         "Agenten-Hinweis (pdf)", "Agenten-Hinweis (search)",
@@ -1582,11 +1586,16 @@ def sources_export():
     ws.append(headers)
     for s in sorted(sources_list, key=lambda x: x.get("kuerzel", "")):
         ah = {h.get("agent", ""): h.get("text", "") for h in s.get("agent_hints", [])}
+        eps = s.get("endpoints", [])
+        eps_str = " | ".join(
+            f"{e.get('agent','')}:{e.get('url','')} ({e.get('label','')})" for e in eps
+        ) if eps else ""
         ws.append([
             s.get("kuerzel", ""),
             s.get("name", ""),
             s.get("url", ""),
-            s.get("feed_url", ""),
+            s.get("region", "Bundesweit"),
+            eps_str,
             s.get("primary_category", ""),
             ", ".join(s.get("relevant_roles", [])),
             ", ".join(s.get("ingestion_methods", [])),
@@ -1623,7 +1632,8 @@ def _parse_sources_tsv(raw_text):
         "kuerzel":        next((i for i, h in enumerate(header) if "kürzel" in h or "kurzel" in h), None),
         "name":           next((i for i, h in enumerate(header) if h == "name"), None),
         "url":            next((i for i, h in enumerate(header) if h in ("url", "url (konkret)")), None),
-        "feed_url":       next((i for i, h in enumerate(header) if "feed" in h and "url" in h), None),
+        "region":         next((i for i, h in enumerate(header) if h == "region"), None),
+        "endpoints":      next((i for i, h in enumerate(header) if "endpoint" in h), None),
         "primary_category": next((i for i, h in enumerate(header) if "primär" in h or "kategorie" in h), None),
         "relevant_roles": next((i for i, h in enumerate(header) if "rollen" in h), None),
         "ingestion_methods": next((i for i, h in enumerate(header) if "agenten" == h or h in ("agenten", "empfohlener agent")), None),
@@ -1660,11 +1670,31 @@ def _parse_sources_tsv(raw_text):
         methods = [m.strip() for m in methods_raw.replace(",", " ").split() if m.strip() in ("scrape", "feed", "pdf", "search")]
         roles_raw = cell(parts, "relevant_roles")
         roles = [r.strip() for r in roles_raw.split(",") if r.strip()]
+        # Parse endpoints from "agent:url (label) | ..." format
+        eps_raw = cell(parts, "endpoints")
+        endpoints = []
+        if eps_raw:
+            for ep_str in eps_raw.split(" | "):
+                ep_str = ep_str.strip()
+                if not ep_str:
+                    continue
+                label = ""
+                if "(" in ep_str and ep_str.endswith(")"):
+                    ep_str, label = ep_str[:-1].rsplit("(", 1)
+                    label = label.strip()
+                    ep_str = ep_str.strip()
+                if ":" in ep_str:
+                    agent_key, url = ep_str.split(":", 1)
+                else:
+                    agent_key, url = "", ep_str
+                if url.strip():
+                    endpoints.append({"url": url.strip(), "agent": agent_key.strip(), "label": label})
         results.append({
             "kuerzel":           cell(parts, "kuerzel"),
             "name":              name,
             "url":               cell(parts, "url"),
-            "feed_url":          cell(parts, "feed_url"),
+            "region":            cell(parts, "region") or "Bundesweit",
+            "endpoints":         endpoints,
             "primary_category":  cell(parts, "primary_category"),
             "relevant_roles":    roles,
             "ingestion_methods": methods,
@@ -1904,6 +1934,15 @@ def agents_save():
 
 # ── Sources ───────────────────────────────────────────────────────────────────
 
+REGION_OPTIONS = [
+    "Bundesweit",
+    "Baden-Württemberg", "Bayern", "Berlin", "Brandenburg", "Bremen",
+    "Hamburg", "Hessen", "Mecklenburg-Vorpommern", "Niedersachsen",
+    "Nordrhein-Westfalen", "Rheinland-Pfalz", "Saarland", "Sachsen",
+    "Sachsen-Anhalt", "Schleswig-Holstein", "Thüringen",
+    "EU / International",
+]
+
 SOURCE_PRIMARY_CATEGORIES = [
     "Abrechnung & Honorar",
     "Arzneimittel & Sicherheit",
@@ -1994,12 +2033,24 @@ def sources():
         action = request.form.get("action", "")
         sources_list = load_sources()
 
+        def _endpoints_from_form(form):
+            endpoints = []
+            for i in range(1, 11):
+                url   = form.get(f"ep_{i}_url", "").strip()
+                agent = form.get(f"ep_{i}_agent", "").strip()
+                label = form.get(f"ep_{i}_label", "").strip()
+                if url:
+                    endpoints.append({"url": url, "agent": agent, "label": label})
+            return endpoints
+
         if action == "new":
             src = {
                 "id":                   str(uuid.uuid4()),
                 "kuerzel":              request.form.get("kuerzel", "").strip(),
                 "name":                 request.form.get("name", "").strip(),
                 "url":                  request.form.get("url", "").strip(),
+                "region":               request.form.get("region", "Bundesweit").strip(),
+                "endpoints":            _endpoints_from_form(request.form),
                 "primary_category":     request.form.get("primary_category", "Sonstiges"),
                 "secondary_categories": request.form.getlist("secondary_categories"),
                 "relevant_roles":       request.form.getlist("relevant_roles"),
@@ -2022,6 +2073,8 @@ def sources():
                     s["kuerzel"]              = request.form.get("kuerzel", "").strip()
                     s["name"]                 = request.form.get("name", "").strip()
                     s["url"]                  = request.form.get("url", "").strip()
+                    s["region"]               = request.form.get("region", "Bundesweit").strip()
+                    s["endpoints"]            = _endpoints_from_form(request.form)
                     s["primary_category"]     = request.form.get("primary_category", "Sonstiges")
                     s["secondary_categories"] = request.form.getlist("secondary_categories")
                     s["relevant_roles"]       = request.form.getlist("relevant_roles")
@@ -2078,7 +2131,8 @@ def sources():
         source_update_options=SOURCE_UPDATE_OPTIONS,
         source_priorities=SOURCE_PRIORITIES,
         source_statuses=SOURCE_STATUSES,
-        source_status_labels=SOURCE_STATUS_LABELS)
+        source_status_labels=SOURCE_STATUS_LABELS,
+        region_options=REGION_OPTIONS)
 
 @app.route("/admin/sources/import", methods=["POST"])
 @role_required("admin", "superadmin")

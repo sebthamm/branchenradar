@@ -143,6 +143,18 @@
         </div>
       </div>
 
+      <div class="row-2">
+        <div class="field">
+          <label for="region">Region / Geltungsbereich</label>
+          <select id="region" name="region">
+            {% for r in region_options %}
+            <option value="{{ r }}" {{ 'selected' if signal and signal.get('region') == r else ('' if signal or r != 'Bundesweit' else 'selected') }}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field"></div>
+      </div>
+
       {% set existing_sources = signal.get('sources', []) if signal else [] %}
       {% for i in range(1, 4) %}
       {% set src = existing_sources[i-1] if existing_sources|length >= i else {} %}

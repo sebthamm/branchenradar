@@ -40,6 +40,16 @@
   .inline-form textarea { min-height: 80px; resize: vertical; line-height: 1.6; }
   .form-actions { display: flex; gap: 8px; margin-top: 16px; grid-column: 1 / -1; }
 
+  /* Endpoint rows */
+  .ep-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
+  .ep-row { display: flex; gap: 6px; align-items: center; }
+  .ep-row input, .ep-row select { padding: 7px 9px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; color: var(--text); outline: none; min-width: 0; }
+  .ep-row input:focus, .ep-row select:focus { border-color: var(--navy); }
+  .del-ep-btn { background: none; border: none; cursor: pointer; color: var(--faint); font-size: 16px; padding: 3px 6px; border-radius: 4px; flex-shrink: 0; }
+  .del-ep-btn:hover { color: var(--s-action); background: var(--surface2); }
+  .add-ep-btn { font-size: 11px; color: var(--navy); background: none; border: 1px dashed var(--border); border-radius: var(--radius); padding: 5px 12px; cursor: pointer; transition: all .15s; }
+  .add-ep-btn:hover { border-color: var(--navy); background: var(--surface2); }
+
   /* Multi-select checkboxes */
   .multi-checks { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; max-height: 120px; overflow-y: auto; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
   .multi-check  { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text); cursor: pointer; padding: 3px 7px; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); white-space: nowrap; }
@@ -183,8 +193,34 @@
           <input type="text" name="name" required placeholder="z.B. Bundesministerium für Gesundheit">
         </div>
         <div class="full">
-          <label>URL</label>
+          <label>URL (Homepage)</label>
           <input type="text" name="url" placeholder="https://...">
+        </div>
+        <div class="half">
+          <label>Region / Geltungsbereich</label>
+          <select name="region">
+            {% for r in region_options %}
+            <option value="{{ r }}" {{ 'selected' if r == 'Bundesweit' else '' }}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="half"></div>
+        <div class="full">
+          <label>Endpunkte (URLs für Agenten)</label>
+          <div class="ep-list" id="new-ep-list">
+            <div class="ep-row">
+              <input type="text" name="ep_1_url" placeholder="https://..." style="flex:3">
+              <select name="ep_1_agent" style="flex:1">
+                <option value="">Agent</option>
+                <option value="scrape">scrape</option>
+                <option value="feed">feed</option>
+                <option value="pdf">pdf</option>
+                <option value="search">search</option>
+              </select>
+              <input type="text" name="ep_1_label" placeholder="Bezeichnung" style="flex:2">
+            </div>
+          </div>
+          <button type="button" class="add-ep-btn" onclick="addEpRow('new-ep-list', 2)">+ Endpunkt</button>
         </div>
         <div class="half">
           <label>Primärkategorie</label>
@@ -331,8 +367,47 @@
                     <input type="text" name="name" value="{{ src.name }}" required>
                   </div>
                   <div class="full">
-                    <label>URL</label>
+                    <label>URL (Homepage)</label>
                     <input type="text" name="url" value="{{ src.url or '' }}">
+                  </div>
+                  <div class="half">
+                    <label>Region / Geltungsbereich</label>
+                    <select name="region">
+                      {% for r in region_options %}
+                      <option value="{{ r }}" {{ 'selected' if src.get('region', 'Bundesweit') == r else '' }}>{{ r }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="half"></div>
+                  <div class="full">
+                    <label>Endpunkte (URLs für Agenten)</label>
+                    <div class="ep-list" id="ep-list-{{ src.id }}">
+                      {% set eps = src.get('endpoints', []) %}
+                      {% for ep in eps %}
+                      <div class="ep-row">
+                        <input type="text" name="ep_{{ loop.index }}_url" value="{{ ep.url or '' }}" placeholder="https://..." style="flex:3">
+                        <select name="ep_{{ loop.index }}_agent" style="flex:1">
+                          <option value="">Agent</option>
+                          {% for key in ['scrape','feed','pdf','search'] %}
+                          <option value="{{ key }}" {{ 'selected' if ep.get('agent') == key else '' }}>{{ key }}</option>
+                          {% endfor %}
+                        </select>
+                        <input type="text" name="ep_{{ loop.index }}_label" value="{{ ep.label or '' }}" placeholder="Bezeichnung" style="flex:2">
+                        <button type="button" class="del-ep-btn" onclick="this.closest('.ep-row').remove()">×</button>
+                      </div>
+                      {% endfor %}
+                      <div class="ep-row">
+                        <input type="text" name="ep_{{ (eps|length)+1 }}_url" placeholder="https://..." style="flex:3">
+                        <select name="ep_{{ (eps|length)+1 }}_agent" style="flex:1">
+                          <option value="">Agent</option>
+                          {% for key in ['scrape','feed','pdf','search'] %}
+                          <option value="{{ key }}">{{ key }}</option>
+                          {% endfor %}
+                        </select>
+                        <input type="text" name="ep_{{ (eps|length)+1 }}_label" placeholder="Bezeichnung" style="flex:2">
+                      </div>
+                    </div>
+                    <button type="button" class="add-ep-btn" onclick="addEpRow('ep-list-{{ src.id }}', {{ (eps|length)+2 }})">+ Endpunkt</button>
                   </div>
                   <div class="half">
                     <label>Primärkategorie</label>
@@ -718,6 +793,28 @@ function showDiffModal(data) {
     ? data.modified.map(m => `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)">${m.name} <span style="color:var(--faint)">(${m.fields.join(', ')})</span></div>`).join('')
     : '<div style="font-size:12px;color:var(--faint)">—</div>';
   el('diff-modal').style.display = 'flex';
+}
+
+function addEpRow(listId, nextIdx) {
+  const list = document.getElementById(listId);
+  if (!list) return;
+  const row = document.createElement('div');
+  row.className = 'ep-row';
+  row.innerHTML = `
+    <input type="text" name="ep_${nextIdx}_url" placeholder="https://..." style="flex:3">
+    <select name="ep_${nextIdx}_agent" style="flex:1">
+      <option value="">Agent</option>
+      <option value="scrape">scrape</option>
+      <option value="feed">feed</option>
+      <option value="pdf">pdf</option>
+      <option value="search">search</option>
+    </select>
+    <input type="text" name="ep_${nextIdx}_label" placeholder="Bezeichnung" style="flex:2">
+    <button type="button" class="del-ep-btn" onclick="this.closest('.ep-row').remove()">×</button>`;
+  list.appendChild(row);
+  // Increment counter on the button that called this
+  const btn = list.nextElementSibling;
+  if (btn) btn.setAttribute('onclick', `addEpRow('${listId}', ${nextIdx + 1})`);
 }
 
 function closeDiffModal() {
