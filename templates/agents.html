@@ -10,6 +10,14 @@
   .agent-group { margin-bottom: 40px; }
   .agent-group-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--faint); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 
+  /* Ingestion blocks (Feed / Scrape / PDF / Search) */
+  .ingestion-block { margin-bottom: 28px; }
+  .ingestion-block-header { padding: 14px 20px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px 8px 0 0; border-bottom: none; }
+  .ingestion-block-header + .agent-card { border-radius: 0 0 10px 10px; margin-bottom: 0; }
+  .ingestion-block-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--navy); margin-bottom: 6px; }
+  .ingestion-block-desc { font-size: 12px; color: var(--muted); line-height: 1.65; }
+  .ingestion-todo { margin-top: 10px; font-size: 11px; color: var(--s-announced); background: color-mix(in srgb, var(--s-announced) 8%, transparent); border: 1px solid color-mix(in srgb, var(--s-announced) 25%, transparent); border-radius: 5px; padding: 6px 10px; display: inline-block; }
+
   /* Agent cards */
   .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
   .agent-card-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); gap: 12px; }
@@ -111,56 +119,144 @@
   </div>
 
   {# ═══════════════════════════════════════════════════════════════════════════
-     SUCH-AGENTEN
+     SUCH-AGENTEN & FETCHER
   ═══════════════════════════════════════════════════════════════════════════ #}
   <div class="agent-group">
-    <div class="agent-group-title">Such-Agenten</div>
+    <div class="agent-group-title">Such-Agenten &amp; Fetcher</div>
 
-    {# Shared output_format — rendered once, referenced by all search agents #}
     {% set shared_fmt = agent_configs.output_format %}
 
-    {% for key in ['scrape', 'feed', 'pdf', 'search'] %}
-    {% set ag = agent_configs.agents[key] %}
-    {% set src_count = src_counts.get(key, 0) %}
-    <div class="agent-card" id="card-{{ key }}">
-      <div class="agent-card-head">
-        <div>
-          <div class="agent-card-title">{{ ag.label }}</div>
-          <div class="agent-card-meta"><span class="source-count-badge">{{ src_count }} Quell{{ 'e' if src_count == 1 else 'en' }}</span></div>
-        </div>
-        <div class="agent-card-actions">
-          <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
-        </div>
+    {# ── FEED ── #}
+    {% set key = 'feed' %}{% set ag = agent_configs.agents[key] %}{% set src_count = src_counts.get(key, 0) %}
+    <div class="ingestion-block">
+      <div class="ingestion-block-header">
+        <div class="ingestion-block-title">Feed</div>
+        <div class="ingestion-block-desc">Quellen, die RSS- oder Atom-Feeds bereitstellen, liefern neue Inhalte als maschinenlesbare Liste — mit URL, Titel und Datum. Ein Fetcher abonniert diese Feeds deterministisch: Er ruft jeden konfigurierten Endpunkt ab, erkennt neue Einträge anhand ihrer ID oder ihres Datums und speichert sie als Rohkandidaten. Kein KI-Ermessen, vollständige Abdeckung, auditierbar pro Quelle.</div>
+        <div class="ingestion-todo">&#9881; Fetcher muss noch gebaut und so integriert werden, dass der Feed-Agent ersetzt wird.</div>
       </div>
-      <div class="agent-sections">
-        {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
-        {{ section(key, 'method',  'Methode',           ag.method) }}
-        {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
-        {# Shared output format — editable only on first card #}
-        <div class="agent-section" style="border-right:none">
-          <div class="section-label">
-            Ausgabeformat
-            {% if session.get('role') == 'superadmin' and loop.first %}
-            <span class="edit-btns" style="font-weight:400;font-size:10px;color:var(--faint)">
-              gilt für alle Such-Agenten
-              <button class="edit-btn" onclick="startEdit('__shared__','output_format',this)">Bearbeiten</button>
-              <button class="save-btn" onclick="saveField('__shared__','output_format',this)">Speichern</button>
-              <span class="save-ok">✓</span>
-            </span>
-            {% else %}
-            <span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span>
-            {% endif %}
+      <div class="agent-card" id="card-{{ key }}">
+        <div class="agent-card-head">
+          <div>
+            <div class="agent-card-title">{{ ag.label }}</div>
+            <div class="agent-card-meta"><span class="source-count-badge">{{ src_count }} Quell{{ 'e' if src_count == 1 else 'en' }}</span></div>
           </div>
-          {% if loop.first %}
-          <div class="section-text{% if not shared_fmt %} placeholder{% endif %}" id="text-__shared__-output_format">{{ shared_fmt if shared_fmt else '—  noch nicht konfiguriert' }}</div>
-          <textarea class="section-textarea" id="ta-__shared__-output_format">{{ shared_fmt }}</textarea>
-          {% else %}
-          <div class="section-text placeholder">→ Ausgabeformat wird beim Scrape-Agenten konfiguriert.</div>
-          {% endif %}
+          <div class="agent-card-actions">
+            <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+          </div>
+        </div>
+        <div class="agent-sections">
+          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+          {{ section(key, 'method',  'Methode',           ag.method) }}
+          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+          <div class="agent-section" style="border-right:none">
+            <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span></div>
+            <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten konfiguriert.</div>
+          </div>
         </div>
       </div>
     </div>
-    {% endfor %}
+
+    {# ── SCRAPE ── #}
+    {% set key = 'scrape' %}{% set ag = agent_configs.agents[key] %}{% set src_count = src_counts.get(key, 0) %}
+    <div class="ingestion-block">
+      <div class="ingestion-block-header">
+        <div class="ingestion-block-title">Scrape</div>
+        <div class="ingestion-block-desc">Quellen ohne Feed werden über ihre HTML-Übersichtsseiten überwacht. Ein Fetcher ruft dabei deterministisch die konfigurierten Endpunkte ab, extrahiert neue Links anhand stabiler Selektoren und speichert die Rohinhalte. Der Scrape-Agent übernimmt anschließend ausschließlich die inhaltliche Auswertung: Er bewertet, was der Fetcher geliefert hat, und formuliert daraus Signale — ohne selbst entscheiden zu müssen, welche Seiten er aufruft.</div>
+        <div class="ingestion-todo">&#9881; Fetcher muss noch gebaut und so integriert werden, dass er die erste Arbeit leistet und der Agent dann damit weiterarbeitet.</div>
+      </div>
+      <div class="agent-card" id="card-{{ key }}">
+        <div class="agent-card-head">
+          <div>
+            <div class="agent-card-title">{{ ag.label }}</div>
+            <div class="agent-card-meta"><span class="source-count-badge">{{ src_count }} Quell{{ 'e' if src_count == 1 else 'en' }}</span></div>
+          </div>
+          <div class="agent-card-actions">
+            <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+          </div>
+        </div>
+        <div class="agent-sections">
+          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+          {{ section(key, 'method',  'Methode',           ag.method) }}
+          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+          <div class="agent-section" style="border-right:none">
+            <div class="section-label">
+              Ausgabeformat
+              {% if session.get('role') == 'superadmin' %}
+              <span class="edit-btns" style="font-weight:400;font-size:10px;color:var(--faint)">
+                gilt für alle Such-Agenten
+                <button class="edit-btn" onclick="startEdit('__shared__','output_format',this)">Bearbeiten</button>
+                <button class="save-btn" onclick="saveField('__shared__','output_format',this)">Speichern</button>
+                <span class="save-ok">&#10003;</span>
+              </span>
+              {% else %}
+              <span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span>
+              {% endif %}
+            </div>
+            <div class="section-text{% if not shared_fmt %} placeholder{% endif %}" id="text-__shared__-output_format">{{ shared_fmt if shared_fmt else '—  noch nicht konfiguriert' }}</div>
+            <textarea class="section-textarea" id="ta-__shared__-output_format">{{ shared_fmt }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── PDF ── #}
+    {% set key = 'pdf' %}{% set ag = agent_configs.agents[key] %}{% set src_count = src_counts.get(key, 0) %}
+    <div class="ingestion-block">
+      <div class="ingestion-block-header">
+        <div class="ingestion-block-title">PDF</div>
+        <div class="ingestion-block-desc">Viele Behörden, Kammern und Kassenärztliche Vereinigungen veröffentlichen relevante Inhalte ausschließlich als PDF — Beschlüsse, Rundschreiben, Richtlinien. Maschinelles Parsing ist hier unzuverlässig: Tabellen, mehrspaltige Layouts und eingebettete Listen lassen sich kaum strukturiert extrahieren. Der PDF-Agent liest diese Dokumente direkt und versteht Inhalt, Kontext und Relevanz — ohne vorgelagerten Fetcher.</div>
+      </div>
+      <div class="agent-card" id="card-{{ key }}">
+        <div class="agent-card-head">
+          <div>
+            <div class="agent-card-title">{{ ag.label }}</div>
+            <div class="agent-card-meta"><span class="source-count-badge">{{ src_count }} Quell{{ 'e' if src_count == 1 else 'en' }}</span></div>
+          </div>
+          <div class="agent-card-actions">
+            <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+          </div>
+        </div>
+        <div class="agent-sections">
+          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+          {{ section(key, 'method',  'Methode',           ag.method) }}
+          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+          <div class="agent-section" style="border-right:none">
+            <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span></div>
+            <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten konfiguriert.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── SEARCH ── #}
+    {% set key = 'search' %}{% set ag = agent_configs.agents[key] %}{% set src_count = src_counts.get(key, 0) %}
+    <div class="ingestion-block">
+      <div class="ingestion-block-header">
+        <div class="ingestion-block-title">Search</div>
+        <div class="ingestion-block-desc">Der Search-Agent ist grundlegend anders als die anderen drei: Er sucht aktiv nach Signalen, die in keiner der definierten Quellen stehen — über Suchmaschinen, Nachrichtenaggregatoren und offenes Web. Das ist per Definition nicht deterministisch und damit nicht durch einen Fetcher ersetzbar. KI ist hier die einzig sinnvolle Methode: Sie kann unbekannte Quellen entdecken, Relevanz einschätzen und neue Inhalte aus dem offenen Web in das Quelleninventar einspeisen.</div>
+      </div>
+      <div class="agent-card" id="card-{{ key }}">
+        <div class="agent-card-head">
+          <div>
+            <div class="agent-card-title">{{ ag.label }}</div>
+            <div class="agent-card-meta"><span class="source-count-badge">{{ src_count }} Quell{{ 'e' if src_count == 1 else 'en' }}</span></div>
+          </div>
+          <div class="agent-card-actions">
+            <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+          </div>
+        </div>
+        <div class="agent-sections">
+          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+          {{ section(key, 'method',  'Methode',           ag.method) }}
+          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+          <div class="agent-section" style="border-right:none">
+            <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span></div>
+            <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten konfiguriert.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   {# ═══════════════════════════════════════════════════════════════════════════
