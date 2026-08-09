@@ -133,7 +133,23 @@
     <div class="page-title">Quellen</div>
     <div class="actions">
       <a href="{{ url_for('agents') }}" class="btn btn-secondary btn-sm">→ Agenten</a>
+      <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm">↓ Export</a>
+      <button class="btn btn-secondary btn-sm" onclick="toggleImportPanel()">↑ Import</button>
       <button class="btn btn-primary btn-sm" onclick="toggleNewPanel()">+ Neue Quelle</button>
+    </div>
+  </div>
+
+  {# ── Bulk-Import Panel ── #}
+  <div class="new-panel" id="import-panel" style="display:none">
+    <div style="font-size:13px;font-weight:600;margin-bottom:6px">Quellenliste importieren (TSV)</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+      Ausgabe des Quellen-Pflege-Agenten oder Quellen-Recherche-Agenten hier einfügen. Die vollständige Liste ersetzt nach Bestätigung die aktuelle Quellenliste.
+    </div>
+    <textarea id="import-tsv" style="width:100%;min-height:140px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-family:monospace;color:var(--text);resize:vertical;outline:none" placeholder="Kürzel&#9;Name&#9;URL&#9;Feed-URL&#9;…"></textarea>
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+      <button class="btn btn-primary btn-sm" onclick="previewImport()">Vorschau</button>
+      <button class="btn btn-secondary btn-sm" onclick="toggleImportPanel()">Abbrechen</button>
+      <span id="import-loading" style="display:none;font-size:12px;color:var(--muted)">Analysiere…</span>
     </div>
   </div>
 
@@ -500,6 +516,11 @@ function toggleNewPanel() {
   document.getElementById('new-panel').classList.toggle('open');
 }
 
+function toggleImportPanel() {
+  const p = document.getElementById('import-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
 function toggleEdit(uid) {
   const panel = document.getElementById('panel-edit-' + uid);
   panel.classList.toggle('open');
@@ -656,6 +677,107 @@ function copyPrompt() {
   });
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closePromptModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePromptModal(); closeDiffModal(); } });
+
+// ── Bulk Import ───────────────────────────────────────────────────────────────
+let _pendingTsv = '';
+
+async function previewImport() {
+  const tsv = document.getElementById('import-tsv').value.trim();
+  if (!tsv) { alert('Bitte zuerst TSV-Daten einfügen.'); return; }
+  _pendingTsv = tsv;
+  document.getElementById('import-loading').style.display = 'inline';
+  try {
+    const resp = await fetch('{{ url_for("sources_bulk_import") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'preview', tsv_data: tsv })
+    });
+    const data = await resp.json();
+    document.getElementById('import-loading').style.display = 'none';
+    if (!data.ok) { alert('Fehler: ' + (data.msg || 'Unbekannt')); return; }
+    showDiffModal(data);
+  } catch(e) {
+    document.getElementById('import-loading').style.display = 'none';
+    alert('Fehler beim Analysieren: ' + e.message);
+  }
+}
+
+function showDiffModal(data) {
+  const el = id => document.getElementById(id);
+  el('diff-total').textContent   = data.total;
+  el('diff-new-count').textContent      = data.new.length;
+  el('diff-modified-count').textContent = data.modified.length;
+  el('diff-unchanged-count').textContent = data.unchanged;
+  // New list
+  el('diff-new-list').innerHTML = data.new.length
+    ? data.new.map(n => `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)">${n}</div>`).join('')
+    : '<div style="font-size:12px;color:var(--faint)">—</div>';
+  // Modified list
+  el('diff-modified-list').innerHTML = data.modified.length
+    ? data.modified.map(m => `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)">${m.name} <span style="color:var(--faint)">(${m.fields.join(', ')})</span></div>`).join('')
+    : '<div style="font-size:12px;color:var(--faint)">—</div>';
+  el('diff-modal').style.display = 'flex';
+}
+
+function closeDiffModal() {
+  document.getElementById('diff-modal').style.display = 'none';
+}
+
+async function confirmImport() {
+  document.getElementById('diff-confirm-btn').disabled = true;
+  document.getElementById('diff-confirm-btn').textContent = 'Importiere…';
+  try {
+    const resp = await fetch('{{ url_for("sources_bulk_import") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'confirm', tsv_data: _pendingTsv })
+    });
+    const data = await resp.json();
+    if (data.ok && data.redirect) {
+      window.location.href = data.redirect;
+    } else {
+      alert('Fehler beim Import.');
+    }
+  } catch(e) {
+    alert('Fehler: ' + e.message);
+  }
+}
 </script>
+
+{# ── Diff Modal ── #}
+<div id="diff-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 40px rgba(0,0,0,.25);width:min(580px,92vw);max-height:85vh;display:flex;flex-direction:column">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <span style="font-size:15px;font-weight:600">Import-Vorschau</span>
+      <button onclick="closeDiffModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);line-height:1">×</button>
+    </div>
+    <div style="overflow-y:auto;padding:18px 20px;flex:1">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:var(--navy)" id="diff-total">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Gesamt</div>
+        </div>
+        <div style="background:rgba(42,122,82,.08);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:var(--s-active)" id="diff-new-count">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Neu</div>
+        </div>
+        <div style="background:rgba(184,107,26,.08);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:var(--s-announced)" id="diff-modified-count">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Geändert</div>
+        </div>
+      </div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:6px">Neue Quellen</div>
+      <div id="diff-new-list" style="max-height:120px;overflow-y:auto;margin-bottom:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px"></div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:6px">Geänderte Quellen</div>
+      <div id="diff-modified-list" style="max-height:160px;overflow-y:auto;margin-bottom:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px"></div>
+      <div style="font-size:12px;color:var(--faint)">Unverändert: <span id="diff-unchanged-count">—</span> Quelle(n)</div>
+    </div>
+    <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0">
+      <button id="diff-confirm-btn" class="btn btn-primary btn-sm" onclick="confirmImport()">Fortfahren mit Import</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeDiffModal()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

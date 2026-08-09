@@ -96,9 +96,7 @@
           </div>
         </div>
         <div class="agent-card-actions">
-          {% if key == 'source_maintenance' %}
-            <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm" title="Alle Quellen als Excel exportieren — als Input für den Agenten verwenden">↓ Quellen-Export</a>
-          {% endif %}
+          <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm" title="Alle Quellen als Excel exportieren — als Input für den Agenten verwenden">↓ Quellen-Export</a>
           <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
         </div>
       </div>

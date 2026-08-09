@@ -201,17 +201,31 @@ _SOURCE_MAINTENANCE_HINT = (
     "Belasse Felder die du nicht mit Sicherheit ergänzen kannst leer — keine Vermutungen."
 )
 
+_SOURCE_TSV_HEADER = (
+    "Kürzel\tName\tURL\tFeed-URL\tPrimärkategorie\tRelevante Rollen\tAgenten\t"
+    "Priorität\tZugang\tAktualisierung\tStatus\tHinweise\t"
+    "Agenten-Hinweis (scrape)\tAgenten-Hinweis (feed)\tAgenten-Hinweis (pdf)\tAgenten-Hinweis (search)\t"
+    "Datum Hinzugefügt\tDatum Letzte Änderung\tKommentar"
+)
+
+_SOURCE_OUTPUT_RULES = (
+    "Regeln:\n"
+    "- 'URL': direkter Einstiegspunkt (Unterseite/Feed/Dokumentverzeichnis), nicht die Homepage\n"
+    "- 'Feed-URL': RSS/Atom-URL falls vorhanden, sonst leer\n"
+    "- 'Agenten': kommagetrennt aus scrape | feed | pdf | search\n"
+    "- 'Relevante Rollen': kommagetrennt\n"
+    "- 'Agenten-Hinweis (X)': nur für den/die zugewiesenen Agenten befüllen, konkret, max. 2 Sätze\n"
+    "- 'Datum Hinzugefügt': leer lassen wenn Quelle bereits bestand — nur bei neuen Quellen heutiges Datum JJJJ-MM-TT\n"
+    "- 'Datum Letzte Änderung': heutiges Datum JJJJ-MM-TT wenn du Felder angepasst hast, sonst leer\n"
+    "- 'Kommentar': kurze Beschreibung was du geändert/hinzugefügt hast, z.B. 'Feed-URL ergänzt', 'Neu hinzugefügt'\n"
+    "Liefere eine vollständige Liste aller Quellen (bestehende + neue/geänderte) als einzige TSV-Tabelle mit Kopfzeile."
+)
+
 _SOURCE_MAINTENANCE_OUTPUT = (
     "## Ausgabeformat\n"
-    "Für jede Quelle: erstelle einen strukturierten Datensatz mit genau diesen Feldern (TSV, Tab-getrennt):\n\n"
-    "Kürzel\tName\tURL (konkret)\tFeed-URL\tEmpfohlener Agent\tAgenten-Hinweis\tZugang\tAktualisierung\tHinweise\tStatus\n\n"
-    "Regeln:\n"
-    "- 'URL (konkret)': direkter Einstiegspunkt, nicht Homepage\n"
-    "- 'Feed-URL': RSS/Atom-URL falls vorhanden, sonst leer\n"
-    "- 'Empfohlener Agent': genau eines von scrape | feed | pdf | search\n"
-    "- 'Agenten-Hinweis': konkrete Anweisung für den Agenten, max. 2 Sätze\n"
-    "- 'Status': 'geprüft' | 'nicht erreichbar' | 'Login erforderlich' | 'kein neuer Inhalt erwartet'\n"
-    "Führe alle übergebenen Quellen auf — auch solche bei denen keine Änderung nötig ist."
+    "Liefere eine vollständige gesamthafte Quellenliste als TSV (Tab-getrennt) mit genau dieser Kopfzeile:\n\n"
+    + _SOURCE_TSV_HEADER + "\n\n"
+    + _SOURCE_OUTPUT_RULES
 )
 
 _SOURCE_RESEARCH_PERSONA = (
@@ -240,18 +254,14 @@ _SOURCE_RESEARCH_HINT = (
 
 _SOURCE_RESEARCH_OUTPUT = (
     "## Ausgabeformat\n"
-    "Für jede neu gefundene Quelle: strukturierter Datensatz (TSV, Tab-getrennt):\n\n"
-    "Kürzel\tName\tURL (konkret)\tFeed-URL\tEmpfohlener Agent\tPrimärkategorie\tRelevante Rollen\tPriorität\tAgenten-Hinweis\tHinweise\n\n"
-    "Regeln:\n"
+    "Liefere eine vollständige gesamthafte Quellenliste (Bestand + neue Quellen) als TSV (Tab-getrennt) mit genau dieser Kopfzeile:\n\n"
+    + _SOURCE_TSV_HEADER + "\n\n"
+    + _SOURCE_OUTPUT_RULES + "\n\n"
+    "Zusatz für neue Quellen:\n"
     "- 'Kürzel': maximal 8 Zeichen, Großbuchstaben, eindeutig (z.B. BZÄK, KBVNL, GKVSV)\n"
-    "- 'URL (konkret)': direkter Einstiegspunkt, nicht Homepage\n"
-    "- 'Feed-URL': RSS/Atom-URL falls vorhanden, sonst leer\n"
-    "- 'Empfohlener Agent': genau eines von scrape | feed | pdf | search\n"
-    "- 'Primärkategorie': Behörde | Verband | KV/KZV | Kammer | Fachgesellschaft | Krankenkasse | Sonstiges\n"
-    "- 'Relevante Rollen': kommagetrennt, z.B. Praxismanagement, Abrechnung, Hygiene\n"
-    "- 'Priorität': hoch | mittel | niedrig\n"
-    "- 'Agenten-Hinweis': konkrete Anweisung für den Agenten, max. 2 Sätze\n"
-    "Keine Quellen aufführen die bereits in der übergebenen Bestandsliste enthalten sind."
+    "- 'Datum Hinzugefügt': heutiges Datum JJJJ-MM-TT\n"
+    "- 'Kommentar': 'Neu hinzugefügt'\n"
+    "Bestehende Quellen aus der Bestandsliste vollständig übernehmen (keine Felder löschen)."
 )
 
 DEFAULT_AGENT_CONFIGS = {
@@ -1563,10 +1573,11 @@ def sources_export():
     ws = wb.active
     ws.title = "Quellen"
     headers = [
-        "Kürzel", "Name", "URL", "Primärkategorie", "Relevante Rollen",
-        "Agenten", "Priorität", "Zugang", "Aktualisierung", "Status",
-        "Hinweise", "Agenten-Hinweis (scrape)", "Agenten-Hinweis (feed)",
+        "Kürzel", "Name", "URL", "Feed-URL", "Primärkategorie", "Relevante Rollen",
+        "Agenten", "Priorität", "Zugang", "Aktualisierung", "Status", "Hinweise",
+        "Agenten-Hinweis (scrape)", "Agenten-Hinweis (feed)",
         "Agenten-Hinweis (pdf)", "Agenten-Hinweis (search)",
+        "Datum Hinzugefügt", "Datum Letzte Änderung", "Kommentar",
     ]
     ws.append(headers)
     for s in sorted(sources_list, key=lambda x: x.get("kuerzel", "")):
@@ -1575,6 +1586,7 @@ def sources_export():
             s.get("kuerzel", ""),
             s.get("name", ""),
             s.get("url", ""),
+            s.get("feed_url", ""),
             s.get("primary_category", ""),
             ", ".join(s.get("relevant_roles", [])),
             ", ".join(s.get("ingestion_methods", [])),
@@ -1587,6 +1599,9 @@ def sources_export():
             ah.get("feed", ""),
             ah.get("pdf", ""),
             ah.get("search", ""),
+            s.get("created_at", ""),
+            s.get("updated_at", ""),
+            s.get("comment", ""),
         ])
     buf = io.BytesIO()
     wb.save(buf)
@@ -1595,6 +1610,139 @@ def sources_export():
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         as_attachment=True,
         download_name=f"quellen_{datetime.now().strftime('%Y%m%d')}.xlsx")
+
+
+def _parse_sources_tsv(raw_text):
+    """Parse TSV from agent output or app export into source dicts."""
+    lines = [l for l in raw_text.strip().splitlines() if l.strip()]
+    if not lines:
+        return []
+    # Detect header row
+    header = [h.strip().lower() for h in lines[0].split("\t")]
+    col = {
+        "kuerzel":        next((i for i, h in enumerate(header) if "kürzel" in h or "kurzel" in h), None),
+        "name":           next((i for i, h in enumerate(header) if h == "name"), None),
+        "url":            next((i for i, h in enumerate(header) if h in ("url", "url (konkret)")), None),
+        "feed_url":       next((i for i, h in enumerate(header) if "feed" in h and "url" in h), None),
+        "primary_category": next((i for i, h in enumerate(header) if "primär" in h or "kategorie" in h), None),
+        "relevant_roles": next((i for i, h in enumerate(header) if "rollen" in h), None),
+        "ingestion_methods": next((i for i, h in enumerate(header) if "agenten" == h or h in ("agenten", "empfohlener agent")), None),
+        "priority":       next((i for i, h in enumerate(header) if "priorität" in h or "prioritat" in h), None),
+        "zugang":         next((i for i, h in enumerate(header) if "zugang" in h), None),
+        "expected_update": next((i for i, h in enumerate(header) if "aktualis" in h), None),
+        "status":         next((i for i, h in enumerate(header) if h == "status"), None),
+        "notes":          next((i for i, h in enumerate(header) if "hinweise" in h and "agenten" not in h), None),
+        "hint_scrape":    next((i for i, h in enumerate(header) if "scrape" in h), None),
+        "hint_feed":      next((i for i, h in enumerate(header) if "feed" in h and "url" not in h), None),
+        "hint_pdf":       next((i for i, h in enumerate(header) if "pdf" in h), None),
+        "hint_search":    next((i for i, h in enumerate(header) if "search" in h or "suche" in h), None),
+        "created_at":     next((i for i, h in enumerate(header) if "hinzugefügt" in h or "hinzugefugt" in h), None),
+        "updated_at":     next((i for i, h in enumerate(header) if "letzte" in h and "änderung" in h), None),
+        "comment":        next((i for i, h in enumerate(header) if "kommentar" in h), None),
+    }
+    def cell(row, key):
+        idx = col.get(key)
+        if idx is None or idx >= len(row):
+            return ""
+        return row[idx].strip()
+    results = []
+    for line in lines[1:]:
+        parts = line.split("\t")
+        name = cell(parts, "name")
+        if not name:
+            continue
+        agent_hints = []
+        for agent_key in ("hint_scrape", "hint_feed", "hint_pdf", "hint_search"):
+            text = cell(parts, agent_key)
+            if text:
+                agent_hints.append({"agent": agent_key.replace("hint_", ""), "text": text})
+        methods_raw = cell(parts, "ingestion_methods")
+        methods = [m.strip() for m in methods_raw.replace(",", " ").split() if m.strip() in ("scrape", "feed", "pdf", "search")]
+        roles_raw = cell(parts, "relevant_roles")
+        roles = [r.strip() for r in roles_raw.split(",") if r.strip()]
+        results.append({
+            "kuerzel":           cell(parts, "kuerzel"),
+            "name":              name,
+            "url":               cell(parts, "url"),
+            "feed_url":          cell(parts, "feed_url"),
+            "primary_category":  cell(parts, "primary_category"),
+            "relevant_roles":    roles,
+            "ingestion_methods": methods,
+            "priority":          cell(parts, "priority") or "mittel",
+            "zugang":            cell(parts, "zugang"),
+            "expected_update":   cell(parts, "expected_update"),
+            "status":            cell(parts, "status"),
+            "notes":             cell(parts, "notes"),
+            "agent_hints":       agent_hints,
+            "created_at":        cell(parts, "created_at"),
+            "updated_at":        cell(parts, "updated_at"),
+            "comment":           cell(parts, "comment"),
+        })
+    return results
+
+
+@app.route("/admin/sources/bulk-import", methods=["POST"])
+@role_required("superadmin")
+def sources_bulk_import():
+    action = request.form.get("action", "preview")
+    raw = request.form.get("tsv_data", "").strip()
+    if not raw:
+        flash("Keine Daten eingefügt.", "error")
+        return redirect(url_for("sources"))
+    incoming = _parse_sources_tsv(raw)
+    if not incoming:
+        flash("Keine gültigen Zeilen erkannt. Prüfe das Format.", "error")
+        return redirect(url_for("sources"))
+    existing = load_sources()
+    existing_by_kuerzel = {s.get("kuerzel", "").upper(): s for s in existing if s.get("kuerzel")}
+    today = datetime.now().strftime("%Y-%m-%d")
+    if action == "preview":
+        new_srcs, modified, unchanged = [], [], []
+        for s in incoming:
+            k = s.get("kuerzel", "").upper()
+            if not k or k not in existing_by_kuerzel:
+                new_srcs.append(s.get("name", k))
+            else:
+                ex = existing_by_kuerzel[k]
+                changed_fields = []
+                for field in ("url", "feed_url", "primary_category", "priority", "status", "notes",
+                              "zugang", "expected_update", "ingestion_methods", "relevant_roles"):
+                    if s.get(field) != ex.get(field):
+                        changed_fields.append(field)
+                if changed_fields:
+                    modified.append({"name": s.get("name", k), "fields": changed_fields})
+                else:
+                    unchanged.append(s.get("name", k))
+        return jsonify({
+            "ok": True,
+            "total": len(incoming),
+            "new": new_srcs,
+            "modified": modified,
+            "unchanged": len(unchanged),
+        })
+    elif action == "confirm":
+        merged = []
+        for s in incoming:
+            k = s.get("kuerzel", "").upper()
+            ex = existing_by_kuerzel.get(k)
+            src = dict(s)
+            src["id"] = ex["id"] if ex else str(uuid.uuid4())
+            # Preserve created_at from existing if not set
+            if not src.get("created_at"):
+                src["created_at"] = ex.get("created_at", today) if ex else today
+            # Set updated_at to today if fields changed or agent set it
+            if not src.get("updated_at") and ex:
+                for field in ("url", "feed_url", "primary_category", "priority", "status",
+                              "notes", "zugang", "expected_update", "ingestion_methods", "relevant_roles"):
+                    if src.get(field) != ex.get(field):
+                        src["updated_at"] = today
+                        break
+            elif not src.get("updated_at") and not ex:
+                src["created_at"] = today
+            merged.append(src)
+        save_sources(merged)
+        flash(f"Import abgeschlossen: {len(merged)} Quellen gespeichert.", "success")
+        return jsonify({"ok": True, "redirect": url_for("sources")})
 
 
 # ── Agent Reports ─────────────────────────────────────────────────────────────
