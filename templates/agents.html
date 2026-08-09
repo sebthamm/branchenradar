@@ -320,7 +320,17 @@ function openPrompt(agentKey, type) {
     lines.push('');
     srcs.forEach((s, i) => {
       lines.push(`### ${i + 1}. [${s.kuerzel || '?'}] ${s.name}`);
-      if (s.url)              lines.push('URL: ' + s.url);
+      // Prefer agent-specific endpoints over homepage URL
+      const agentEps = (s.endpoints || []).filter(e => e.agent === agentKey && e.url);
+      if (agentEps.length) {
+        agentEps.forEach(ep => {
+          const lbl = ep.label ? ` (${ep.label})` : '';
+          lines.push('URL: ' + ep.url + lbl);
+        });
+      } else {
+        if (s.url) lines.push('URL: ' + s.url + ' (Homepage)');
+      }
+      if (s.region && s.region !== 'Bundesweit') lines.push('Region: ' + s.region);
       if (s.primary_category) lines.push('Kategorie: ' + s.primary_category);
       if (s.zugang)           lines.push('Zugang: ' + s.zugang);
       if (s.expected_update)  lines.push('Aktualisierung: ' + s.expected_update);
