@@ -203,7 +203,7 @@ _SOURCE_MAINTENANCE_HINT = (
 )
 
 _SOURCE_TSV_HEADER = (
-    "Kürzel\tName\tURL\tFeed-URL\tPrimärkategorie\tRelevante Rollen\tAgenten\t"
+    "Kürzel\tName\tURL\tRegion\tEndpoints\tPrimärkategorie\tRelevante Rollen\tAgenten\t"
     "Priorität\tZugang\tAktualisierung\tStatus\tHinweise\t"
     "Agenten-Hinweis (scrape)\tAgenten-Hinweis (feed)\tAgenten-Hinweis (pdf)\tAgenten-Hinweis (search)\t"
     "Datum Hinzugefügt\tDatum Letzte Änderung\tKommentar"
