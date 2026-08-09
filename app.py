@@ -176,9 +176,101 @@ _SEARCH_PERSONA_BASE = (
     "und gibt ihm einen sprechenden, handlungsorientierten Titel."
 )
 
+_SOURCE_MAINTENANCE_PERSONA = (
+    "Du bist ein Quellen-Pflege-Agent für den Branchenradar Gesundheitswesen. "
+    "Du erhältst eine Liste bestehender Quellen mit ihren aktuell hinterlegten Details. "
+    "Deine Aufgabe ist es, jede Quelle zu analysieren und die hinterlegten Informationen zu vervollständigen, "
+    "zu korrigieren und zu konkretisieren — insbesondere die URL-Endpunkte und Agenten-Hinweise."
+)
+
+_SOURCE_MAINTENANCE_METHOD = (
+    "Gehe jede Quelle der übergebenen Liste durch:\n"
+    "1. Prüfe die hinterlegte URL — ist es eine Homepage oder ein direkter Endpunkt?\n"
+    "2. Suche nach konkreten Feed-/RSS-Endpunkten (typisch: /feed, /rss.xml, /atom.xml, Link-Tags im HTML-Header)\n"
+    "3. Identifiziere relevante Unterseiten (Beschlüsse, Aktuelles, Pressemitteilungen, Rundschreiben, PDF-Verzeichnisse)\n"
+    "4. Prüfe ob der zugewiesene Agent (scrape/feed/pdf/search) noch der richtige ist\n"
+    "5. Formuliere einen konkreten Agenten-Hinweis der beschreibt wo genau neue Inhalte zu finden sind\n"
+    "6. Ergänze fehlende Felder soweit recherchierbar (Zugang, Aktualisierungsfrequenz, Hinweise)"
+)
+
+_SOURCE_MAINTENANCE_HINT = (
+    "Fokussiere auf Vollständigkeit und Konkretheit: Eine URL wie 'https://www.g-ba.de' ist nutzlos, "
+    "'https://www.g-ba.de/beschluesse/' ist brauchbar. "
+    "Wenn du keinen direkten Feed findest, benenne die spezifische Unterseite die gecrawlt werden soll. "
+    "Wenn eine Quelle weder Feed noch crawlbare Unterseite hat, empfehle 'search' als Agenten-Methode. "
+    "Belasse Felder die du nicht mit Sicherheit ergänzen kannst leer — keine Vermutungen."
+)
+
+_SOURCE_MAINTENANCE_OUTPUT = (
+    "## Ausgabeformat\n"
+    "Für jede Quelle: erstelle einen strukturierten Datensatz mit genau diesen Feldern (TSV, Tab-getrennt):\n\n"
+    "Kürzel\tName\tURL (konkret)\tFeed-URL\tEmpfohlener Agent\tAgenten-Hinweis\tZugang\tAktualisierung\tHinweise\tStatus\n\n"
+    "Regeln:\n"
+    "- 'URL (konkret)': direkter Einstiegspunkt, nicht Homepage\n"
+    "- 'Feed-URL': RSS/Atom-URL falls vorhanden, sonst leer\n"
+    "- 'Empfohlener Agent': genau eines von scrape | feed | pdf | search\n"
+    "- 'Agenten-Hinweis': konkrete Anweisung für den Agenten, max. 2 Sätze\n"
+    "- 'Status': 'geprüft' | 'nicht erreichbar' | 'Login erforderlich' | 'kein neuer Inhalt erwartet'\n"
+    "Führe alle übergebenen Quellen auf — auch solche bei denen keine Änderung nötig ist."
+)
+
+_SOURCE_RESEARCH_PERSONA = (
+    "Du bist ein Quellen-Recherche-Agent für den Branchenradar Gesundheitswesen. "
+    "Deine Aufgabe ist es, neue relevante Quellen zu finden, die noch nicht in der bestehenden Quellenliste enthalten sind. "
+    "Du kennst die deutschen Gesundheitseinrichtungen, ihre regulatorischen Stakeholder und die relevanten Informationskanäle."
+)
+
+_SOURCE_RESEARCH_METHOD = (
+    "1. Analysiere den übergebenen Suchfokus (Thema, Einrichtungstyp, Region oder Behördentyp)\n"
+    "2. Recherchiere gezielt nach Quellen die diesen Fokus abdecken und noch nicht in der Liste sind\n"
+    "3. Für jede gefundene Quelle: prüfe ob sie regelmäßig relevante regulatorische Inhalte veröffentlicht\n"
+    "4. Identifiziere sofort den konkreten Endpunkt (Feed, Unterseite, Dokumentverzeichnis)\n"
+    "5. Bewerte Priorität: hoch (direkte Rechtswirkung), mittel (operative Relevanz), niedrig (Orientierung)\n"
+    "6. Schließe Quellen aus die nur Werbung, rein redaktionelle Inhalte oder keine deutschen Bezüge haben"
+)
+
+_SOURCE_RESEARCH_HINT = (
+    "Typische Quellen-Kategorien die oft fehlen: KV-Landesverbände, Landeszahnärztekammern, "
+    "Landesgesundheitsministerien, Fachgesellschaften (z.B. DGAI, DGCH), Kassenzahnärztliche Vereinigungen, "
+    "Bundesbehörden (BfArM, BZgA, PEI, DIMDI), Selbstverwaltungsorgane (G-BA, GKV-Spitzenverband). "
+    "Prüfe auch: offizielle Bundesanzeiger-Rubriken, EUR-Lex für EU-Rechtsakte mit Deutschlandbezug, "
+    "Krankenhausgesellschaften auf Landesebene. "
+    "Liefere nur Quellen bei denen du den konkreten Endpunkt mit Sicherheit benennen kannst."
+)
+
+_SOURCE_RESEARCH_OUTPUT = (
+    "## Ausgabeformat\n"
+    "Für jede neu gefundene Quelle: strukturierter Datensatz (TSV, Tab-getrennt):\n\n"
+    "Kürzel\tName\tURL (konkret)\tFeed-URL\tEmpfohlener Agent\tPrimärkategorie\tRelevante Rollen\tPriorität\tAgenten-Hinweis\tHinweise\n\n"
+    "Regeln:\n"
+    "- 'Kürzel': maximal 8 Zeichen, Großbuchstaben, eindeutig (z.B. BZÄK, KBVNL, GKVSV)\n"
+    "- 'URL (konkret)': direkter Einstiegspunkt, nicht Homepage\n"
+    "- 'Feed-URL': RSS/Atom-URL falls vorhanden, sonst leer\n"
+    "- 'Empfohlener Agent': genau eines von scrape | feed | pdf | search\n"
+    "- 'Primärkategorie': Behörde | Verband | KV/KZV | Kammer | Fachgesellschaft | Krankenkasse | Sonstiges\n"
+    "- 'Relevante Rollen': kommagetrennt, z.B. Praxismanagement, Abrechnung, Hygiene\n"
+    "- 'Priorität': hoch | mittel | niedrig\n"
+    "- 'Agenten-Hinweis': konkrete Anweisung für den Agenten, max. 2 Sätze\n"
+    "Keine Quellen aufführen die bereits in der übergebenen Bestandsliste enthalten sind."
+)
+
 DEFAULT_AGENT_CONFIGS = {
     "output_format": _SEARCH_OUTPUT_FORMAT,
     "agents": {
+        "source_maintenance": {
+            "label": "Quellen-Pflege-Agent",
+            "persona": _SOURCE_MAINTENANCE_PERSONA,
+            "method":  _SOURCE_MAINTENANCE_METHOD,
+            "hint":    _SOURCE_MAINTENANCE_HINT,
+            "output_format": _SOURCE_MAINTENANCE_OUTPUT,
+        },
+        "source_research": {
+            "label": "Quellen-Recherche-Agent",
+            "persona": _SOURCE_RESEARCH_PERSONA,
+            "method":  _SOURCE_RESEARCH_METHOD,
+            "hint":    _SOURCE_RESEARCH_HINT,
+            "output_format": _SOURCE_RESEARCH_OUTPUT,
+        },
         "scrape": {
             "label": "Scrape-Agent",
             "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf öffentlich zugängliche Webseiten von Behörden, Verbänden und Institutionen.",
@@ -1459,6 +1551,50 @@ def signal_export_final():
     data = load_signal_final()
     signals = sorted(data["signals"], key=lambda s: s.get("id", ""))
     return _signals_to_xlsx(signals, f"signale_final_{datetime.now().strftime('%Y%m%d')}.xlsx")
+
+
+@app.route("/admin/sources/export")
+@role_required("admin", "superadmin")
+def sources_export():
+    from flask import send_file
+    import openpyxl
+    sources_list = load_sources()
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Quellen"
+    headers = [
+        "Kürzel", "Name", "URL", "Primärkategorie", "Relevante Rollen",
+        "Agenten", "Priorität", "Zugang", "Aktualisierung", "Status",
+        "Hinweise", "Agenten-Hinweis (scrape)", "Agenten-Hinweis (feed)",
+        "Agenten-Hinweis (pdf)", "Agenten-Hinweis (search)",
+    ]
+    ws.append(headers)
+    for s in sorted(sources_list, key=lambda x: x.get("kuerzel", "")):
+        ah = {h.get("agent", ""): h.get("text", "") for h in s.get("agent_hints", [])}
+        ws.append([
+            s.get("kuerzel", ""),
+            s.get("name", ""),
+            s.get("url", ""),
+            s.get("primary_category", ""),
+            ", ".join(s.get("relevant_roles", [])),
+            ", ".join(s.get("ingestion_methods", [])),
+            s.get("priority", ""),
+            s.get("zugang", ""),
+            s.get("expected_update", ""),
+            s.get("status", ""),
+            s.get("notes", ""),
+            ah.get("scrape", ""),
+            ah.get("feed", ""),
+            ah.get("pdf", ""),
+            ah.get("search", ""),
+        ])
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(buf,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=f"quellen_{datetime.now().strftime('%Y%m%d')}.xlsx")
 
 
 # ── Agent Reports ─────────────────────────────────────────────────────────────

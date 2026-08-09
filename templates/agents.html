@@ -79,6 +79,40 @@
   {% endmacro %}
 
   {# ═══════════════════════════════════════════════════════════════════════════
+     QUELLEN-AGENTEN
+  ═══════════════════════════════════════════════════════════════════════════ #}
+  <div class="agent-group">
+    <div class="agent-group-title">Quellen-Agenten</div>
+
+    {% for key in ['source_maintenance', 'source_research'] %}
+    {% set ag = agent_configs.agents[key] %}
+    <div class="agent-card" id="card-{{ key }}">
+      <div class="agent-card-head">
+        <div>
+          <div class="agent-card-title">{{ ag.label }}</div>
+          <div class="agent-card-meta">
+            {% if key == 'source_maintenance' %}Bestehende Quellen vervollständigen, konkretisieren und aktualisieren
+            {% else %}Neue relevante Quellen für das Gesundheitswesen recherchieren und vorschlagen{% endif %}
+          </div>
+        </div>
+        <div class="agent-card-actions">
+          {% if key == 'source_maintenance' %}
+            <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm" title="Alle Quellen als Excel exportieren — als Input für den Agenten verwenden">↓ Quellen-Export</a>
+          {% endif %}
+          <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+        </div>
+      </div>
+      <div class="agent-sections">
+        {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+        {{ section(key, 'method',  'Methode',           ag.method) }}
+        {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+        {{ section(key, 'output_format', 'Ausgabeformat', ag.get('output_format', ''), 'border-right:none') }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# ═══════════════════════════════════════════════════════════════════════════
      SUCH-AGENTEN
   ═══════════════════════════════════════════════════════════════════════════ #}
   <div class="agent-group">
@@ -300,6 +334,34 @@ function openPrompt(agentKey, type) {
       lines.push('');
     });
     document.getElementById('prompt-title').textContent = `${ag.label} — Prompt (${srcs.length} Quellen)`;
+  } else if (type === 'source') {
+    lines.push('## Methode');
+    lines.push(ag.method || '');
+    lines.push('');
+    lines.push('## Globale Hinweise');
+    lines.push(ag.hint || '');
+    lines.push('');
+    if (ag.output_format) {
+      lines.push('## Ausgabeformat');
+      lines.push(ag.output_format);
+    }
+    if (agentKey === 'source_maintenance') {
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+      lines.push('## Bestehende Quellenliste');
+      lines.push('Den aktuellen Quellen-Export (Excel) als Tabelle einfügen.');
+    } else {
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+      lines.push('## Suchfokus');
+      lines.push('[Hier den gewünschten Fokus eintragen: z.B. "KV-Landesverbände", "Zahnärztekammern", "Bundesbehörden Arzneimittel"]');
+      lines.push('');
+      lines.push('## Bereits bekannte Quellen (Ausschluss)');
+      lines.push('Den aktuellen Quellen-Export als Referenz einfügen, damit keine Duplikate entstehen.');
+    }
+    document.getElementById('prompt-title').textContent = `${ag.label} — Prompt`;
   } else {
     if (agentKey === 'group') {
       const df = document.getElementById('group-date-from')?.value || ag.date_from || '';
