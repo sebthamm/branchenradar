@@ -10,6 +10,13 @@
   .agent-group { margin-bottom: 40px; }
   .agent-group-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--faint); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 
+  /* Fletcher panel */
+  .fletcher-panel { padding: 12px 20px; background: var(--bg); border: 1px solid var(--border); border-top: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .fletcher-status-text { font-size: 12px; color: var(--muted); }
+  .fletcher-status-text.ok { color: var(--s-force); }
+  .fletcher-status-text.error { color: var(--s-action); }
+  .fletcher-actions { display: flex; gap: 8px; }
+
   /* Ingestion blocks (Feed / Scrape / PDF / Search) */
   .ingestion-block { margin-bottom: 28px; }
   .ingestion-block-header { padding: 14px 20px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px 8px 0 0; border-bottom: none; }
@@ -255,7 +262,16 @@
       <div class="ingestion-block-header">
         <div class="ingestion-block-title">Feed</div>
         <div class="ingestion-block-desc">Quellen, die RSS- oder Atom-Feeds bereitstellen, liefern neue Inhalte als maschinenlesbare Liste — mit URL, Titel und Datum. Ein Fetcher abonniert diese Feeds deterministisch: Er ruft jeden konfigurierten Endpunkt ab, erkennt neue Einträge anhand ihrer ID oder ihres Datums und speichert sie als Rohkandidaten. Kein KI-Ermessen, vollständige Abdeckung, auditierbar pro Quelle.</div>
-        <div class="ingestion-todo">&#9881; Fetcher muss noch gebaut und so integriert werden, dass der Feed-Agent ersetzt wird.</div>
+        <div class="ingestion-todo">&#9881; Cron-Job kommt später — Fletcher aktuell per manuellem Start.</div>
+      </div>
+      <div class="fletcher-panel">
+        <div class="fletcher-status-row" id="fletcher-status-row">
+          <span class="fletcher-status-text" id="fletcher-status-text">Noch nicht gestartet</span>
+        </div>
+        <div class="fletcher-actions">
+          <button class="btn btn-primary btn-sm" id="fletcher-run-btn" onclick="runFletcher()">&#9654; Fletcher starten</button>
+          <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm" id="fletcher-export-btn">&#8595; Export für Lars</a>
+        </div>
       </div>
       <div class="agent-card" id="card-{{ key }}">
         <div class="agent-card-head">
@@ -479,6 +495,57 @@
 </div>
 
 <script>
+// ── Fletcher ──────────────────────────────────────────────────────────────────
+function _setFletcherStatus(text, cls) {
+  const el = document.getElementById('fletcher-status-text');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'fletcher-status-text' + (cls ? ' ' + cls : '');
+}
+
+async function runFletcher() {
+  const btn = document.getElementById('fletcher-run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Fletcher läuft…';
+  _setFletcherStatus('Läuft…');
+  try {
+    const resp = await fetch('{{ url_for("fetcher_feed_run") }}', { method: 'POST' });
+    const data = await resp.json();
+    if (data.ok) {
+      const r = data.result;
+      _setFletcherStatus(
+        `Letzter Lauf: ${r.run_at} · ${r.new_entries_total} neue Einträge · ` +
+        `${r.sources_ok} OK · ${r.sources_error} Fehler`,
+        r.sources_error > 0 ? 'error' : 'ok'
+      );
+      btn.textContent = '✓ Fertig';
+    } else {
+      _setFletcherStatus('Fehler: ' + data.error, 'error');
+      btn.textContent = '✗ Fehler';
+    }
+  } catch (e) {
+    _setFletcherStatus('Netzwerkfehler', 'error');
+    btn.textContent = '✗ Fehler';
+  }
+  setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Fletcher starten'; }, 3000);
+}
+
+// Status beim Laden der Seite abfragen
+(async () => {
+  try {
+    const resp = await fetch('{{ url_for("fetcher_feed_status") }}');
+    const data = await resp.json();
+    if (data.exists) {
+      _setFletcherStatus(
+        `Letzter Lauf: ${data.run_at} · ${data.new_entries_total} neue Einträge · ` +
+        `${data.sources_ok} OK · ${data.sources_error} Fehler`,
+        data.sources_error > 0 ? 'error' : 'ok'
+      );
+    }
+  } catch (_) {}
+})();
+
+// ── Agent configs ─────────────────────────────────────────────────────────────
 const AGENT_CONFIGS = {{ agent_configs | tojson }};
 const SOURCES       = {{ sources | tojson }};
 const HINTS         = {{ hints | tojson }};

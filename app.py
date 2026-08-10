@@ -11,7 +11,7 @@ from datetime import datetime
 from functools import wraps
 from flask import (
     Flask, render_template, request, redirect, url_for,
-    session, flash, jsonify, abort
+    session, flash, jsonify, abort, Response
 )
 from dotenv import load_dotenv
 
@@ -1150,6 +1150,51 @@ def sa_settings():
     teams = cfg.get("default_team_names", ["Team Abrechnung", "Team Personal"])
     return render_template("sa_settings.html", categories=cats, default_teams=teams)
 
+
+FETCHER_FEED_OUTPUT = os.path.join(DATA_DIR, "fetcher_feed_latest.json")
+
+@app.route("/admin/fetcher/feed/run", methods=["POST"])
+@role_required("superadmin")
+def fetcher_feed_run():
+    from fetcher_feed import run
+    try:
+        result = run()
+        return jsonify({"ok": True, "result": result})
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 500
+
+@app.route("/admin/fetcher/feed/status")
+@role_required("admin", "superadmin")
+def fetcher_feed_status():
+    if not os.path.exists(FETCHER_FEED_OUTPUT):
+        return jsonify({"exists": False})
+    with open(FETCHER_FEED_OUTPUT, encoding="utf-8") as f:
+        data = json.load(f)
+    return jsonify({
+        "exists":            True,
+        "run_at":            data.get("run_at", ""),
+        "new_entries_total": data.get("new_entries_total", 0),
+        "sources_checked":   data.get("sources_checked", 0),
+        "sources_ok":        data.get("sources_ok", 0),
+        "sources_error":     data.get("sources_error", 0),
+    })
+
+@app.route("/admin/fetcher/feed/export")
+@role_required("admin", "superadmin")
+def fetcher_feed_export():
+    if not os.path.exists(FETCHER_FEED_OUTPUT):
+        flash("Noch keine Fetcher-Ergebnisse. Bitte zuerst Fletcher starten.", "error")
+        return redirect(url_for("agents"))
+    with open(FETCHER_FEED_OUTPUT, encoding="utf-8") as f:
+        data = json.load(f)
+    from fetcher_feed import export_text
+    content = export_text(data)
+    date_str = data.get("run_at", "")[:10]
+    return Response(
+        content,
+        mimetype="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="fletcher_{date_str}.txt"'},
+    )
 
 @app.route("/superadmin/backup/download")
 @role_required("superadmin")
