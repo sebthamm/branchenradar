@@ -288,11 +288,40 @@ DEFAULT_AGENT_CONFIGS = {
             "method": "Du rufst jede URL direkt ab (HTTP GET), analysierst den HTML-Inhalt und extrahierst relevante neue Dokumente, Meldungen oder Änderungen. Vergleiche mit bekannten Inhalten und melde nur tatsächlich neue Informationen. Wenn die gegebene URL eine Homepage ist (kein direkter Endpunkt wie /news, /aktuelles, /beschluesse), suche zunächst selbstständig nach den relevanten Unterseiten (Newsbereich, Meldungen, Beschlüsse, Pressemitteilungen) und crawle diese — nicht die Homepage selbst.",
             "hint": "Achte besonders auf Neuigkeiten, Pressemitteilungen und aktuelle Meldungen. Deprioritiere redaktionelle Artikel ohne konkreten regulatorischen Gehalt. Melde nur Inhalte, die seit der letzten Recherche neu erschienen sind. **Wichtig:** Deine Aufgabe ist sammeln, nicht bewerten. Nimm im Zweifel auf — Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent. Nur offensichtlich themenfremde Inhalte (Sportnachrichten, Stellenanzeigen ohne regulatorischen Bezug) weglassen."
         },
+        "fletcher_feed": {
+            "label": "Feed-Fetcher",
+            "beschreibung": (
+                "Fletcher ruft deterministisch alle RSS- und Atom-Feeds aus dem Quellenregister ab. "
+                "Er erkennt neue Einträge anhand gespeicherter Entry-IDs (State-File), speichert Rohdaten "
+                "(Titel, URL, Datum, Originaltext) und schreibt ein vollständiges Crawl-Receipt — "
+                "welche Feeds OK waren, welche Fehler zurückgaben und wie viele neue Einträge gefunden wurden. "
+                "Fletcher bewertet, filtert und formuliert nichts — das ist Lars' Aufgabe."
+            ),
+            "konfiguration": (
+                "User-Agent: Branchenradar-Fletcher/1.0\n"
+                "State-File: data/fetcher_feed_state.json (bis zu 500 bekannte IDs pro Feed-URL)\n"
+                "Output: data/fetcher_feed_latest.json\n"
+                "Textvorschau: max. 600 Zeichen (HTML-Tags werden entfernt)\n"
+                "Fehlerbehandlung: Quelle wird im Crawl-Receipt mit Fehlertext protokolliert, Lauf läuft weiter"
+            ),
+        },
         "feed": {
-            "label": "Feed-Agent",
-            "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf strukturierte Datenquellen: RSS-Feeds, Atom-Feeds, Newsletter-Archive und APIs.",
-            "method": "Du liest RSS/Atom-Feeds, verarbeitest Newsletter-Inhalte oder rufst APIs ab und analysierst die zurückgegebenen Einträge auf Relevanz für Gesundheitseinrichtungen in Deutschland. Wenn keine direkte Feed-URL angegeben ist, suche auf der Quellen-URL nach verfügbaren RSS/Atom-Feeds (typisch: /feed, /rss.xml, Link-Tags im HTML-Header) und verwende den spezifischsten verfügbaren Feed.",
-            "hint": "Filtere nach Einträgen der letzten 7 Tage. Fokussiere auf Themen wie Abrechnung, Datenschutz, Hygiene, Qualitätsmanagement und regulatorische Änderungen. Deprioritiere reine Veranstaltungshinweise ohne regulatorischen Inhalt. **Wichtig:** Deine Aufgabe ist sammeln, nicht bewerten. Nimm im Zweifel auf — Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent. Nur offensichtlich themenfremde Inhalte (Sportnachrichten, Stellenanzeigen ohne regulatorischen Bezug) weglassen."
+            "label": "Feed-Agent (Lars)",
+            "persona": _SEARCH_PERSONA_BASE + " Du spezialisierst dich auf die inhaltliche Auswertung von Feed-Einträgen, die Fletcher (der Feed-Fetcher) für dich gesammelt hat.",
+            "method": (
+                "Du erhältst den Fletcher-Export als Input: eine strukturierte Liste neuer Feed-Einträge "
+                "mit Titel, Quelle, URL, Datum und Originaltext. Deine Aufgabe ist ausschließlich die "
+                "inhaltliche Bewertung dieser Einträge — du rufst keine URLs selbst ab. "
+                "Prüfe jeden Eintrag auf Relevanz für Gesundheitseinrichtungen in Deutschland "
+                "und erstelle für relevante Einträge Signal-Cards im vorgegebenen Ausgabeformat."
+            ),
+            "hint": (
+                "Fokussiere auf Themen wie Abrechnung, Datenschutz, Hygiene, Qualitätsmanagement "
+                "und regulatorische Änderungen. Deprioritiere reine Veranstaltungshinweise ohne "
+                "regulatorischen Inhalt. **Wichtig:** Deine Aufgabe ist bewerten und formulieren — "
+                "das Sammeln hat Fletcher bereits übernommen. Ein Eintrag pro Signal, "
+                "auch wenn mehrere Quellen dasselbe Ereignis berichten."
+            ),
         },
         "pdf": {
             "label": "PDF-Agent",
@@ -453,7 +482,7 @@ def load_agent_configs():
         cfg["output_format"] = data["output_format"]
     for key in cfg["agents"]:
         saved = data.get("agents", {}).get(key, {})
-        for field in ("persona", "method", "hint", "output_format"):
+        for field in ("persona", "method", "hint", "output_format", "beschreibung", "konfiguration"):
             if saved.get(field, "").strip():
                 cfg["agents"][key][field] = saved[field]
         for field in ("date_from", "date_to", "last_date_from", "last_date_to"):
@@ -1969,7 +1998,7 @@ def agents_save():
     value = request.form.get("value", "").strip()
     if field == "output_format":
         cfg["output_format"] = value
-    elif field in ("persona", "method", "hint") and agent_key in cfg["agents"]:
+    elif field in ("persona", "method", "hint", "beschreibung", "konfiguration") and agent_key in cfg["agents"]:
         cfg["agents"][agent_key][field] = value
     elif field in ("date_from", "date_to", "last_date_from", "last_date_to") and agent_key in cfg["agents"]:
         cfg["agents"][agent_key][field] = value

@@ -10,12 +10,11 @@
   .agent-group { margin-bottom: 40px; }
   .agent-group-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--faint); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 
-  /* Fletcher panel */
-  .fletcher-panel { padding: 12px 20px; background: var(--bg); border: 1px solid var(--border); border-top: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  /* Fletcher status bar */
+  .fletcher-status-bar { padding: 8px 24px; background: var(--surface2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
   .fletcher-status-text { font-size: 12px; color: var(--muted); }
   .fletcher-status-text.ok { color: var(--s-force); }
   .fletcher-status-text.error { color: var(--s-action); }
-  .fletcher-actions { display: flex; gap: 8px; }
 
   /* Ingestion blocks (Feed / Scrape / PDF / Search) */
   .ingestion-block { margin-bottom: 28px; }
@@ -78,7 +77,7 @@
   <div class="page-sub">Prompt-Zusammensetzung und Konfiguration der Recherche- und Redaktionsagenten. Superadmins können alle Felder direkt bearbeiten.</div>
 
   {# ── Macro: agent firstname ────────────────────────────────────────────── #}
-  {% macro firstname(key) %}{% if key == 'feed' %}Lars{% elif key == 'scrape' %}Finn{% elif key == 'pdf' %}Mats{% elif key == 'search' %}Lena{% elif key == 'source_maintenance' %}Maja{% elif key == 'source_research' %}Nils{% elif key == 'group' %}Theo{% elif key == 'bewertung' %}Ida{% endif %}{% endmacro %}
+  {% macro firstname(key) %}{% if key == 'feed' %}Lars{% elif key == 'scrape' %}Finn{% elif key == 'pdf' %}Mats{% elif key == 'search' %}Lena{% elif key == 'source_maintenance' %}Maja{% elif key == 'source_research' %}Nils{% elif key == 'group' %}Theo{% elif key == 'bewertung' %}Ida{% elif key == 'fletcher_feed' %}Fletcher{% endif %}{% endmacro %}
 
   {# ── Macro: agent avatar SVG ──────────────────────────────────────────── #}
   {% macro avatar(key) %}
@@ -177,6 +176,21 @@
     <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
     <path d="M18.5 24 Q22 26.5 25.5 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
   </svg>
+  {% elif key == 'fletcher_feed' %}
+  <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
+    <circle cx="22" cy="22" r="22" fill="#3A5068"/>
+    <ellipse cx="22" cy="46" rx="16" ry="9" fill="#162030"/>
+    <rect x="19" y="29" width="6" height="4" rx="2" fill="#F0D0A0"/>
+    <circle cx="22" cy="20" r="10" fill="#F0D0A0"/>
+    <path d="M13 18 C13 7 31 7 31 18 L29 14 Q22 9 15 14 Z" fill="#1A1010"/>
+    <rect x="11.5" y="13" width="2.5" height="5" rx="1.2" fill="#1A1010"/>
+    <rect x="30" y="13" width="2.5" height="5" rx="1.2" fill="#1A1010"/>
+    <!-- subtle beard/stubble -->
+    <path d="M16 26 Q22 29 28 26" stroke="#C8A878" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".4"/>
+    <circle cx="18.5" cy="20" r="1.5" fill="#1A1A1A"/>
+    <circle cx="25.5" cy="20" r="1.5" fill="#1A1A1A"/>
+    <path d="M18.5 24 Q22 26 25.5 24" stroke="#777" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  </svg>
   {% elif key == 'bewertung' %}
   <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
     <circle cx="22" cy="22" r="22" fill="#2C3C7E"/>
@@ -258,22 +272,38 @@
 
     {# ── FEED ── #}
     {% set key = 'feed' %}{% set ag = agent_configs.agents[key] %}{% set src_count = src_counts.get(key, 0) %}
+    {% set fag = agent_configs.agents.get('fletcher_feed', {}) %}
     <div class="ingestion-block">
       <div class="ingestion-block-header">
         <div class="ingestion-block-title">Feed</div>
-        <div class="ingestion-block-desc">Quellen, die RSS- oder Atom-Feeds bereitstellen, liefern neue Inhalte als maschinenlesbare Liste — mit URL, Titel und Datum. Ein Fetcher abonniert diese Feeds deterministisch: Er ruft jeden konfigurierten Endpunkt ab, erkennt neue Einträge anhand ihrer ID oder ihres Datums und speichert sie als Rohkandidaten. Kein KI-Ermessen, vollständige Abdeckung, auditierbar pro Quelle.</div>
-        <div class="ingestion-todo">&#9881; Cron-Job kommt später — Fletcher aktuell per manuellem Start.</div>
+        <div class="ingestion-block-desc">Quellen, die RSS- oder Atom-Feeds bereitstellen, liefern neue Inhalte als maschinenlesbare Liste — mit URL, Titel und Datum. Fletcher ruft jeden Feed deterministisch ab, erkennt neue Einträge anhand gespeicherter IDs und stellt sie Lars als strukturierten Export bereit. Kein KI-Ermessen beim Sammeln — vollständige Abdeckung, auditierbar pro Quelle.</div>
       </div>
-      <div class="fletcher-panel">
-        <div class="fletcher-status-row" id="fletcher-status-row">
+      {# Fletcher-Card #}
+      <div class="agent-card" id="card-fletcher_feed" style="border-radius:0;border-top:none;border-bottom:none">
+        <div class="agent-card-head">
+          <div class="agent-card-identity">
+            {{ avatar('fletcher_feed') }}
+            <div>
+              <div class="agent-card-firstname">Fletcher</div>
+              <div class="agent-card-title">Feed-Fetcher</div>
+              <div class="agent-card-meta">Deterministischer RSS/Atom-Crawler</div>
+            </div>
+          </div>
+          <div class="agent-card-actions">
+            <button class="btn btn-primary btn-sm" id="fletcher-run-btn" onclick="runFletcher()">&#9654; Starten</button>
+            <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export für Lars</a>
+          </div>
+        </div>
+        <div class="fletcher-status-bar">
           <span class="fletcher-status-text" id="fletcher-status-text">Noch nicht gestartet</span>
         </div>
-        <div class="fletcher-actions">
-          <button class="btn btn-primary btn-sm" id="fletcher-run-btn" onclick="runFletcher()">&#9654; Fletcher starten</button>
-          <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm" id="fletcher-export-btn">&#8595; Export für Lars</a>
+        <div class="agent-sections">
+          {{ section('fletcher_feed', 'beschreibung', 'Beschreibung', fag.get('beschreibung',''), 'border-right:none') }}
+          {{ section('fletcher_feed', 'konfiguration', 'Konfiguration', fag.get('konfiguration',''), 'border-right:none') }}
         </div>
       </div>
-      <div class="agent-card" id="card-{{ key }}">
+      {# Lars-Card #}
+      <div class="agent-card" id="card-{{ key }}" style="border-radius:0 0 10px 10px;border-top:none">
         <div class="agent-card-head">
           <div class="agent-card-identity">
             {{ avatar(key) }}
