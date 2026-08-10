@@ -83,13 +83,14 @@ SIGNAL_PRIORITY_LABELS = {
     "kann":   "Kann",
 }
 ENTWICKLUNGSSTAND_LABELS = {
-    "beobachtung":    "Beobachtung",
-    "entwurf":        "Entwurf",
-    "angekuendigt":   "Angekündigt",
-    "beschlossen":    "Beschlossen",
-    "veroeffentlicht":"Veröffentlicht",
-    "in_kraft":       "In Kraft",
-    "abgeloest":      "Abgelöst",
+    "beobachtung":      "Beobachtung",
+    "entwurf":          "Entwurf",
+    "konsultation":     "Konsultation",
+    "beschlossen":      "Beschlossen",
+    "veroeffentlicht":  "Verkündet / Veröffentlicht",
+    "in_kraft_kuenftig":"In Kraft ab [Datum]",
+    "in_kraft":         "In Kraft",
+    "aufgehoben":       "Aufgehoben / Abgelöst",
 }
 HANDLUNGSZEITPUNKT_LABELS = {
     "jetzt":       "Jetzt handeln",
@@ -152,7 +153,15 @@ _SEARCH_OUTPUT_FORMAT = (
     "**Im Bundesanzeiger:** [TT.MM.JJJJ – Datum der amtlichen Bekanntmachung im Bundesanzeiger oder EU-Amtsblatt; nur für Gesetze/Verordnungen]\n"
     "**Gilt ab:** [TT.MM.JJJJ – Datum des Inkrafttretens oder der Wirksamkeit; z.B. 01.10.2026 für zukünftige Regelungen]\n"
     "**Frist bis:** [TT.MM.JJJJ – Handlungsfrist oder Stellungnahmefrist; z.B. bei AWMF-Konsultationen oder Übergangszeiträumen]\n"
-    "**Entwicklungsstand:** [Genau eines von: Beobachtung | Veröffentlicht | Beschlossen | In Kraft]\n"
+    "**Entwicklungsstand:** [Genau eines von: Beobachtung | Entwurf | Konsultation | Beschlossen | Verkündet / Veröffentlicht | In Kraft ab [Datum] | In Kraft | Aufgehoben / Abgelöst]\n"
+    "  → Beobachtung: früher Hinweis, noch nicht formalisiert\n"
+    "  → Entwurf: Referentenentwurf oder Beschlussentwurf veröffentlicht\n"
+    "  → Konsultation: formale Konsultationsphase mit Frist (z.B. AWMF, EU)\n"
+    "  → Beschlossen: formal beschlossen (G-BA, Bundestag), noch nicht im Bundesanzeiger\n"
+    "  → Verkündet / Veröffentlicht: im Bundesanzeiger / Amtsblatt, noch nicht wirksam oder Sicherheitsinformation\n"
+    "  → In Kraft ab [Datum]: verkündet, zukünftiges Inkrafttreten bekannt\n"
+    "  → In Kraft: unmittelbar rechtlich wirksam\n"
+    "  → Aufgehoben / Abgelöst: widerrufen oder durch neue Regelung ersetzt\n"
     "**Handlungszeitpunkt:** [Genau eines von: Sofort | Kurzfristig (< 3 Monate) | Mittelfristig (3–12 Monate) | Langfristig (> 12 Monate) | Beobachten]\n"
     "**Quelle 1:** [Name der Quelle, z.B. G-BA, BMG, gematik, BZÄK]\n"
     "**Quellenlink 1:** [Direkte URL zum Originaldokument oder zur Meldung]\n"
@@ -1417,8 +1426,22 @@ def _parse_signal_csv(raw, sections):
         "gilt ab": "effective_from", "effective_from": "effective_from",
         "frist bis": "deadline_at", "deadline_at": "deadline_at",
         "frist": "deadline", "deadline": "deadline",
+        "entwicklungsstand": "entwicklungsstand",
         "agent": "agent",
         "region": "region",
+    }
+    entwicklungsstand_map = {
+        "beobachtung": "beobachtung",
+        "entwurf": "entwurf",
+        "konsultation": "konsultation",
+        "beschlossen": "beschlossen",
+        "veröffentlicht": "veroeffentlicht", "veroeffentlicht": "veroeffentlicht",
+        "verkündet": "veroeffentlicht", "verkundet": "veroeffentlicht",
+        "verkündet / veröffentlicht": "veroeffentlicht",
+        "in kraft ab": "in_kraft_kuenftig", "in_kraft_kuenftig": "in_kraft_kuenftig",
+        "in kraft": "in_kraft", "in_kraft": "in_kraft",
+        "aufgehoben": "aufgehoben", "abgelöst": "aufgehoben", "abgeloest": "aufgehoben",
+        "aufgehoben / abgelöst": "aufgehoben",
     }
 
     reader = csv.DictReader(io.StringIO(raw), delimiter=sep)
@@ -1469,6 +1492,7 @@ def _parse_signal_csv(raw, sections):
             "category":   category,
             "source":     mapped.get("source", ""),
             "source_url": mapped.get("source_url", ""),
+            "entwicklungsstand": entwicklungsstand_map.get(mapped.get("entwicklungsstand", "").lower().strip(), mapped.get("entwicklungsstand", "")),
             "date":         mapped.get("date", datetime.now().strftime("%Y-%m-%d")),
             "published_at": mapped.get("published_at", ""),
             "decision_at":  mapped.get("decision_at", ""),
