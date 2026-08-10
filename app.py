@@ -190,8 +190,11 @@ _SOURCE_MAINTENANCE_METHOD = (
     "2. Suche nach konkreten Feed-/RSS-Endpunkten (typisch: /feed, /rss.xml, /atom.xml, Link-Tags im HTML-Header)\n"
     "3. Identifiziere relevante Unterseiten (Beschlüsse, Aktuelles, Pressemitteilungen, Rundschreiben, PDF-Verzeichnisse)\n"
     "4. Prüfe ob der zugewiesene Agent (scrape/feed/pdf/search) noch der richtige ist\n"
-    "5. Formuliere einen konkreten Agenten-Hinweis der beschreibt wo genau neue Inhalte zu finden sind\n"
-    "6. Ergänze fehlende Felder soweit recherchierbar (Zugang, Aktualisierungsfrequenz, Hinweise)"
+    "5. Für Scrape-Endpunkte: Ermittle den präzisen CSS-Selektor der Artikel-Links auf der Seite "
+    "(z.B. 'ul.news-list a', 'div.content h2 a'). Rufe dazu die Seite ab und analysiere die HTML-Struktur. "
+    "Trage den Selektor als viertes Element im Endpoints-Format ein.\n"
+    "6. Formuliere einen konkreten Agenten-Hinweis der beschreibt wo genau neue Inhalte zu finden sind\n"
+    "7. Ergänze fehlende Felder soweit recherchierbar (Zugang, Aktualisierungsfrequenz, Hinweise)"
 )
 
 _SOURCE_MAINTENANCE_HINT = (
@@ -239,9 +242,11 @@ _SOURCE_RESEARCH_METHOD = (
     "1. Analysiere den übergebenen Suchfokus (Thema, Einrichtungstyp, Region oder Behördentyp)\n"
     "2. Recherchiere gezielt nach Quellen die diesen Fokus abdecken und noch nicht in der Liste sind\n"
     "3. Für jede gefundene Quelle: prüfe ob sie regelmäßig relevante regulatorische Inhalte veröffentlicht\n"
-    "4. Identifiziere sofort den konkreten Endpunkt (Feed, Unterseite, Dokumentverzeichnis)\n"
-    "5. Bewerte Priorität: hoch (direkte Rechtswirkung), mittel (operative Relevanz), niedrig (Orientierung)\n"
-    "6. Schließe Quellen aus die nur Werbung, rein redaktionelle Inhalte oder keine deutschen Bezüge haben"
+    "4. Identifiziere sofort den konkreten Endpunkt (Feed-URL, Unterseite, Dokumentverzeichnis)\n"
+    "5. Falls der Endpunkt ein Scrape-Endpunkt ist: Rufe die Seite ab und ermittle den CSS-Selektor "
+    "der Artikel-Links (z.B. 'ul.news-list a'). Trage ihn direkt im Endpoints-Format ein.\n"
+    "6. Bewerte Priorität: hoch (direkte Rechtswirkung), mittel (operative Relevanz), niedrig (Orientierung)\n"
+    "7. Schließe Quellen aus die nur Werbung, rein redaktionelle Inhalte oder keine deutschen Bezüge haben"
 )
 
 _SOURCE_RESEARCH_HINT = (
@@ -302,6 +307,23 @@ DEFAULT_AGENT_CONFIGS = {
                 "State-File: data/fetcher_feed_state.json (bis zu 500 bekannte IDs pro Feed-URL)\n"
                 "Output: data/fetcher_feed_latest.json\n"
                 "Textvorschau: max. 600 Zeichen (HTML-Tags werden entfernt)\n"
+                "Fehlerbehandlung: Quelle wird im Crawl-Receipt mit Fehlertext protokolliert, Lauf läuft weiter"
+            ),
+        },
+        "frank_scrape": {
+            "label": "Scrape-Fetcher",
+            "beschreibung": (
+                "Frank ruft deterministisch alle Scrape-Endpunkte aus dem Quellenregister ab. "
+                "Er nutzt die von Maja und Nils hinterlegten CSS-Selektoren, um Artikel-Links auf "
+                "Übersichtsseiten zu extrahieren. Neue Links werden anhand eines State-Files erkannt "
+                "(bekannte URLs pro Endpunkt) und mit Titel und Snippet an Finn weitergegeben. "
+                "Kein KI-Ermessen beim Sammeln — vollständige Abdeckung, auditierbar pro Quelle."
+            ),
+            "konfiguration": (
+                "User-Agent: Branchenradar-Frank/1.0\n"
+                "State-File: data/fetcher_scrape_state.json (bis zu 500 bekannte URLs pro Endpunkt)\n"
+                "Output: data/fetcher_scrape_latest.json\n"
+                "Fallback ohne Selektor: alle internen <a>-Tags mit pfadähnlicher URL\n"
                 "Fehlerbehandlung: Quelle wird im Crawl-Receipt mit Fehlertext protokolliert, Lauf läuft weiter"
             ),
         },
@@ -1225,6 +1247,51 @@ def fetcher_feed_export():
         headers={"Content-Disposition": f'attachment; filename="fletcher_{date_str}.txt"'},
     )
 
+FETCHER_SCRAPE_OUTPUT = os.path.join(DATA_DIR, "fetcher_scrape_latest.json")
+
+@app.route("/admin/fetcher/scrape/run", methods=["POST"])
+@role_required("superadmin")
+def fetcher_scrape_run():
+    from fetcher_scrape import run
+    try:
+        result = run()
+        return jsonify({"ok": True, "result": result})
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 500
+
+@app.route("/admin/fetcher/scrape/status")
+@role_required("admin", "superadmin")
+def fetcher_scrape_status():
+    if not os.path.exists(FETCHER_SCRAPE_OUTPUT):
+        return jsonify({"exists": False})
+    with open(FETCHER_SCRAPE_OUTPUT, encoding="utf-8") as f:
+        data = json.load(f)
+    return jsonify({
+        "exists": True,
+        "run_at": data.get("run_at"),
+        "new_entries_total": data.get("new_entries_total", 0),
+        "sources_checked": data.get("sources_checked", 0),
+        "sources_ok": data.get("sources_ok", 0),
+        "sources_error": data.get("sources_error", 0),
+    })
+
+@app.route("/admin/fetcher/scrape/export")
+@role_required("admin", "superadmin")
+def fetcher_scrape_export():
+    if not os.path.exists(FETCHER_SCRAPE_OUTPUT):
+        flash("Noch keine Fetcher-Ergebnisse. Bitte zuerst Frank starten.", "error")
+        return redirect(url_for("agents"))
+    with open(FETCHER_SCRAPE_OUTPUT, encoding="utf-8") as f:
+        data = json.load(f)
+    from fetcher_scrape import export_text
+    content = export_text(data)
+    date_str = data.get("run_at", "")[:10]
+    return Response(
+        content,
+        mimetype="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="frank_{date_str}.txt"'},
+    )
+
 @app.route("/superadmin/backup/download")
 @role_required("superadmin")
 def backup_download():
@@ -2110,11 +2177,15 @@ def sources():
         def _endpoints_from_form(form):
             endpoints = []
             for i in range(1, 11):
-                url   = form.get(f"ep_{i}_url", "").strip()
-                agent = form.get(f"ep_{i}_agent", "").strip()
-                label = form.get(f"ep_{i}_label", "").strip()
+                url      = form.get(f"ep_{i}_url", "").strip()
+                agent    = form.get(f"ep_{i}_agent", "").strip()
+                label    = form.get(f"ep_{i}_label", "").strip()
+                selector = form.get(f"ep_{i}_selector", "").strip()
                 if url:
-                    endpoints.append({"url": url, "agent": agent, "label": label})
+                    ep = {"url": url, "agent": agent, "label": label}
+                    if selector:
+                        ep["selector"] = selector
+                    endpoints.append(ep)
             return endpoints
 
         if action == "new":

@@ -218,6 +218,7 @@
                 <option value="search">search</option>
               </select>
               <input type="text" name="ep_1_label" placeholder="Bezeichnung" style="flex:2">
+              <input type="text" name="ep_1_selector" placeholder="CSS-Selektor (scrape)" style="flex:2">
             </div>
           </div>
           <button type="button" class="add-ep-btn" onclick="addEpRow('new-ep-list', 2)">+ Endpunkt</button>
@@ -393,6 +394,7 @@
                           {% endfor %}
                         </select>
                         <input type="text" name="ep_{{ loop.index }}_label" value="{{ ep.label or '' }}" placeholder="Bezeichnung" style="flex:2">
+                        <input type="text" name="ep_{{ loop.index }}_selector" value="{{ ep.selector or '' }}" placeholder="CSS-Selektor (scrape)" style="flex:2">
                         <button type="button" class="del-ep-btn" onclick="this.closest('.ep-row').remove()">×</button>
                       </div>
                       {% endfor %}
@@ -405,6 +407,7 @@
                           {% endfor %}
                         </select>
                         <input type="text" name="ep_{{ (eps|length)+1 }}_label" placeholder="Bezeichnung" style="flex:2">
+                        <input type="text" name="ep_{{ (eps|length)+1 }}_selector" placeholder="CSS-Selektor (scrape)" style="flex:2">
                       </div>
                     </div>
                     <button type="button" class="add-ep-btn" onclick="addEpRow('ep-list-{{ src.id }}', {{ (eps|length)+2 }})">+ Endpunkt</button>
@@ -810,6 +813,7 @@ function addEpRow(listId, nextIdx) {
       <option value="search">search</option>
     </select>
     <input type="text" name="ep_${nextIdx}_label" placeholder="Bezeichnung" style="flex:2">
+    <input type="text" name="ep_${nextIdx}_selector" placeholder="CSS-Selektor (scrape)" style="flex:2">
     <button type="button" class="del-ep-btn" onclick="this.closest('.ep-row').remove()">×</button>`;
   list.appendChild(row);
   // Increment counter on the button that called this
