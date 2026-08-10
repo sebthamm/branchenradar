@@ -147,7 +147,11 @@ _SEARCH_OUTPUT_FORMAT = (
     "Für jedes gefundene Signal erstelle einen Eintrag mit folgenden Feldern:\n\n"
     "**Titel:** [Sprechender Action-Titel im Stil eines Managementpräsentations-Titels – prägnant, aktiv, handlungsorientiert, 8–12 Wörter]\n"
     "**Zusammenfassung:** [500–1000 Zeichen. Was passiert konkret, was bedeutet das für Gesundheitseinrichtungen?]\n"
-    "**Datum:** [TT.MM.JJJJ – Datum der Veröffentlichung, des Beschlusses oder des Inkrafttretens]\n"
+    "**Veröffentlicht am:** [TT.MM.JJJJ – Datum der Veröffentlichung durch die Quelle; immer befüllen wenn bekannt]\n"
+    "**Beschlossen am:** [TT.MM.JJJJ – Datum des Beschlusses/der Entscheidung, z.B. G-BA-Beschlussdatum; leer lassen wenn nicht zutreffend]\n"
+    "**Im Bundesanzeiger:** [TT.MM.JJJJ – Datum der amtlichen Bekanntmachung im Bundesanzeiger oder EU-Amtsblatt; nur für Gesetze/Verordnungen]\n"
+    "**Gilt ab:** [TT.MM.JJJJ – Datum des Inkrafttretens oder der Wirksamkeit; z.B. 01.10.2026 für zukünftige Regelungen]\n"
+    "**Frist bis:** [TT.MM.JJJJ – Handlungsfrist oder Stellungnahmefrist; z.B. bei AWMF-Konsultationen oder Übergangszeiträumen]\n"
     "**Entwicklungsstand:** [Genau eines von: Beobachtung | Veröffentlicht | Beschlossen | In Kraft]\n"
     "**Handlungszeitpunkt:** [Genau eines von: Sofort | Kurzfristig (< 3 Monate) | Mittelfristig (3–12 Monate) | Langfristig (> 12 Monate) | Beobachten]\n"
     "**Quelle 1:** [Name der Quelle, z.B. G-BA, BMG, gematik, BZÄK]\n"
@@ -1407,6 +1411,11 @@ def _parse_signal_csv(raw, sections):
         "quelle": "source", "source": "source",
         "quelle-url": "source_url", "quellenurl": "source_url", "source_url": "source_url", "url": "source_url",
         "datum": "date", "date": "date",
+        "veröffentlicht am": "published_at", "published_at": "published_at",
+        "beschlossen am": "decision_at", "decision_at": "decision_at",
+        "im bundesanzeiger": "gazetted_at", "gazetted_at": "gazetted_at",
+        "gilt ab": "effective_from", "effective_from": "effective_from",
+        "frist bis": "deadline_at", "deadline_at": "deadline_at",
         "frist": "deadline", "deadline": "deadline",
         "agent": "agent",
         "region": "region",
@@ -1460,10 +1469,16 @@ def _parse_signal_csv(raw, sections):
             "category":   category,
             "source":     mapped.get("source", ""),
             "source_url": mapped.get("source_url", ""),
-            "date":       mapped.get("date", datetime.now().strftime("%Y-%m-%d")),
-            "deadline":   mapped.get("deadline", ""),
-            "section_ids": sec_ids,
-            "created_at": datetime.now().isoformat(),
+            "date":         mapped.get("date", datetime.now().strftime("%Y-%m-%d")),
+            "published_at": mapped.get("published_at", ""),
+            "decision_at":  mapped.get("decision_at", ""),
+            "gazetted_at":  mapped.get("gazetted_at", ""),
+            "effective_from": mapped.get("effective_from", ""),
+            "deadline_at":  mapped.get("deadline_at", ""),
+            "deadline":     mapped.get("deadline", ""),
+            "section_ids":  sec_ids,
+            "first_seen_at": datetime.now().isoformat(),
+            "created_at":   datetime.now().isoformat(),
         }
         imported.append(sig)
     return imported, errors
@@ -1521,6 +1536,11 @@ def _signal_from_form(form, existing_id=None):
         "themen_id":         form.get("themen_id", "").strip(),
         "sources":           sources,
         "date":              primary_date,
+        "published_at":      form.get("published_at", "").strip() or None,
+        "decision_at":       form.get("decision_at", "").strip() or None,
+        "gazetted_at":       form.get("gazetted_at", "").strip() or None,
+        "effective_from":    form.get("effective_from", "").strip() or None,
+        "deadline_at":       form.get("deadline_at", "").strip() or None,
         "deadline":          form.get("deadline", "").strip() or None,
         "section_ids":       form.getlist("section_ids"),
         "reporting_status":  form.get("reporting_status", "").strip(),

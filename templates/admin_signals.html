@@ -69,13 +69,69 @@
     .tbl-wrap { -webkit-overflow-scrolling: touch; }
     .db-search { max-width: 100%; }
   }
+
+  /* Legend modal */
+  .legend-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; align-items:center; justify-content:center; }
+  .legend-overlay.open { display:flex; }
+  .legend-modal { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:28px 32px; max-width:620px; width:90%; max-height:85vh; overflow-y:auto; position:relative; }
+  .legend-modal h2 { font-family:Georgia,serif; font-size:18px; font-weight:normal; margin:0 0 18px; }
+  .legend-section { margin-bottom:22px; }
+  .legend-section h3 { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin:0 0 10px; }
+  .legend-row { display:grid; grid-template-columns:160px 1fr; gap:4px 16px; margin-bottom:8px; }
+  .legend-key { font-size:12px; font-weight:600; color:var(--navy); }
+  .legend-val { font-size:12px; color:var(--text); line-height:1.5; }
+  .legend-close { position:absolute; top:14px; right:18px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--faint); }
+  .legend-close:hover { color:var(--text); }
 </style>
 {% endblock %}
 {% block content %}
+
+<div class="legend-overlay" id="legend-overlay" onclick="if(event.target===this)closeLegend()">
+  <div class="legend-modal">
+    <button class="legend-close" onclick="closeLegend()">×</button>
+    <h2>Felderklärung — Signale</h2>
+
+    <div class="legend-section">
+      <h3>Datumsfelder</h3>
+      <div class="legend-row"><span class="legend-key">Veröffentlicht am</span><span class="legend-val">Datum der Veröffentlichung durch die Quelle (z.B. Pressemitteilung, Beschlusstext online). Immer befüllbar.</span></div>
+      <div class="legend-row"><span class="legend-key">Beschlossen am</span><span class="legend-val">Datum des formellen Beschlusses — z.B. G-BA-Sitzung, Kabinettsbeschluss, Bundesratsbeschluss. Nur bei regulatorischen Signalen.</span></div>
+      <div class="legend-row"><span class="legend-key">Im Bundesanzeiger</span><span class="legend-val">Datum der amtlichen Bekanntmachung im Bundesanzeiger oder EU-Amtsblatt. Nur für Gesetze, Verordnungen und G-BA-Richtlinien.</span></div>
+      <div class="legend-row"><span class="legend-key">Gilt ab</span><span class="legend-val">Datum des Inkrafttretens oder der Wirksamkeit. Kann weit in der Zukunft liegen (z.B. Übergangsfristen). Relevant für alle Signal-Typen.</span></div>
+      <div class="legend-row"><span class="legend-key">Frist bis</span><span class="legend-val">Aktive Handlungs- oder Stellungnahmefrist. Z.B. Konsultationsende bei AWMF-Leitlinien, Umsetzungsfrist für technische Änderungen.</span></div>
+      <div class="legend-row"><span class="legend-key">Erstmals gesehen</span><span class="legend-val">Zeitstempel wann der Crawler das Signal erstmals erfasst hat. Wird automatisch gesetzt, nie manuell.</span></div>
+    </div>
+
+    <div class="legend-section">
+      <h3>Entwicklungsstand</h3>
+      <div class="legend-row"><span class="legend-key">Beobachtung</span><span class="legend-val">Ankündigung, Entwurf, Konsultation oder Gerücht — noch kein verbindlicher Status.</span></div>
+      <div class="legend-row"><span class="legend-key">Veröffentlicht</span><span class="legend-val">Offiziell veröffentlicht, aber noch nicht in Kraft — z.B. Sicherheitsmitteilung, Rote-Hand-Brief, beschlossene Richtlinie unter BMG-Prüfung.</span></div>
+      <div class="legend-row"><span class="legend-key">Beschlossen</span><span class="legend-val">Formal beschlossen (z.B. G-BA-Beschluss), aber noch nicht im Bundesanzeiger / noch nicht wirksam.</span></div>
+      <div class="legend-row"><span class="legend-key">In Kraft</span><span class="legend-val">Rechtlich wirksam und unmittelbar anwendbar.</span></div>
+    </div>
+
+    <div class="legend-section">
+      <h3>Handlungszeitpunkt</h3>
+      <div class="legend-row"><span class="legend-key">Sofort</span><span class="legend-val">Unmittelbarer Handlungsbedarf — z.B. Rückruf, Sicherheitswarnung, bereits wirksame Pflicht.</span></div>
+      <div class="legend-row"><span class="legend-key">Kurzfristig</span><span class="legend-val">Handlung innerhalb von 3 Monaten erforderlich.</span></div>
+      <div class="legend-row"><span class="legend-key">Mittelfristig</span><span class="legend-val">Handlung innerhalb von 3–12 Monaten erforderlich.</span></div>
+      <div class="legend-row"><span class="legend-key">Langfristig</span><span class="legend-val">Handlung in mehr als 12 Monaten — zur Planung vormerken.</span></div>
+      <div class="legend-row"><span class="legend-key">Beobachten</span><span class="legend-val">Kein aktiver Handlungsbedarf, aber Entwicklung weiter verfolgen.</span></div>
+    </div>
+
+    <div class="legend-section">
+      <h3>Weitere Felder</h3>
+      <div class="legend-row"><span class="legend-key">Region</span><span class="legend-val">Geltungsbereich des Signals. Bundesweit = alle Praxen betroffen. Ländersignale (z.B. KV Nordrhein) nur regional relevant.</span></div>
+      <div class="legend-row"><span class="legend-key">Agent</span><span class="legend-val">Welcher Recherche-Agent das Signal gefunden hat (feed / scrape / pdf / search).</span></div>
+      <div class="legend-row"><span class="legend-key">Themen-ID</span><span class="legend-val">Optionale interne ID zum Verknüpfen mehrerer Signale die dasselbe Ereignis betreffen (Story-Cluster).</span></div>
+    </div>
+  </div>
+</div>
+
 <div class="main">
   <div class="page-head">
     <div class="page-title">Signale (RAW) <span style="font-size:14px;font-family:inherit;color:var(--faint);font-weight:normal">({{ signals | length }})</span></div>
     <div class="page-actions">
+      <button class="btn btn-secondary btn-sm" onclick="openLegend()">? Legende</button>
       <a href="{{ url_for('signal_import') }}" class="btn btn-secondary">↑ Importieren</a>
       <a href="{{ url_for('signal_new') }}" class="btn btn-primary">+ Neues Signal</a>
     </div>
@@ -228,6 +284,10 @@ function toggleDetail(id) {
     row.classList.add('expanded');
   }
 }
+
+function openLegend()  { document.getElementById('legend-overlay').classList.add('open'); }
+function closeLegend() { document.getElementById('legend-overlay').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLegend(); });
 
 function dbSearch(q) {
   q = q.toLowerCase().trim();

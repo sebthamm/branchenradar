@@ -155,6 +155,42 @@
         <div class="field"></div>
       </div>
 
+      <div class="field">
+        <label style="margin-bottom:10px">Datumsfelder</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 20px">
+          <div>
+            <label for="published_at" style="font-size:10px;margin-bottom:4px">Veröffentlicht am</label>
+            <input type="date" id="published_at" name="published_at"
+                   value="{{ signal.get('published_at','') if signal else '' }}">
+            <div class="hint">Datum der Quellenveröffentlichung</div>
+          </div>
+          <div>
+            <label for="decision_at" style="font-size:10px;margin-bottom:4px">Beschlossen am</label>
+            <input type="date" id="decision_at" name="decision_at"
+                   value="{{ signal.get('decision_at','') if signal else '' }}">
+            <div class="hint">z.B. G-BA-Beschlussdatum</div>
+          </div>
+          <div>
+            <label for="gazetted_at" style="font-size:10px;margin-bottom:4px">Im Bundesanzeiger</label>
+            <input type="date" id="gazetted_at" name="gazetted_at"
+                   value="{{ signal.get('gazetted_at','') if signal else '' }}">
+            <div class="hint">Nur für Gesetze / Verordnungen</div>
+          </div>
+          <div>
+            <label for="effective_from" style="font-size:10px;margin-bottom:4px">Gilt ab</label>
+            <input type="date" id="effective_from" name="effective_from"
+                   value="{{ signal.get('effective_from','') if signal else '' }}">
+            <div class="hint">Inkrafttreten / Wirksamkeit</div>
+          </div>
+          <div>
+            <label for="deadline_at" style="font-size:10px;margin-bottom:4px">Frist bis</label>
+            <input type="date" id="deadline_at" name="deadline_at"
+                   value="{{ signal.get('deadline_at','') if signal else '' }}">
+            <div class="hint">Handlungs- oder Stellungnahmefrist</div>
+          </div>
+        </div>
+      </div>
+
       {% set existing_sources = signal.get('sources', []) if signal else [] %}
       {% for i in range(1, 4) %}
       {% set src = existing_sources[i-1] if existing_sources|length >= i else {} %}
