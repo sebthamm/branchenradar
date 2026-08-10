@@ -294,12 +294,12 @@
             <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export für Lars</a>
           </div>
         </div>
-        <div class="fletcher-status-bar">
-          <span class="fletcher-status-text" id="fletcher-status-text">Noch nicht gestartet</span>
-        </div>
         <div class="agent-sections">
           {{ section('fletcher_feed', 'beschreibung', 'Beschreibung', fag.get('beschreibung',''), 'border-right:none') }}
           {{ section('fletcher_feed', 'konfiguration', 'Konfiguration', fag.get('konfiguration',''), 'border-right:none') }}
+        </div>
+        <div class="fletcher-status-bar">
+          <span class="fletcher-status-text" id="fletcher-status-text">Noch nicht gestartet</span>
         </div>
       </div>
       {# Lars-Card #}
