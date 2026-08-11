@@ -209,20 +209,24 @@ _SOURCE_MAINTENANCE_PERSONA = (
 
 _SOURCE_MAINTENANCE_METHOD = (
     "Gehe jede Quelle der übergebenen Liste durch:\n"
-    "1. Prüfe die hinterlegte URL — ist es eine Homepage oder ein direkter Endpunkt?\n"
+    "1. Prüfe ob die Quelle bereits Einträge in der Endpoints-Spalte hat. "
+    "Quellen ohne Endpoints haben höchste Priorität — sie werden vom System aktuell gar nicht abgerufen.\n"
     "2. Suche nach konkreten Feed-/RSS-Endpunkten (typisch: /feed, /rss.xml, /atom.xml, Link-Tags im HTML-Header)\n"
-    "3. Identifiziere relevante Unterseiten (Beschlüsse, Aktuelles, Pressemitteilungen, Rundschreiben, PDF-Verzeichnisse)\n"
-    "4. Prüfe ob der zugewiesene Agent (scrape/feed/pdf/search) noch der richtige ist\n"
-    "5. Für Scrape-Endpunkte: Ermittle den präzisen CSS-Selektor der Artikel-Links auf der Seite "
-    "(z.B. 'ul.news-list a', 'div.content h2 a'). Rufe dazu die Seite ab und analysiere die HTML-Struktur. "
-    "Trage den Selektor als viertes Element im Endpoints-Format ein.\n"
+    "3. Identifiziere relevante Unterseiten für Scrape-Endpunkte (Beschlüsse, Aktuelles, Pressemitteilungen, Rundschreiben, PDF-Verzeichnisse)\n"
+    "4. Prüfe ob die zugewiesenen Agenten (scrape/feed/pdf/search) noch die richtigen sind\n"
+    "5. Für jeden Scrape-Endpunkt: Rufe die Seite ab, analysiere die HTML-Struktur und ermittle den präzisen CSS-Selektor "
+    "der Artikel-Links (z.B. 'ul.news-list a', 'div.content h2 a', 'article h2 > a'). "
+    "Trage ihn in eckigen Klammern im Endpoints-Format ein: scrape:https://... (Label) [selektor]\n"
     "6. Formuliere einen konkreten Agenten-Hinweis der beschreibt wo genau neue Inhalte zu finden sind\n"
     "7. Ergänze fehlende Felder soweit recherchierbar (Zugang, Aktualisierungsfrequenz, Hinweise)"
 )
 
 _SOURCE_MAINTENANCE_HINT = (
+    "Priorität: Quellen ohne Endpoints-Einträge zuerst bearbeiten — diese werden aktuell nicht abgerufen. "
     "Fokussiere auf Vollständigkeit und Konkretheit: Eine URL wie 'https://www.g-ba.de' ist nutzlos, "
     "'https://www.g-ba.de/beschluesse/' ist brauchbar. "
+    "Endpoint-Format: 'feed:https://example.com/rss.xml (RSS-Feed) | scrape:https://example.com/news/ (Aktuelles) [article h2 a]'. "
+    "Mehrere Endpunkte mit ' | ' trennen. Selektor nur bei scrape-Endpunkten, in eckigen Klammern. "
     "Wenn du keinen direkten Feed findest, benenne die spezifische Unterseite die gecrawlt werden soll. "
     "Wenn eine Quelle weder Feed noch crawlbare Unterseite hat, empfehle 'search' als Agenten-Methode. "
     "Belasse Felder die du nicht mit Sicherheit ergänzen kannst leer — keine Vermutungen."
@@ -1888,12 +1892,20 @@ def _parse_sources_tsv(raw_text):
                     ep_str, label = ep_str[:-1].rsplit("(", 1)
                     label = label.strip()
                     ep_str = ep_str.strip()
+                selector = ""
+                if "[" in ep_str and ep_str.endswith("]"):
+                    ep_str, selector = ep_str[:-1].rsplit("[", 1)
+                    selector = selector.strip()
+                    ep_str = ep_str.strip()
                 if ":" in ep_str:
                     agent_key, url = ep_str.split(":", 1)
                 else:
                     agent_key, url = "", ep_str
                 if url.strip():
-                    endpoints.append({"url": url.strip(), "agent": agent_key.strip(), "label": label})
+                    ep = {"url": url.strip(), "agent": agent_key.strip(), "label": label}
+                    if selector:
+                        ep["selector"] = selector
+                    endpoints.append(ep)
         results.append({
             "kuerzel":           cell(parts, "kuerzel"),
             "name":              name,
