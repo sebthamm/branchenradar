@@ -985,7 +985,28 @@ function openPrompt(agentKey, type) {
 }
 
 function closePrompt() { document.getElementById('prompt-modal').classList.remove('open'); }
-function copyPrompt()  { navigator.clipboard.writeText(document.getElementById('prompt-output').textContent); }
+
+async function copyPrompt() {
+  const text = document.getElementById('prompt-output').textContent;
+  const btn  = document.querySelector('.prompt-box-foot .btn-secondary');
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    if (btn) { const orig = btn.textContent; btn.textContent = '✓ Kopiert'; setTimeout(() => btn.textContent = orig, 1800); }
+  } catch (e) {
+    if (btn) { btn.textContent = '✗ Fehler'; setTimeout(() => btn.textContent = 'Kopieren', 1800); }
+  }
+}
+
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePrompt(); });
 
 function saveDates() {
