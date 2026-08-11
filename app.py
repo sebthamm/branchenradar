@@ -555,7 +555,10 @@ def load_agent_configs():
         for field in ("persona", "method", "hint", "output_format", "beschreibung", "konfiguration"):
             if saved.get(field, "").strip():
                 cfg["agents"][key][field] = saved[field]
-        for field in ("date_from", "date_to", "last_date_from", "last_date_to"):
+        for field in ("date_from", "date_to", "last_date_from", "last_date_to",
+                      "timeout", "min_links", "max_per_run",
+                      "schedule_type", "schedule_day", "schedule_weekday",
+                      "schedule_time", "schedule_enabled", "maja_model"):
             if field in saved:
                 cfg["agents"][key][field] = saved[field]
     return cfg
@@ -1341,6 +1344,57 @@ def fetcher_scrape_export():
     )
 
 SELECTOR_STATUS_FILE = os.path.join(DATA_DIR, "selector_finder_status.json")
+MAJA_STATUS_FILE     = os.path.join(DATA_DIR, "maja_status.json")
+
+# ── APScheduler ───────────────────────────────────────────────────────────────
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+
+_scheduler = BackgroundScheduler(timezone="Europe/Berlin")
+_scheduler.start()
+
+def _maja_scheduled_job():
+    """Called by APScheduler on schedule."""
+    import maja_runner
+    cfg     = load_agent_configs()
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return
+    maja_cfg = cfg.get("agents", {}).get("source_maintenance", {})
+    model    = maja_cfg.get("maja_model", "claude-haiku-4-5-20251001")
+    try:
+        maja_runner.run(maja_cfg, api_key, model=model)
+    except Exception:
+        pass
+
+def _apply_maja_schedule(cfg):
+    """Read schedule config and register/replace the APScheduler job."""
+    maja = cfg.get("agents", {}).get("source_maintenance", {})
+    job_id = "maja_scheduled"
+    _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
+    if not maja.get("schedule_enabled"):
+        return
+    stype   = maja.get("schedule_type", "")
+    s_time  = maja.get("schedule_time", "08:00")
+    try:
+        hour, minute = s_time.split(":")
+    except Exception:
+        hour, minute = "8", "0"
+    if stype == "monthly":
+        day = maja.get("schedule_day", "1")
+        _scheduler.add_job(_maja_scheduled_job, CronTrigger(day=day, hour=hour, minute=minute),
+                           id=job_id, replace_existing=True)
+    elif stype == "weekly":
+        weekday = maja.get("schedule_weekday", "mon")
+        _scheduler.add_job(_maja_scheduled_job, CronTrigger(day_of_week=weekday, hour=hour, minute=minute),
+                           id=job_id, replace_existing=True)
+
+# Apply schedule on startup
+with app.app_context():
+    try:
+        _apply_maja_schedule(load_agent_configs())
+    except Exception:
+        pass
 
 @app.route("/admin/selector/run", methods=["POST"])
 @role_required("superadmin")
@@ -1373,6 +1427,59 @@ def selector_status():
         "failed":             data.get("failed", 0),
         "remaining":          data.get("remaining", 0),
     })
+
+@app.route("/admin/maja/run", methods=["POST"])
+@role_required("superadmin")
+def maja_run():
+    import maja_runner
+    cfg     = load_agent_configs()
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt."})
+    maja_cfg = cfg.get("agents", {}).get("source_maintenance", {})
+    model    = maja_cfg.get("maja_model", "claude-haiku-4-5-20251001")
+    try:
+        result = maja_runner.run(maja_cfg, api_key, model=model)
+        return jsonify({"ok": True, "result": result})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+@app.route("/admin/maja/status")
+@role_required("admin", "superadmin")
+def maja_status():
+    if not os.path.exists(MAJA_STATUS_FILE):
+        return jsonify({"exists": False})
+    with open(MAJA_STATUS_FILE, encoding="utf-8") as f:
+        data = json.load(f)
+    job = _scheduler.get_job("maja_scheduled")
+    next_run = job.next_run_time.strftime("%Y-%m-%d %H:%M") if job and job.next_run_time else None
+    return jsonify({
+        "exists":          True,
+        "run_at":          data.get("run_at", ""),
+        "sources_total":   data.get("sources_total", 0),
+        "batches":         data.get("batches", 0),
+        "endpoints_added": data.get("endpoints_added", 0),
+        "errors":          data.get("errors", []),
+        "next_run":        next_run,
+    })
+
+@app.route("/admin/maja/schedule", methods=["POST"])
+@role_required("superadmin")
+def maja_schedule():
+    cfg  = load_agent_configs()
+    maja = cfg["agents"].setdefault("source_maintenance", {})
+    body = request.get_json(silent=True) or {}
+    maja["schedule_enabled"] = bool(body.get("schedule_enabled"))
+    maja["schedule_type"]    = body.get("schedule_type", "monthly")
+    maja["schedule_day"]     = body.get("schedule_day", "1")
+    maja["schedule_weekday"] = body.get("schedule_weekday", "mon")
+    maja["schedule_time"]    = body.get("schedule_time", "08:00")
+    maja["maja_model"]       = body.get("maja_model", "claude-haiku-4-5-20251001")
+    save_agent_configs(cfg)
+    _apply_maja_schedule(cfg)
+    job = _scheduler.get_job("maja_scheduled")
+    next_run = job.next_run_time.strftime("%Y-%m-%d %H:%M") if job and job.next_run_time else None
+    return jsonify({"ok": True, "next_run": next_run})
 
 @app.route("/superadmin/backup/download")
 @role_required("superadmin")

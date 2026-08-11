@@ -279,8 +279,8 @@
   <div class="agent-group">
     <div class="agent-group-title">Quellen-Agenten</div>
 
-    {% for key in ['source_research', 'source_maintenance'] %}
-    {% set ag = agent_configs.agents[key] %}
+    {# ── Nils ── #}
+    {% set key = 'source_research' %}{% set ag = agent_configs.agents[key] %}
     <div class="agent-card" id="card-{{ key }}">
       <div class="agent-card-head">
         <div class="agent-card-identity">
@@ -288,14 +288,11 @@
           <div>
             <div class="agent-card-firstname">{{ firstname(key) }}</div>
             <div class="agent-card-title">{{ ag.label }}</div>
-            <div class="agent-card-meta">
-              {% if key == 'source_maintenance' %}Bestehende Quellen vervollständigen, konkretisieren und aktualisieren
-              {% else %}Neue relevante Quellen für das Gesundheitswesen recherchieren und vorschlagen{% endif %}
-            </div>
+            <div class="agent-card-meta">Neue relevante Quellen für das Gesundheitswesen recherchieren und vorschlagen</div>
           </div>
         </div>
         <div class="agent-card-actions">
-          <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm" title="Alle Quellen als Excel exportieren — als Input für den Agenten verwenden">↓ Quellen-Export</a>
+          <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm">↓ Quellen-Export</a>
           <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
         </div>
       </div>
@@ -306,7 +303,95 @@
         {{ section(key, 'output_format', 'Ausgabeformat', ag.get('output_format', ''), 'border-right:none') }}
       </div>
     </div>
-    {% endfor %}
+
+    {# ── Maja ── #}
+    {% set key = 'source_maintenance' %}{% set ag = agent_configs.agents[key] %}
+    <div class="agent-card" id="card-{{ key }}">
+      <div class="agent-card-head">
+        <div class="agent-card-identity">
+          {{ avatar(key) }}
+          <div>
+            <div class="agent-card-firstname">{{ firstname(key) }}</div>
+            <div class="agent-card-title">{{ ag.label }}</div>
+            <div class="agent-card-meta">Bestehende Quellen vervollständigen, konkretisieren und aktualisieren</div>
+          </div>
+        </div>
+        <div class="agent-card-actions">
+          {% if session.get('role') == 'superadmin' %}
+          <button class="btn btn-primary btn-sm" id="maja-run-btn" onclick="runMaja()">&#9654; Starten</button>
+          {% endif %}
+          <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+        </div>
+      </div>
+
+      {# Schedule + Model config (superadmin) #}
+      {% if session.get('role') == 'superadmin' %}
+      <div class="agent-sections">
+        <div class="agent-section" style="grid-column:1/-1;border-right:none">
+          <div class="section-label">Automatisierung</div>
+          <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap">
+            <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+              <input type="checkbox" id="maja-sched-enabled" {{ 'checked' if ag.get('schedule_enabled') else '' }}
+                style="accent-color:var(--navy)" onchange="majaScheduleToggle()">
+              Automatisch ausführen
+            </label>
+            <div id="maja-sched-fields" style="display:{{ 'flex' if ag.get('schedule_enabled') else 'none' }};gap:16px;flex-wrap:wrap;align-items:center">
+              <select id="maja-sched-type" onchange="majaScheduleToggle()"
+                style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+                <option value="monthly"  {{ 'selected' if ag.get('schedule_type','monthly')=='monthly' }}>Monatlich</option>
+                <option value="weekly"   {{ 'selected' if ag.get('schedule_type')=='weekly' }}>Wöchentlich</option>
+              </select>
+              <span id="maja-monthly-fields" style="display:{{ 'none' if ag.get('schedule_type')=='weekly' else 'flex' }};gap:8px;align-items:center">
+                <label style="font-size:12px;color:var(--muted)">am
+                  <input type="number" id="maja-sched-day" value="{{ ag.get('schedule_day','1') }}" min="1" max="28"
+                    style="width:48px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+                  . des Monats
+                </label>
+              </span>
+              <span id="maja-weekly-fields" style="display:{{ 'flex' if ag.get('schedule_type')=='weekly' else 'none' }};gap:8px;align-items:center">
+                <label style="font-size:12px;color:var(--muted)">jeden
+                  <select id="maja-sched-weekday"
+                    style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+                    {% for val, lbl in [('mon','Montag'),('tue','Dienstag'),('wed','Mittwoch'),('thu','Donnerstag'),('fri','Freitag'),('sat','Samstag'),('sun','Sonntag')] %}
+                    <option value="{{ val }}" {{ 'selected' if ag.get('schedule_weekday','mon')==val }}>{{ lbl }}</option>
+                    {% endfor %}
+                  </select>
+                </label>
+              </span>
+              <label style="font-size:12px;color:var(--muted)">um
+                <input type="time" id="maja-sched-time" value="{{ ag.get('schedule_time','08:00') }}"
+                  style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+              </label>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+                Modell:
+                <select id="maja-model"
+                  style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+                  <option value="claude-haiku-4-5-20251001" {{ 'selected' if ag.get('maja_model','claude-haiku-4-5-20251001')=='claude-haiku-4-5-20251001' }}>Haiku 4.5 (günstig)</option>
+                  <option value="claude-sonnet-4-6" {{ 'selected' if ag.get('maja_model')=='claude-sonnet-4-6' }}>Sonnet 4.6</option>
+                  <option value="claude-opus-4-8" {{ 'selected' if ag.get('maja_model')=='claude-opus-4-8' }}>Opus 4.8</option>
+                </select>
+              </label>
+              <button class="btn btn-secondary btn-sm" onclick="saveMajaSchedule()">Speichern</button>
+              <span id="maja-sched-ok" style="font-size:11px;color:var(--s-active);display:none">✓ gespeichert</span>
+              <span id="maja-next-run" style="font-size:11px;color:var(--faint)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="agent-sections">
+        {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+        {{ section(key, 'method',  'Methode',           ag.method) }}
+        {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+        {{ section(key, 'output_format', 'Ausgabeformat', ag.get('output_format', ''), 'border-right:none') }}
+      </div>
+      <div class="fletcher-status-bar">
+        <span class="fletcher-status-text" id="maja-status-text">Noch nicht gestartet</span>
+      </div>
+    </div>
 
     {# ── Sol – Selektor-Finder ── #}
     {% set sol = agent_configs.agents.get('sol_selector', {}) %}
@@ -766,6 +851,97 @@ function _setSolStatus(text, cls) {
   el.textContent = text;
   el.className = 'fletcher-status-text' + (cls ? ' ' + cls : '');
 }
+
+// ── Maja ─────────────────────────────────────────────────────────────────────
+function _setMajaStatus(text, cls) {
+  const el = document.getElementById('maja-status-text');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'fletcher-status-text' + (cls ? ' ' + cls : '');
+}
+
+async function runMaja() {
+  const btn = document.getElementById('maja-run-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Maja läuft…'; }
+  _setMajaStatus('Läuft… (kann einige Minuten dauern)');
+  try {
+    const resp = await fetch('{{ url_for("maja_run") }}', { method: 'POST' });
+    const data = await resp.json();
+    if (data.ok) {
+      const r = data.result;
+      const errs = r.errors && r.errors.length ? ` · ${r.errors.length} Fehler` : '';
+      _setMajaStatus(
+        `Letzter Lauf: ${r.run_at} · ${r.endpoints_added} Endpunkte ergänzt · ` +
+        `${r.batches} Batches (${r.sources_total} Quellen)${errs}`,
+        r.errors && r.errors.length ? 'error' : 'ok'
+      );
+      if (btn) btn.textContent = '✓ Fertig';
+    } else {
+      _setMajaStatus('Fehler: ' + (data.error || 'unbekannt'), 'error');
+      if (btn) btn.textContent = '✗ Fehler';
+    }
+  } catch (e) {
+    _setMajaStatus('Netzwerkfehler', 'error');
+    if (btn) btn.textContent = '✗ Fehler';
+  }
+  setTimeout(() => { if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Starten'; } }, 3000);
+}
+
+function majaScheduleToggle() {
+  const enabled = document.getElementById('maja-sched-enabled')?.checked;
+  const fields  = document.getElementById('maja-sched-fields');
+  if (fields) fields.style.display = enabled ? 'flex' : 'none';
+  const type = document.getElementById('maja-sched-type')?.value;
+  const monthly = document.getElementById('maja-monthly-fields');
+  const weekly  = document.getElementById('maja-weekly-fields');
+  if (monthly) monthly.style.display = type === 'weekly' ? 'none' : 'flex';
+  if (weekly)  weekly.style.display  = type === 'weekly' ? 'flex' : 'none';
+}
+
+async function saveMajaSchedule() {
+  const payload = {
+    schedule_enabled: document.getElementById('maja-sched-enabled')?.checked ? '1' : '',
+    schedule_type:    document.getElementById('maja-sched-type')?.value    || 'monthly',
+    schedule_day:     document.getElementById('maja-sched-day')?.value     || '1',
+    schedule_weekday: document.getElementById('maja-sched-weekday')?.value || 'mon',
+    schedule_time:    document.getElementById('maja-sched-time')?.value    || '08:00',
+    maja_model:       document.getElementById('maja-model')?.value         || 'claude-haiku-4-5-20251001',
+  };
+  try {
+    const resp = await fetch('{{ url_for("maja_schedule") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    const ok = document.getElementById('maja-sched-ok');
+    if (ok) { ok.style.display = 'inline'; setTimeout(() => ok.style.display = 'none', 2500); }
+    if (data.next_run) {
+      const nr = document.getElementById('maja-next-run');
+      if (nr) nr.textContent = 'Nächster Lauf: ' + data.next_run;
+    }
+  } catch (e) {}
+}
+
+(async () => {
+  try {
+    const resp = await fetch('{{ url_for("maja_status") }}');
+    const data = await resp.json();
+    if (data.exists) {
+      const r = data;
+      const errs = r.errors && r.errors.length ? ` · ${r.errors.length} Fehler` : '';
+      _setMajaStatus(
+        `Letzter Lauf: ${r.run_at} · ${r.endpoints_added} Endpunkte ergänzt · ` +
+        `${r.batches} Batches (${r.sources_total} Quellen)${errs}`,
+        r.errors && r.errors.length ? 'error' : 'ok'
+      );
+    }
+    if (data.next_run) {
+      const nr = document.getElementById('maja-next-run');
+      if (nr) nr.textContent = 'Nächster Lauf: ' + data.next_run;
+    }
+  } catch (_) {}
+})();
 
 async function runSol() {
   const btn = document.getElementById('sol-run-btn');
