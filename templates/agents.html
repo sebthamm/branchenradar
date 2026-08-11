@@ -43,6 +43,19 @@
   .section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .section-text { font-size: 13px; color: var(--muted); line-height: 1.65; white-space: pre-wrap; min-height: 20px; }
   .section-text.placeholder { color: var(--faint); font-style: italic; }
+
+  /* Collapse / expand */
+  .section-collapsible { position: relative; cursor: pointer; }
+  .section-collapsible.collapsed { max-height: calc(1.65em * 4); overflow: hidden; }
+  .section-collapsible.collapsed::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2em;
+    background: linear-gradient(to bottom, transparent, var(--surface));
+    pointer-events: none;
+  }
+  .section-toggle-hint { font-size: 10px; color: var(--faint); margin-top: 5px; cursor: pointer; user-select: none; display: none; }
+  .section-toggle-hint:hover { color: var(--navy); }
+  .has-collapse .section-toggle-hint { display: block; }
   .section-textarea { width: 100%; min-height: 90px; font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: inherit; line-height: 1.65; resize: vertical; outline: none; display: none; box-sizing: border-box; }
   .section-textarea:focus { border-color: var(--navy); }
 
@@ -240,7 +253,8 @@
 
   {# ── Macro: renders one editable section ─────────────────────────────────── #}
   {% macro section(agent_key, field, label, value, extra_style='') %}
-  <div class="agent-section" style="{{ extra_style }}">
+  {% set is_long = value and value|length > 200 %}
+  <div class="agent-section{% if is_long %} has-collapse{% endif %}" style="{{ extra_style }}">
     <div class="section-label">
       {{ label }}
       {% if session.get('role') == 'superadmin' %}
@@ -251,7 +265,10 @@
       </span>
       {% endif %}
     </div>
-    <div class="section-text{% if not value %} placeholder{% endif %}" id="text-{{ agent_key }}-{{ field }}">{{ value if value else '—  noch nicht konfiguriert' }}</div>
+    <div class="section-text{% if not value %} placeholder{% endif %}{% if is_long %} section-collapsible collapsed{% endif %}"
+         id="text-{{ agent_key }}-{{ field }}"
+         {% if is_long %}onclick="toggleSection(this)"{% endif %}>{{ value if value else '—  noch nicht konfiguriert' }}</div>
+    {% if is_long %}<div class="section-toggle-hint" onclick="toggleSection(document.getElementById('text-{{ agent_key }}-{{ field }}'))">▼ mehr anzeigen</div>{% endif %}
     <textarea class="section-textarea" id="ta-{{ agent_key }}-{{ field }}">{{ value }}</textarea>
   </div>
   {% endmacro %}
@@ -735,6 +752,14 @@ async function runFrank() {
   } catch (_) {}
 })();
 
+// ── Collapse / expand ────────────────────────────────────────────────────────
+function toggleSection(el) {
+  const isCollapsed = el.classList.contains('collapsed');
+  el.classList.toggle('collapsed', !isCollapsed);
+  const hint = el.closest('.agent-section').querySelector('.section-toggle-hint');
+  if (hint) hint.textContent = isCollapsed ? '▲ weniger anzeigen' : '▼ mehr anzeigen';
+}
+
 // ── Sol ───────────────────────────────────────────────────────────────────────
 function _setSolStatus(text, cls) {
   const el = document.getElementById('sol-status-text');
@@ -811,6 +836,7 @@ function startEdit(agentKey, field, editBtn) {
   const textEl  = document.getElementById(`text-${agentKey}-${field}`);
   const taEl    = document.getElementById(`ta-${agentKey}-${field}`);
   const saveBtn = row.querySelector('.save-btn');
+  textEl.classList.remove('collapsed');
   textEl.style.display = 'none';
   taEl.style.display   = 'block';
   taEl.focus();
