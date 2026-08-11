@@ -262,7 +262,7 @@
   <div class="agent-group">
     <div class="agent-group-title">Quellen-Agenten</div>
 
-    {% for key in ['source_maintenance', 'source_research'] %}
+    {% for key in ['source_research', 'source_maintenance'] %}
     {% set ag = agent_configs.agents[key] %}
     <div class="agent-card" id="card-{{ key }}">
       <div class="agent-card-head">
