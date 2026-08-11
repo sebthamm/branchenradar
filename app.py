@@ -214,19 +214,18 @@ _SOURCE_MAINTENANCE_METHOD = (
     "2. Suche nach konkreten Feed-/RSS-Endpunkten (typisch: /feed, /rss.xml, /atom.xml, Link-Tags im HTML-Header)\n"
     "3. Identifiziere relevante Unterseiten für Scrape-Endpunkte (Beschlüsse, Aktuelles, Pressemitteilungen, Rundschreiben, PDF-Verzeichnisse)\n"
     "4. Prüfe ob die zugewiesenen Agenten (scrape/feed/pdf/search) noch die richtigen sind\n"
-    "5. Für jeden Scrape-Endpunkt: Rufe die Seite ab, analysiere die HTML-Struktur und ermittle den präzisen CSS-Selektor "
-    "der Artikel-Links (z.B. 'ul.news-list a', 'div.content h2 a', 'article h2 > a'). "
-    "Trage ihn in eckigen Klammern im Endpoints-Format ein: scrape:https://... (Label) [selektor]\n"
-    "6. Formuliere einen konkreten Agenten-Hinweis der beschreibt wo genau neue Inhalte zu finden sind\n"
-    "7. Ergänze fehlende Felder soweit recherchierbar (Zugang, Aktualisierungsfrequenz, Hinweise)"
+    "5. Formuliere einen konkreten Agenten-Hinweis der beschreibt wo genau neue Inhalte zu finden sind\n"
+    "6. Ergänze fehlende Felder soweit recherchierbar (Zugang, Aktualisierungsfrequenz, Hinweise)\n"
+    "Hinweis: CSS-Selektoren für Scrape-Endpunkte werden automatisch durch Sol (Selektor-Finder) ermittelt — "
+    "du musst diese nicht selbst recherchieren."
 )
 
 _SOURCE_MAINTENANCE_HINT = (
     "Priorität: Quellen ohne Endpoints-Einträge zuerst bearbeiten — diese werden aktuell nicht abgerufen. "
     "Fokussiere auf Vollständigkeit und Konkretheit: Eine URL wie 'https://www.g-ba.de' ist nutzlos, "
     "'https://www.g-ba.de/beschluesse/' ist brauchbar. "
-    "Endpoint-Format: 'feed:https://example.com/rss.xml (RSS-Feed) | scrape:https://example.com/news/ (Aktuelles) [article h2 a]'. "
-    "Mehrere Endpunkte mit ' | ' trennen. Selektor nur bei scrape-Endpunkten, in eckigen Klammern. "
+    "Endpoint-Format: 'feed:https://example.com/rss.xml (RSS-Feed) | scrape:https://example.com/news/ (Aktuelles)'. "
+    "Mehrere Endpunkte mit ' | ' trennen. CSS-Selektoren NICHT eintragen — das übernimmt Sol automatisch. "
     "Wenn du keinen direkten Feed findest, benenne die spezifische Unterseite die gecrawlt werden soll. "
     "Wenn eine Quelle weder Feed noch crawlbare Unterseite hat, empfehle 'search' als Agenten-Methode. "
     "Belasse Felder die du nicht mit Sicherheit ergänzen kannst leer — keine Vermutungen."
@@ -353,6 +352,18 @@ DEFAULT_AGENT_CONFIGS = {
                 "Fallback ohne Selektor: alle internen <a>-Tags mit pfadähnlicher URL\n"
                 "Fehlerbehandlung: Quelle wird im Crawl-Receipt mit Fehlertext protokolliert, Lauf läuft weiter"
             ),
+        },
+        "sol_selector": {
+            "label": "Selektor-Finder",
+            "beschreibung": (
+                "Sol besucht automatisch alle Scrape-Endpunkte im Quellenregister, die noch keinen "
+                "CSS-Selektor haben. Er ruft die Seite serverseitig ab, analysiert die HTML-Linkstruktur "
+                "und schreibt den besten Kandidaten direkt in sources.json. "
+                "Kein manueller Aufwand, kein Raten — Sol erkennt Artikel-Link-Muster deterministisch."
+            ),
+            "timeout":      "8",
+            "min_links":    "3",
+            "max_per_run":  "30",
         },
         "feed": {
             "label": "Feed-Agent (Lars)",
@@ -1328,6 +1339,40 @@ def fetcher_scrape_export():
         mimetype="text/plain; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="frank_{date_str}.txt"'},
     )
+
+SELECTOR_STATUS_FILE = os.path.join(DATA_DIR, "selector_finder_status.json")
+
+@app.route("/admin/selector/run", methods=["POST"])
+@role_required("superadmin")
+def selector_run():
+    import selector_finder
+    cfg = load_agent_configs()
+    sol = cfg.get("agents", {}).get("sol_selector", {})
+    try:
+        result = selector_finder.run(
+            timeout=int(sol.get("timeout", 8)),
+            min_links=int(sol.get("min_links", 3)),
+            max_per_run=int(sol.get("max_per_run", 30)),
+        )
+        return jsonify({"ok": True, "result": result})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+@app.route("/admin/selector/status")
+@role_required("admin", "superadmin")
+def selector_status():
+    if not os.path.exists(SELECTOR_STATUS_FILE):
+        return jsonify({"exists": False})
+    with open(SELECTOR_STATUS_FILE, encoding="utf-8") as f:
+        data = json.load(f)
+    return jsonify({
+        "exists":             True,
+        "run_at":             data.get("run_at", ""),
+        "endpoints_checked":  data.get("endpoints_checked", 0),
+        "updated":            data.get("updated", 0),
+        "failed":             data.get("failed", 0),
+        "remaining":          data.get("remaining", 0),
+    })
 
 @app.route("/superadmin/backup/download")
 @role_required("superadmin")
