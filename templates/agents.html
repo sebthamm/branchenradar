@@ -317,7 +317,7 @@
           <div>
             <div class="agent-card-firstname">Sol</div>
             <div class="agent-card-title">{{ sol.get('label', 'Selektor-Finder') }}</div>
-            <div class="agent-card-meta">Erkennt CSS-Selektoren für Scrape-Endpunkte automatisch per Seitenabruf</div>
+            <div class="agent-card-meta" style="max-width:560px;line-height:1.5;margin-top:4px">{{ sol.get('beschreibung', 'Erkennt CSS-Selektoren für Scrape-Endpunkte automatisch per Seitenabruf') }}</div>
           </div>
         </div>
         <div class="agent-card-actions">
@@ -328,37 +328,36 @@
       </div>
       {# Configurable runtime parameters (superadmin only) #}
       {% if session.get('role') == 'superadmin' %}
-      <div style="padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2)">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:10px">Konfiguration</div>
-        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-          <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
-            Timeout (s):
-            <input type="number" id="sol-timeout" value="{{ sol.get('timeout', '8') }}" min="2" max="30"
-              style="width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-          </label>
-          <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
-            Min. Links:
-            <input type="number" id="sol-min-links" value="{{ sol.get('min_links', '3') }}" min="1" max="20"
-              style="width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-          </label>
-          <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
-            Max. pro Lauf:
-            <input type="number" id="sol-max-per-run" value="{{ sol.get('max_per_run', '30') }}" min="1" max="200"
-              style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-          </label>
-          <button class="btn btn-secondary btn-sm" onclick="saveSolConfig()">Speichern</button>
-          <span id="sol-config-ok" style="font-size:11px;color:var(--s-active);display:none">✓ gespeichert</span>
-        </div>
-        <div style="margin-top:8px;font-size:11px;color:var(--faint)">
-          <strong>Timeout:</strong> HTTP-Timeout pro Seite &nbsp;·&nbsp;
-          <strong>Min. Links:</strong> Mindestanzahl übereinstimmender Links damit ein Selektor akzeptiert wird &nbsp;·&nbsp;
-          <strong>Max. pro Lauf:</strong> Endpunkte pro Durchlauf (restliche beim nächsten Lauf)
+      <div class="agent-sections">
+        <div class="agent-section" style="grid-column: 1 / -1; border-right: none">
+          <div class="section-label">Konfiguration</div>
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:8px">
+            <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+              Timeout (s):
+              <input type="number" id="sol-timeout" value="{{ sol.get('timeout', '8') }}" min="2" max="30"
+                style="width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+            </label>
+            <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+              Min. Links:
+              <input type="number" id="sol-min-links" value="{{ sol.get('min_links', '3') }}" min="1" max="20"
+                style="width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+            </label>
+            <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+              Max. pro Lauf:
+              <input type="number" id="sol-max-per-run" value="{{ sol.get('max_per_run', '30') }}" min="1" max="200"
+                style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+            </label>
+            <button class="btn btn-secondary btn-sm" onclick="saveSolConfig()">Speichern</button>
+            <span id="sol-config-ok" style="font-size:11px;color:var(--s-active);display:none">✓ gespeichert</span>
+          </div>
+          <div style="font-size:11px;color:var(--faint)">
+            <strong>Timeout:</strong> HTTP-Timeout pro Seite &nbsp;·&nbsp;
+            <strong>Min. Links:</strong> Mindestanzahl übereinstimmender Links damit ein Selektor akzeptiert wird &nbsp;·&nbsp;
+            <strong>Max. pro Lauf:</strong> Endpunkte pro Durchlauf (restliche beim nächsten Lauf)
+          </div>
         </div>
       </div>
       {% endif %}
-      <div class="agent-sections">
-        {{ section('sol_selector', 'beschreibung', 'Beschreibung', sol.get('beschreibung', ''), 'border-right:none; grid-column: 1 / -1') }}
-      </div>
       <div class="fletcher-status-bar">
         <span class="fletcher-status-text" id="sol-status-text">Noch nicht gestartet</span>
       </div>
