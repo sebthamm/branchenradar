@@ -2733,7 +2733,7 @@ def forbidden(e):
 @app.route("/deploy", methods=["POST"])
 def deploy():
     import signal as _signal
-    token = request.args.get("token", "")
+    token = request.headers.get("X-Deploy-Token", "")
     if not DEPLOY_TOKEN or not hmac.compare_digest(token, DEPLOY_TOKEN):
         abort(403)
     repo = os.path.dirname(os.path.abspath(__file__))
