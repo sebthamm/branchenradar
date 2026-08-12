@@ -142,8 +142,21 @@ def _load(path):
         return json.load(f)
 
 def _save(path, data):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    import fcntl, tempfile
+    lock_path = path + ".lock"
+    with open(lock_path, "w") as lf:
+        fcntl.flock(lf, fcntl.LOCK_EX)
+        try:
+            tmp_fd, tmp_path = tempfile.mkstemp(dir=os.path.dirname(path), suffix=".tmp")
+            try:
+                with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+                os.replace(tmp_path, path)
+            except Exception:
+                os.unlink(tmp_path)
+                raise
+        finally:
+            fcntl.flock(lf, fcntl.LOCK_UN)
 
 def load_signals():   return _load(SIGNALS_FILE)
 def save_signals(d):  _save(SIGNALS_FILE, d)

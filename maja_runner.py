@@ -2,14 +2,33 @@
 Maja Runner — vollautomatische Quellen-Pflege via Claude API.
 Verarbeitet sources.json in Batches, schreibt Endpoints direkt zurück.
 """
+import fcntl
 import json
 import os
 import re
+import tempfile
 from datetime import datetime
 
 import anthropic
 
 import uuid
+
+
+def _atomic_save(path, data):
+    lock_path = path + ".lock"
+    with open(lock_path, "w") as lf:
+        fcntl.flock(lf, fcntl.LOCK_EX)
+        try:
+            tmp_fd, tmp_path = tempfile.mkstemp(dir=os.path.dirname(path), suffix=".tmp")
+            try:
+                with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+                os.replace(tmp_path, path)
+            except Exception:
+                os.unlink(tmp_path)
+                raise
+        finally:
+            fcntl.flock(lf, fcntl.LOCK_UN)
 
 DATA_DIR       = os.path.join(os.path.dirname(__file__), "data")
 SOURCES_FILE   = os.path.join(DATA_DIR, "sources.json")
@@ -25,8 +44,7 @@ def _load_sources():
         return json.load(f)
 
 def _save_sources(sources):
-    with open(SOURCES_FILE, "w", encoding="utf-8") as f:
-        json.dump(sources, f, ensure_ascii=False, indent=2)
+    _atomic_save(SOURCES_FILE, sources)
 
 def _source_to_tsv_row(s):
     eps = s.get("endpoints", [])
@@ -228,8 +246,7 @@ def _load_insights():
         return json.load(f)
 
 def _save_insights(insights):
-    with open(INSIGHTS_FILE, "w", encoding="utf-8") as f:
-        json.dump(insights, f, ensure_ascii=False, indent=2)
+    _atomic_save(INSIGHTS_FILE, insights)
 
 def _generate_insights(client, model, sources_processed, run_at):
     """Zweiter Claude-Call: systemische Verbesserungsvorschläge aus dem Lauf ableiten."""
@@ -299,8 +316,7 @@ def _append_history(entry):
     history = _load_history()
     history.insert(0, entry)
     history = history[:HISTORY_MAX]
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
+    _atomic_save(HISTORY_FILE, history)
 
 def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to_idx=None):
     all_sources = _load_sources()
@@ -387,8 +403,7 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to
         "cost_usd":         round(cost_usd, 4),
         "errors":           errors,
     }
-    with open(STATUS_FILE, "w", encoding="utf-8") as f:
-        json.dump(status, f, ensure_ascii=False, indent=2)
+    _atomic_save(STATUS_FILE, status)
 
     _append_history(status)
     _generate_insights(client, model, sources, run_at)
