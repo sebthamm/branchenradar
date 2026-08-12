@@ -153,19 +153,38 @@ def _build_prompt(persona, method, hint, output_format, sources_batch):
 
 # ── Main runner ───────────────────────────────────────────────────────────────
 
+HISTORY_FILE = os.path.join(DATA_DIR, "maja_history.json")
+HISTORY_MAX  = 50
+
+def _load_history():
+    if not os.path.exists(HISTORY_FILE):
+        return []
+    with open(HISTORY_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+def _append_history(entry):
+    history = _load_history()
+    history.insert(0, entry)
+    history = history[:HISTORY_MAX]
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
 def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001"):
-    sources  = _load_sources()
-    run_at   = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    persona  = agent_cfg.get("persona", "")
-    method   = agent_cfg.get("method", "")
-    hint     = agent_cfg.get("hint", "")
-    out_fmt  = agent_cfg.get("output_format", "")
+    sources    = _load_sources()
+    started_at = datetime.now()
+    run_at     = started_at.strftime("%Y-%m-%d %H:%M:%S")
+    persona    = agent_cfg.get("persona", "")
+    method     = agent_cfg.get("method", "")
+    hint       = agent_cfg.get("hint", "")
+    out_fmt    = agent_cfg.get("output_format", "")
 
     client = anthropic.Anthropic(api_key=api_key)
 
-    batches = [sources[i:i+BATCH_SIZE] for i in range(0, len(sources), BATCH_SIZE)]
-    updated = 0
-    errors  = []
+    batches        = [sources[i:i+BATCH_SIZE] for i in range(0, len(sources), BATCH_SIZE)]
+    updated        = 0
+    errors         = []
+    input_tokens   = 0
+    output_tokens  = 0
 
     for batch_idx, batch in enumerate(batches):
         prompt = _build_prompt(persona, method, hint, out_fmt, batch)
@@ -175,8 +194,9 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001"):
                 max_tokens=4096,
                 messages=[{"role": "user", "content": prompt}],
             )
+            input_tokens  += msg.usage.input_tokens  if msg.usage else 0
+            output_tokens += msg.usage.output_tokens if msg.usage else 0
             raw = msg.content[0].text if msg.content else ""
-            # Extract TSV block (between ``` or raw)
             tsv_match = re.search(r"```(?:tsv)?\n(.*?)```", raw, re.DOTALL)
             tsv_text  = tsv_match.group(1) if tsv_match else raw
             parsed    = _parse_tsv_response(tsv_text)
@@ -186,7 +206,6 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001"):
                 if key not in parsed:
                     continue
                 patch = parsed[key]
-                # Only update endpoints if Maja returned some
                 if patch.get("endpoints"):
                     src["endpoints"] = patch["endpoints"]
                     updated += 1
@@ -210,14 +229,31 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001"):
 
     _save_sources(sources)
 
+    duration_s = int((datetime.now() - started_at).total_seconds())
+
+    # Cost estimate (USD) — approximate prices per 1M tokens
+    MODEL_PRICES = {
+        "claude-haiku-4-5-20251001": (1.0,  5.0),
+        "claude-sonnet-4-6":         (3.0, 15.0),
+        "claude-opus-4-8":           (5.0, 25.0),
+    }
+    in_price, out_price = MODEL_PRICES.get(model, (3.0, 15.0))
+    cost_usd = (input_tokens * in_price + output_tokens * out_price) / 1_000_000
+
     status = {
-        "run_at":        run_at,
-        "sources_total": len(sources),
-        "batches":       len(batches),
-        "endpoints_added": updated,
-        "errors":        errors,
+        "run_at":           run_at,
+        "duration_s":       duration_s,
+        "model":            model,
+        "sources_total":    len(sources),
+        "batches":          len(batches),
+        "endpoints_added":  updated,
+        "input_tokens":     input_tokens,
+        "output_tokens":    output_tokens,
+        "cost_usd":         round(cost_usd, 4),
+        "errors":           errors,
     }
     with open(STATUS_FILE, "w", encoding="utf-8") as f:
         json.dump(status, f, ensure_ascii=False, indent=2)
 
+    _append_history(status)
     return status

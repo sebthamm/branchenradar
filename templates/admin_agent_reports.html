@@ -45,7 +45,8 @@
   .detail-meta { color: var(--muted); margin-top: 2px; }
 
   .empty-state { text-align:center;padding:48px 20px;color:var(--faint);font-size:14px; }
-  @media (max-width:700px) { .main { padding:14px 14px 60px; } .agents-grid { grid-template-columns: 1fr; } }
+  #maja-history-table th, #maja-history-table td { white-space: nowrap; }
+  @media (max-width:700px) { .main { padding:14px 14px 60px; } .agents-grid { grid-template-columns: 1fr; } #maja-report-grid { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
 {% block content %}
@@ -64,6 +65,48 @@
     {% endif %}
   </form>
 
+  {# ── Maja Report ── #}
+  <div style="margin-bottom:32px">
+    <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Maja — Quellen-Pflege</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="maja-report-grid">
+
+      {# Qualität #}
+      <div class="agent-card">
+        <div class="agent-card-head"><div class="agent-card-label">Qualität</div></div>
+        <div class="agent-card-body" id="maja-quality-body">
+          <div class="stat-row"><span class="stat-label">Wird geladen…</span></div>
+        </div>
+      </div>
+
+      {# Lauf-Performance #}
+      <div class="agent-card" style="grid-column:1/-1">
+        <div class="agent-card-head"><div class="agent-card-label">Lauf-Performance (letzte 10 Läufe)</div></div>
+        <div style="overflow-x:auto">
+          <table id="maja-history-table" style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:var(--surface2);text-align:left">
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border)">Datum</th>
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border)">Modell</th>
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Quellen</th>
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Endpunkte ergänzt</th>
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Dauer</th>
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Input-Token</th>
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Output-Token</th>
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Kosten (USD)</th>
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:center">Fehler</th>
+              </tr>
+            </thead>
+            <tbody id="maja-history-body">
+              <tr><td colspan="9" style="padding:20px;text-align:center;color:var(--faint)">Wird geladen…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Agenten-Reports</div>
   <div class="agents-grid">
     {% for key, s in stats.items() %}
     <div class="agent-card">
@@ -154,5 +197,61 @@ function closeDetailBtn() {
   document.getElementById('detail-overlay').classList.remove('open');
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailBtn(); });
+
+// ── Maja Report ───────────────────────────────────────────────────────────────
+(async () => {
+  try {
+    const resp = await fetch('{{ url_for("maja_report") }}');
+    const data = await resp.json();
+
+    // Qualität
+    const q = data.quality || {};
+    const byType = q.by_type || {};
+    document.getElementById('maja-quality-body').innerHTML = [
+      ['Quellen mit Endpoint', `${q.with_ep} / ${q.total} (${q.pct}%)`, q.pct >= 80 ? 'dot-high' : q.pct >= 40 ? 'dot-mid' : 'dot-low'],
+      ['Quellen ohne Endpoint', q.no_ep, q.no_ep === 0 ? 'dot-high' : 'dot-error'],
+      ['Feed-Endpoints',   byType.feed   || 0, 'dot-mid'],
+      ['Scrape-Endpoints', byType.scrape || 0, 'dot-mid'],
+      ['PDF-Endpoints',    byType.pdf    || 0, 'dot-mid'],
+      ['Search-Endpoints', byType.search || 0, 'dot-mid'],
+      ['Sol-validiert (Selektor)', q.validated || 0, q.validated > 0 ? 'dot-high' : 'dot-zero'],
+    ].map(([label, val, dot]) =>
+      `<div class="stat-row">
+        <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
+        <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
+      </div>`
+    ).join('');
+
+    // Lauf-Performance
+    const history = data.history || [];
+    const tbody = document.getElementById('maja-history-body');
+    if (!history.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--faint)">Noch keine Läufe aufgezeichnet</td></tr>';
+      return;
+    }
+    const modelShort = m => m.replace('claude-', '').replace('-20251001', '');
+    const dur = s => s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
+    tbody.innerHTML = history.map((r, i) => {
+      const errCell = r.errors && r.errors.length
+        ? `<span style="color:var(--s-action);font-weight:600">${r.errors.length}</span>`
+        : `<span style="color:var(--faint)">—</span>`;
+      const bg = i % 2 === 1 ? 'background:var(--surface2)' : '';
+      return `<tr style="${bg}">
+        <td style="padding:7px 14px">${r.run_at || '—'}</td>
+        <td style="padding:7px 14px;color:var(--muted)">${modelShort(r.model || '')}</td>
+        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums">${r.sources_total ?? '—'}</td>
+        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${r.endpoints_added ?? '—'}</td>
+        <td style="padding:7px 14px;text-align:right;color:var(--muted)">${r.duration_s != null ? dur(r.duration_s) : '—'}</td>
+        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)">${(r.input_tokens ?? 0).toLocaleString('de')}</td>
+        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)">${(r.output_tokens ?? 0).toLocaleString('de')}</td>
+        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums">$${(r.cost_usd ?? 0).toFixed(4)}</td>
+        <td style="padding:7px 14px;text-align:center">${errCell}</td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    document.getElementById('maja-quality-body').innerHTML =
+      '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
+  }
+})();
 </script>
 {% endblock %}

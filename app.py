@@ -1345,6 +1345,7 @@ def fetcher_scrape_export():
 
 SELECTOR_STATUS_FILE = os.path.join(DATA_DIR, "selector_finder_status.json")
 MAJA_STATUS_FILE     = os.path.join(DATA_DIR, "maja_status.json")
+MAJA_HISTORY_FILE    = os.path.join(DATA_DIR, "maja_history.json")
 
 # ── APScheduler ───────────────────────────────────────────────────────────────
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -1480,6 +1481,39 @@ def maja_schedule():
     job = _scheduler.get_job("maja_scheduled")
     next_run = job.next_run_time.strftime("%Y-%m-%d %H:%M") if job and job.next_run_time else None
     return jsonify({"ok": True, "next_run": next_run})
+
+def _maja_quality(sources):
+    total = len(sources)
+    with_ep   = sum(1 for s in sources if s.get("endpoints"))
+    no_ep     = total - with_ep
+    by_type   = {"feed": 0, "scrape": 0, "pdf": 0, "search": 0}
+    validated = 0  # scrape endpoints with a selector (Sol confirmed)
+    for s in sources:
+        for ep in s.get("endpoints", []):
+            t = ep.get("agent", "")
+            if t in by_type:
+                by_type[t] += 1
+            if t == "scrape" and ep.get("selector"):
+                validated += 1
+    return {
+        "total":     total,
+        "with_ep":   with_ep,
+        "no_ep":     no_ep,
+        "pct":       round(with_ep / total * 100, 1) if total else 0,
+        "by_type":   by_type,
+        "validated": validated,
+    }
+
+@app.route("/admin/maja/report")
+@role_required("admin", "superadmin")
+def maja_report():
+    sources = load_sources()
+    quality = _maja_quality(sources)
+    history = []
+    if os.path.exists(MAJA_HISTORY_FILE):
+        with open(MAJA_HISTORY_FILE, encoding="utf-8") as f:
+            history = json.load(f)[:10]
+    return jsonify({"quality": quality, "history": history})
 
 @app.route("/superadmin/backup/download")
 @role_required("superadmin")
