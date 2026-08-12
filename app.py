@@ -4,8 +4,7 @@ import json
 import os
 import uuid
 import zipfile
-import hashlib
-import hmac
+import bcrypt
 import subprocess
 from datetime import datetime
 from functools import wraps
@@ -646,7 +645,14 @@ def get_entity(eid):
 def get_user(uid):
     return next((u for u in load_users() if u["id"] == uid), None)
 
-def _hash(pw): return hashlib.sha256(pw.encode()).hexdigest()
+def _hash(pw):
+    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt(rounds=12)).decode()
+
+def _verify(pw, stored_hash):
+    try:
+        return bcrypt.checkpw(pw.encode(), stored_hash.encode())
+    except Exception:
+        return False
 
 
 # ── Auth decorators ───────────────────────────────────────────────────────────
@@ -716,7 +722,7 @@ def login():
         password = request.form.get("password", "")
         users = load_users()
         user = next((u for u in users if u["username"] == username), None)
-        if user and hmac.compare_digest(user["pass_hash"], _hash(password)):
+        if user and _verify(password, user["pass_hash"]):
             session["user_id"]   = user["id"]
             session["username"]  = user["username"]
             session["role"]      = user["role"]
