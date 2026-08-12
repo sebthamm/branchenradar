@@ -1346,6 +1346,7 @@ def fetcher_scrape_export():
 SELECTOR_STATUS_FILE = os.path.join(DATA_DIR, "selector_finder_status.json")
 MAJA_STATUS_FILE     = os.path.join(DATA_DIR, "maja_status.json")
 MAJA_HISTORY_FILE    = os.path.join(DATA_DIR, "maja_history.json")
+MAJA_INSIGHTS_FILE   = os.path.join(DATA_DIR, "maja_insights.json")
 
 # ── APScheduler ───────────────────────────────────────────────────────────────
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -1543,6 +1544,33 @@ def _maja_quality(sources):
         "by_type":   by_type,
         "validated": validated,
     }
+
+@app.route("/admin/maja/insights")
+@role_required("admin", "superadmin")
+def maja_insights():
+    if not os.path.exists(MAJA_INSIGHTS_FILE):
+        return jsonify([])
+    with open(MAJA_INSIGHTS_FILE, encoding="utf-8") as f:
+        return jsonify(json.load(f))
+
+@app.route("/admin/maja/insights/<insight_id>", methods=["POST"])
+@role_required("admin", "superadmin")
+def maja_insight_update(insight_id):
+    if not os.path.exists(MAJA_INSIGHTS_FILE):
+        return jsonify({"ok": False})
+    with open(MAJA_INSIGHTS_FILE, encoding="utf-8") as f:
+        insights = json.load(f)
+    status = request.json.get("status") if request.json else None
+    if status not in ("neu", "geprüft", "abgelehnt"):
+        return jsonify({"ok": False, "error": "Ungültiger Status"})
+    for item in insights:
+        if item.get("id") == insight_id:
+            item["status"] = status
+            item["status_updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+            break
+    with open(MAJA_INSIGHTS_FILE, "w", encoding="utf-8") as f:
+        json.dump(insights, f, ensure_ascii=False, indent=2)
+    return jsonify({"ok": True})
 
 @app.route("/admin/maja/report")
 @role_required("admin", "superadmin")

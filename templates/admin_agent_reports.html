@@ -121,6 +121,17 @@
         </div>
       </div>
 
+      {# Lerneffekte #}
+      <div class="agent-card" style="grid-column:1/-1">
+        <div class="agent-card-head" style="display:flex;align-items:center;justify-content:space-between">
+          <div class="agent-card-label">Lerneffekte &amp; Verbesserungsvorschläge</div>
+          <span id="maja-insights-count" style="font-size:11px;color:var(--muted)"></span>
+        </div>
+        <div id="maja-insights-body" style="padding:0">
+          <div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">Wird geladen…</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -272,5 +283,61 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailB
       '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
   }
 })();
+
+// ── Maja Insights ─────────────────────────────────────────────────────────────
+const STATUS_LABELS = { neu: 'Neu', geprüft: 'Geprüft', abgelehnt: 'Abgelehnt' };
+const STATUS_COLORS = { neu: '#2563EB', geprüft: 'var(--s-active)', abgelehnt: 'var(--faint)' };
+
+async function setInsightStatus(id, status) {
+  await fetch(`/admin/maja/insights/${id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  loadInsights();
+}
+
+async function loadInsights() {
+  const body = document.getElementById('maja-insights-body');
+  const count = document.getElementById('maja-insights-count');
+  try {
+    const resp = await fetch('{{ url_for("maja_insights") }}');
+    const data = await resp.json();
+    if (!data.length) {
+      body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">Noch keine Vorschläge — wird nach dem nächsten Maja-Lauf befüllt.</div>';
+      count.textContent = '';
+      return;
+    }
+    const neu = data.filter(d => d.status === 'neu').length;
+    count.textContent = `${neu} offen · ${data.length} gesamt`;
+    body.innerHTML = data.map(item => {
+      const sc = STATUS_COLORS[item.status] || 'var(--muted)';
+      const sl = STATUS_LABELS[item.status] || item.status;
+      const catColor = item.category === 'Datenpflege' ? '#7C3AED' :
+                       item.category === 'Prompt'      ? '#C88035' :
+                       item.category === 'Prozess'     ? '#2E6E8E' : 'var(--muted)';
+      const isOpen = item.status !== 'abgelehnt';
+      return `<div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">
+            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${catColor};background:${catColor}18;padding:2px 7px;border-radius:99px">${item.category}</span>
+            <span style="font-size:11px;font-weight:700;color:${sc}">${sl}</span>
+            <span style="font-size:11px;color:var(--faint)">${item.run_at}</span>
+          </div>
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px">${item.title}</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6">${item.description}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          ${item.status !== 'geprüft'   ? `<button onclick="setInsightStatus('${item.id}','geprüft')"   style="padding:4px 10px;font-size:11px;border:1px solid var(--s-active);color:var(--s-active);background:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap">✓ Geprüft</button>` : ''}
+          ${item.status !== 'abgelehnt' ? `<button onclick="setInsightStatus('${item.id}','abgelehnt')" style="padding:4px 10px;font-size:11px;border:1px solid var(--faint);color:var(--muted);background:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap">✕ Ablehnen</button>` : ''}
+          ${item.status !== 'neu'       ? `<button onclick="setInsightStatus('${item.id}','neu')"       style="padding:4px 10px;font-size:11px;border:1px solid var(--border);color:var(--muted);background:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap">↩ Neu</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">Fehler beim Laden</div>';
+  }
+}
+loadInsights();
 </script>
 {% endblock %}

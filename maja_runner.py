@@ -9,9 +9,12 @@ from datetime import datetime
 
 import anthropic
 
-DATA_DIR      = os.path.join(os.path.dirname(__file__), "data")
-SOURCES_FILE  = os.path.join(DATA_DIR, "sources.json")
-STATUS_FILE   = os.path.join(DATA_DIR, "maja_status.json")
+import uuid
+
+DATA_DIR       = os.path.join(os.path.dirname(__file__), "data")
+SOURCES_FILE   = os.path.join(DATA_DIR, "sources.json")
+STATUS_FILE    = os.path.join(DATA_DIR, "maja_status.json")
+INSIGHTS_FILE  = os.path.join(DATA_DIR, "maja_insights.json")
 
 BATCH_SIZE = 15
 
@@ -218,7 +221,81 @@ def test_run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", n=3):
         "preview":        preview,
     }
 
+def _load_insights():
+    if not os.path.exists(INSIGHTS_FILE):
+        return []
+    with open(INSIGHTS_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+def _save_insights(insights):
+    with open(INSIGHTS_FILE, "w", encoding="utf-8") as f:
+        json.dump(insights, f, ensure_ascii=False, indent=2)
+
+def _generate_insights(client, model, sources_processed, run_at):
+    """Zweiter Claude-Call: systemische Verbesserungsvorschläge aus dem Lauf ableiten."""
+    no_ep      = [s for s in sources_processed if not s.get("endpoints")]
+    multi_ep   = [s for s in sources_processed if len(s.get("endpoints", [])) >= 3]
+    no_region  = [s for s in sources_processed if not s.get("region") or s.get("region") == "Bundesweit"]
+    no_zugang  = [s for s in sources_processed if not s.get("zugang")]
+    ep_types   = {}
+    for s in sources_processed:
+        for ep in s.get("endpoints", []):
+            t = ep.get("agent", "")
+            ep_types[t] = ep_types.get(t, 0) + 1
+
+    summary = f"""Du bist Maja, Quellen-Pflege-Agent für den Branchenradar Gesundheitswesen.
+Du hast gerade {len(sources_processed)} Quellen verarbeitet. Hier ist eine Zusammenfassung:
+
+- Quellen ohne Endpoints nach dem Lauf: {len(no_ep)} (z.B. {', '.join(s['kuerzel'] for s in no_ep[:5])})
+- Quellen mit ≥3 Endpoints: {len(multi_ep)}
+- Quellen ohne Region: {len(no_region)}
+- Quellen ohne Zugangsinfo: {len(no_zugang)}
+- Endpoint-Typen gesamt: {json.dumps(ep_types, ensure_ascii=False)}
+
+Analysiere diese Daten und leite daraus konkrete, systemische Verbesserungsvorschläge ab.
+Fokussiere auf Muster und strukturelle Probleme — nicht auf einzelne Quellen.
+
+Antworte NUR mit einem JSON-Array, ohne Erklärung davor oder danach:
+[
+  {{
+    "category": "Datenpflege | Prompt | Prozess | Datenmodell",
+    "title": "Kurzer Titel (max 60 Zeichen)",
+    "description": "Konkrete Beschreibung des Problems und was verbessert werden sollte (2-4 Sätze)"
+  }}
+]
+
+Maximal 5 Vorschläge. Nur wenn du wirklich etwas Konkretes siehst."""
+
+    try:
+        msg = client.messages.create(
+            model=model,
+            max_tokens=1024,
+            messages=[{"role": "user", "content": summary}],
+        )
+        raw = msg.content[0].text if msg.content else "[]"
+        match = re.search(r"\[.*\]", raw, re.DOTALL)
+        proposals = json.loads(match.group(0)) if match else []
+    except Exception:
+        proposals = []
+
+    if not proposals:
+        return
+
+    existing = _load_insights()
+    for p in proposals:
+        existing.insert(0, {
+            "id":          str(uuid.uuid4()),
+            "run_at":      run_at,
+            "category":    p.get("category", "Sonstiges"),
+            "title":       p.get("title", "")[:120],
+            "description": p.get("description", ""),
+            "status":      "neu",
+            "status_updated_at": None,
+        })
+    _save_insights(existing)
+
 def _append_history(entry):
+
     history = _load_history()
     history.insert(0, entry)
     history = history[:HISTORY_MAX]
@@ -314,4 +391,5 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to
         json.dump(status, f, ensure_ascii=False, indent=2)
 
     _append_history(status)
+    _generate_insights(client, model, sources, run_at)
     return status
