@@ -229,8 +229,10 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to
     all_sources = _load_sources()
     lo = (int(from_idx) - 1) if from_idx is not None else 0
     hi = int(to_idx) if to_idx is not None else len(all_sources)
-    sources = all_sources[max(0, lo):min(hi, len(all_sources))]
-    range_label = f"{lo+1}–{lo+len(sources)}" if (from_idx or to_idx) else f"1–{len(all_sources)}"
+    lo = max(0, lo)
+    hi = min(hi, len(all_sources))
+    sources = all_sources[lo:hi]
+    range_label = f"{lo+1}–{lo+len(sources)}" if (from_idx is not None or to_idx is not None) else f"1–{len(all_sources)}"
     started_at = datetime.now()
     run_at     = started_at.strftime("%Y-%m-%d %H:%M:%S")
     persona    = agent_cfg.get("persona", "")
@@ -287,7 +289,8 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to
         except Exception as e:
             errors.append(f"Batch {batch_idx + 1}: {str(e)[:120]}")
 
-    _save_sources(sources)
+    # Always write back the full source list (patches applied in-place to dicts)
+    _save_sources(all_sources)
 
     duration_s = int((datetime.now() - started_at).total_seconds())
 

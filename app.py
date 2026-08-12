@@ -1453,6 +1453,13 @@ def maja_run():
         _maja_running = True
         try:
             maja_runner.run(maja_cfg, api_key, model=model, from_idx=from_idx, to_idx=to_idx)
+        except Exception as e:
+            import traceback, json as _json
+            err = {"run_at": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                   "error": str(e), "traceback": traceback.format_exc()}
+            with open(MAJA_STATUS_FILE, "w", encoding="utf-8") as f:
+                _json.dump(err, f, ensure_ascii=False, indent=2)
+            app.logger.error("Maja thread error: %s", traceback.format_exc())
         finally:
             _maja_running = False
 
