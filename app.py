@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import os
+import secrets
 import uuid
 import zipfile
 import bcrypt
@@ -17,7 +18,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
+
+_secret = os.environ.get("SECRET_KEY", "")
+if not _secret or _secret == "change-me-in-production":
+    import sys
+    print("FEHLER: SECRET_KEY nicht gesetzt oder Standard-Wert. Bitte in .env setzen.", file=sys.stderr)
+    if os.environ.get("FLASK_ENV") != "development":
+        sys.exit(1)
+app.secret_key = _secret or "dev-only-insecure-key"
+
+app.config.update(
+    SESSION_COOKIE_HTTPONLY  = True,
+    SESSION_COOKIE_SAMESITE  = "Lax",
+    SESSION_COOKIE_SECURE    = os.environ.get("HTTPS", "1") == "1",
+)
 
 DATA_DIR      = os.path.join(os.path.dirname(__file__), "data")
 SIGNALS_FILE  = os.path.join(DATA_DIR, "signals.json")
@@ -645,6 +659,58 @@ def get_entity(eid):
 def get_user(uid):
     return next((u for u in load_users() if u["id"] == uid), None)
 
+# ── CSRF ─────────────────────────────────────────────────────────────────────
+
+def _csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(32)
+    return session["csrf_token"]
+
+def _csrf_check():
+    token = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token")
+    if not token or not secrets.compare_digest(token, session.get("csrf_token", "")):
+        abort(403)
+
+app.jinja_env.globals["csrf_token"] = _csrf_token
+
+_CSRF_EXEMPT_PREFIXES = ("/admin/maja/", "/admin/selector/run", "/agents/save",
+                         "/deploy-webhook")
+
+@app.before_request
+def csrf_protect():
+    if request.method not in ("POST", "PUT", "DELETE", "PATCH"):
+        return
+    if any(request.path.startswith(p) for p in _CSRF_EXEMPT_PREFIXES):
+        return
+    if request.is_json:
+        return
+    _csrf_check()
+
+# ── Login-Drosselung ──────────────────────────────────────────────────────────
+
+_login_attempts: dict = {}  # ip -> [timestamp, ...]
+_MAX_ATTEMPTS = 5
+_LOCKOUT_S    = 60
+
+def _check_rate_limit(ip):
+    now = datetime.now().timestamp()
+    attempts = [t for t in _login_attempts.get(ip, []) if now - t < _LOCKOUT_S]
+    _login_attempts[ip] = attempts
+    if len(attempts) >= _MAX_ATTEMPTS:
+        return False
+    return True
+
+def _record_attempt(ip):
+    _login_attempts.setdefault(ip, []).append(datetime.now().timestamp())
+
+def _clear_attempts(ip):
+    _login_attempts.pop(ip, None)
+
+def _safe_next(next_url):
+    if next_url and next_url.startswith("/") and not next_url.startswith("//"):
+        return next_url
+    return None
+
 def _hash(pw):
     return bcrypt.hashpw(pw.encode(), bcrypt.gensalt(rounds=12)).decode()
 
@@ -718,17 +784,25 @@ def inject_globals():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
+        ip       = request.remote_addr
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
+        if not _check_rate_limit(ip):
+            flash("Zu viele Fehlversuche. Bitte 60 Sekunden warten.", "error")
+            return render_template("login.html")
         users = load_users()
-        user = next((u for u in users if u["username"] == username), None)
+        user  = next((u for u in users if u["username"] == username), None)
         if user and _verify(password, user["pass_hash"]):
+            _clear_attempts(ip)
+            session.clear()
             session["user_id"]   = user["id"]
             session["username"]  = user["username"]
             session["role"]      = user["role"]
             session["name"]      = user.get("name", username)
             session["entity_id"] = user.get("entity_id")
-            return redirect(request.args.get("next") or url_for("dashboard"))
+            next_url = _safe_next(request.args.get("next"))
+            return redirect(next_url or url_for("dashboard"))
+        _record_attempt(ip)
         flash("Benutzername oder Passwort falsch.", "error")
     return render_template("login.html")
 

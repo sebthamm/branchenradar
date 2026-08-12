@@ -372,5 +372,19 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTodoMod
 </script>
 {% endif %}
 
+<script>
+(function() {
+  var token = '{{ csrf_token() }}';
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function(form) {
+      if (!form.querySelector('input[name="csrf_token"]')) {
+        var inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = 'csrf_token'; inp.value = token;
+        form.prepend(inp);
+      }
+    });
+  });
+})();
+</script>
 </body>
 </html>

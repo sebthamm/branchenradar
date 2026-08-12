@@ -19,6 +19,7 @@
     <div class="login-title">Anmelden</div>
     <div class="login-sub">Nur für Redakteure</div>
     <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label for="username">Benutzername</label>
       <input type="text" id="username" name="username" autofocus autocomplete="username">
       <label for="password">Passwort</label>
