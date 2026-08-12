@@ -319,6 +319,7 @@
         <div class="agent-card-actions">
           {% if session.get('role') == 'superadmin' %}
           <button class="btn btn-primary btn-sm" id="maja-run-btn" onclick="runMaja()">&#9654; Starten</button>
+          <button class="btn btn-secondary btn-sm" id="maja-test-btn" onclick="runMajaTest()">Test (3 Quellen)</button>
           {% endif %}
           <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
         </div>
@@ -722,6 +723,17 @@
 
 </div>
 
+{# Maja Test Modal #}
+<div class="prompt-modal" id="maja-test-modal" onclick="if(event.target===this)closeMajaTest()">
+  <div class="prompt-box" style="max-width:680px">
+    <div class="prompt-box-head">
+      <span class="prompt-box-title">Maja Test-Ergebnis</span>
+      <button class="prompt-box-close" onclick="closeMajaTest()">×</button>
+    </div>
+    <div id="maja-test-content" style="padding:16px 20px;font-size:13px;overflow-y:auto;max-height:65vh"></div>
+  </div>
+</div>
+
 {# Prompt modal #}
 <div class="prompt-modal" id="prompt-modal" onclick="if(event.target===this)closePrompt()">
   <div class="prompt-box">
@@ -904,6 +916,48 @@ async function runMaja() {
     _setMajaStatus('Fehler beim Starten', 'error');
     if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Starten'; }
   }
+}
+
+function closeMajaTest() {
+  document.getElementById('maja-test-modal').classList.remove('open');
+}
+
+async function runMajaTest() {
+  const btn = document.getElementById('maja-test-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Läuft…'; }
+  document.getElementById('maja-test-content').innerHTML =
+    '<div style="color:var(--muted);padding:20px 0">Maja verarbeitet 3 Quellen… (ca. 10–20 Sekunden)</div>';
+  document.getElementById('maja-test-modal').classList.add('open');
+  try {
+    const resp = await fetch('{{ url_for("maja_test") }}', { method: 'POST' });
+    const data = await resp.json();
+    const el = document.getElementById('maja-test-content');
+    if (!data.ok) {
+      el.innerHTML = `<div style="color:var(--s-action)">Fehler: ${data.error}</div>`;
+    } else {
+      const r = data.result;
+      const modelShort = r.model.replace('claude-','').replace('-20251001','');
+      let html = `<div style="margin-bottom:14px;color:var(--muted);font-size:12px">
+        Modell: <b>${modelShort}</b> &nbsp;·&nbsp;
+        ${r.input_tokens.toLocaleString('de')} Input-Token &nbsp;·&nbsp;
+        ${r.output_tokens.toLocaleString('de')} Output-Token
+      </div>`;
+      for (const s of r.preview) {
+        const eps = s.endpoints.length
+          ? s.endpoints.map(e => `<div style="margin:3px 0 3px 12px;color:var(--navy)">${e.agent}: <a href="${e.url}" target="_blank" style="color:var(--navy)">${e.url}</a> <span style="color:var(--muted)">(${e.label || '—'})</span></div>`).join('')
+          : '<div style="margin:3px 0 3px 12px;color:var(--faint)">Keine Endpoints gefunden</div>';
+        html += `<div style="border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px">
+          <div style="font-weight:600;margin-bottom:4px">${s.kuerzel} — ${s.name}</div>
+          ${eps}
+        </div>`;
+      }
+      el.innerHTML = html;
+    }
+  } catch(e) {
+    document.getElementById('maja-test-content').innerHTML =
+      '<div style="color:var(--s-action)">Netzwerkfehler</div>';
+  }
+  if (btn) { btn.disabled = false; btn.textContent = 'Test (3 Quellen)'; }
 }
 
 function majaScheduleToggle() {

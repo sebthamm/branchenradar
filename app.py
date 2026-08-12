@@ -1456,6 +1456,22 @@ def maja_run():
     threading.Thread(target=_run, daemon=True).start()
     return jsonify({"ok": True, "started": True})
 
+@app.route("/admin/maja/test", methods=["POST"])
+@role_required("superadmin")
+def maja_test():
+    import maja_runner
+    cfg     = load_agent_configs()
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt."})
+    maja_cfg = cfg.get("agents", {}).get("source_maintenance", {})
+    model    = maja_cfg.get("maja_model", "claude-haiku-4-5-20251001")
+    try:
+        result = maja_runner.test_run(maja_cfg, api_key, model=model)
+        return jsonify({"ok": True, "result": result})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
 @app.route("/admin/maja/status")
 @role_required("admin", "superadmin")
 def maja_status():

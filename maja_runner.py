@@ -162,6 +162,50 @@ def _load_history():
     with open(HISTORY_FILE, encoding="utf-8") as f:
         return json.load(f)
 
+def test_run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", n=3):
+    """Dry-run: verarbeitet die ersten n Quellen ohne Endpoints, schreibt nichts zurück."""
+    sources  = _load_sources()
+    persona  = agent_cfg.get("persona", "")
+    method   = agent_cfg.get("method", "")
+    hint     = agent_cfg.get("hint", "")
+    out_fmt  = agent_cfg.get("output_format", "")
+
+    sample = [s for s in sources if not s.get("endpoints")][:n]
+    if not sample:
+        sample = sources[:n]
+
+    client = anthropic.Anthropic(api_key=api_key)
+    prompt = _build_prompt(persona, method, hint, out_fmt, sample)
+
+    msg = client.messages.create(
+        model=model,
+        max_tokens=2048,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    raw = msg.content[0].text if msg.content else ""
+    tsv_match = re.search(r"```(?:tsv)?\n(.*?)```", raw, re.DOTALL)
+    tsv_text  = tsv_match.group(1) if tsv_match else raw
+    parsed    = _parse_tsv_response(tsv_text)
+
+    preview = []
+    for src in sample:
+        key   = src.get("kuerzel", "").upper()
+        patch = parsed.get(key, {})
+        preview.append({
+            "kuerzel":   src.get("kuerzel", ""),
+            "name":      src.get("name", ""),
+            "endpoints": patch.get("endpoints", []),
+            "raw_tsv":   next((l for l in tsv_text.splitlines() if l.startswith(key + "\t")), ""),
+        })
+
+    return {
+        "model":         model,
+        "sources_tested": len(sample),
+        "input_tokens":  msg.usage.input_tokens  if msg.usage else 0,
+        "output_tokens": msg.usage.output_tokens if msg.usage else 0,
+        "preview":       preview,
+    }
+
 def _append_history(entry):
     history = _load_history()
     history.insert(0, entry)
