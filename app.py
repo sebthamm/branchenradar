@@ -674,7 +674,7 @@ def _csrf_check():
 app.jinja_env.globals["csrf_token"] = _csrf_token
 
 _CSRF_EXEMPT_PREFIXES = ("/admin/maja/", "/admin/selector/run", "/agents/save",
-                         "/deploy-webhook")
+                         "/deploy-webhook", "/deploy")
 
 @app.before_request
 def csrf_protect():
