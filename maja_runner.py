@@ -162,6 +162,12 @@ def _load_history():
     with open(HISTORY_FILE, encoding="utf-8") as f:
         return json.load(f)
 
+MODEL_PRICES = {
+    "claude-haiku-4-5-20251001": (1.0,  5.0),
+    "claude-sonnet-4-6":         (3.0, 15.0),
+    "claude-opus-4-8":           (5.0, 25.0),
+}
+
 def test_run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", n=3):
     """Dry-run: verarbeitet die ersten n Quellen ohne Endpoints, schreibt nichts zurück."""
     sources  = _load_sources()
@@ -198,12 +204,18 @@ def test_run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", n=3):
             "raw_tsv":   next((l for l in tsv_text.splitlines() if l.startswith(key + "\t")), ""),
         })
 
+    in_tok  = msg.usage.input_tokens  if msg.usage else 0
+    out_tok = msg.usage.output_tokens if msg.usage else 0
+    in_p, out_p = MODEL_PRICES.get(model, (3.0, 15.0))
+    cost = round((in_tok * in_p + out_tok * out_p) / 1_000_000, 4)
+
     return {
-        "model":         model,
+        "model":          model,
         "sources_tested": len(sample),
-        "input_tokens":  msg.usage.input_tokens  if msg.usage else 0,
-        "output_tokens": msg.usage.output_tokens if msg.usage else 0,
-        "preview":       preview,
+        "input_tokens":   in_tok,
+        "output_tokens":  out_tok,
+        "cost_usd":       cost,
+        "preview":        preview,
     }
 
 def _append_history(entry):
@@ -213,8 +225,12 @@ def _append_history(entry):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, ensure_ascii=False, indent=2)
 
-def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001"):
+def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to_idx=None):
     sources    = _load_sources()
+    if from_idx is not None or to_idx is not None:
+        lo = (int(from_idx) - 1) if from_idx is not None else 0
+        hi = int(to_idx) if to_idx is not None else len(sources)
+        sources = sources[max(0, lo):hi]
     started_at = datetime.now()
     run_at     = started_at.strftime("%Y-%m-%d %H:%M:%S")
     persona    = agent_cfg.get("persona", "")
@@ -275,12 +291,6 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001"):
 
     duration_s = int((datetime.now() - started_at).total_seconds())
 
-    # Cost estimate (USD) — approximate prices per 1M tokens
-    MODEL_PRICES = {
-        "claude-haiku-4-5-20251001": (1.0,  5.0),
-        "claude-sonnet-4-6":         (3.0, 15.0),
-        "claude-opus-4-8":           (5.0, 25.0),
-    }
     in_price, out_price = MODEL_PRICES.get(model, (3.0, 15.0))
     cost_usd = (input_tokens * in_price + output_tokens * out_price) / 1_000_000
 

@@ -317,6 +317,7 @@
         {% for src in sources %}
         {% set uid = src.id | replace('-','_') %}
         <tr onclick="toggleEdit('{{ uid }}')" style="cursor:pointer" title="Klicken zum Auf-/Zuklappen">
+          <td style="font-size:11px;color:var(--faint);text-align:right;padding-right:6px;white-space:nowrap;min-width:28px">{{ loop.index }}</td>
           <td style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap">{{ src.kuerzel or '—' }}</td>
           <td style="font-weight:500;min-width:160px">{{ src.name }}</td>
           <td style="font-size:12px;color:var(--muted);white-space:nowrap">{{ src.primary_category or src.get('category','') or '—' }}</td>

@@ -318,6 +318,14 @@
         </div>
         <div class="agent-card-actions">
           {% if session.get('role') == 'superadmin' %}
+          <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)">
+            Quellen
+            <input type="number" id="maja-from" min="1" placeholder="von"
+              style="width:56px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+            –
+            <input type="number" id="maja-to" min="1" placeholder="bis"
+              style="width:56px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+          </span>
           <button class="btn btn-primary btn-sm" id="maja-run-btn" onclick="runMaja()">&#9654; Starten</button>
           <button class="btn btn-secondary btn-sm" id="maja-test-btn" onclick="runMajaTest()">Test (3 Quellen)</button>
           {% endif %}
@@ -903,7 +911,16 @@ async function runMaja() {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Maja läuft…'; }
   _setMajaStatus('Wird gestartet…');
   try {
-    const resp = await fetch('{{ url_for("maja_run") }}', { method: 'POST' });
+    const fromVal = document.getElementById('maja-from')?.value;
+    const toVal   = document.getElementById('maja-to')?.value;
+    const body = {};
+    if (fromVal) body.from_idx = parseInt(fromVal);
+    if (toVal)   body.to_idx   = parseInt(toVal);
+    const resp = await fetch('{{ url_for("maja_run") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
     const data = await resp.json();
     if (data.ok && data.started) {
       _setMajaStatus('Läuft… (wird automatisch aktualisiert)');
@@ -940,7 +957,8 @@ async function runMajaTest() {
       let html = `<div style="margin-bottom:14px;color:var(--muted);font-size:12px">
         Modell: <b>${modelShort}</b> &nbsp;·&nbsp;
         ${r.input_tokens.toLocaleString('de')} Input-Token &nbsp;·&nbsp;
-        ${r.output_tokens.toLocaleString('de')} Output-Token
+        ${r.output_tokens.toLocaleString('de')} Output-Token &nbsp;·&nbsp;
+        <b style="color:var(--text)">$${r.cost_usd.toFixed(4)}</b>
       </div>`;
       for (const s of r.preview) {
         const eps = s.endpoints.length

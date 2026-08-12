@@ -1445,11 +1445,14 @@ def maja_run():
     maja_cfg = cfg.get("agents", {}).get("source_maintenance", {})
     model    = maja_cfg.get("maja_model", "claude-haiku-4-5-20251001")
 
+    from_idx = request.json.get("from_idx") if request.json else None
+    to_idx   = request.json.get("to_idx")   if request.json else None
+
     def _run():
         global _maja_running
         _maja_running = True
         try:
-            maja_runner.run(maja_cfg, api_key, model=model)
+            maja_runner.run(maja_cfg, api_key, model=model, from_idx=from_idx, to_idx=to_idx)
         finally:
             _maja_running = False
 
