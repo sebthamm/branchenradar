@@ -226,11 +226,11 @@ def _append_history(entry):
         json.dump(history, f, ensure_ascii=False, indent=2)
 
 def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to_idx=None):
-    sources    = _load_sources()
-    if from_idx is not None or to_idx is not None:
-        lo = (int(from_idx) - 1) if from_idx is not None else 0
-        hi = int(to_idx) if to_idx is not None else len(sources)
-        sources = sources[max(0, lo):hi]
+    all_sources = _load_sources()
+    lo = (int(from_idx) - 1) if from_idx is not None else 0
+    hi = int(to_idx) if to_idx is not None else len(all_sources)
+    sources = all_sources[max(0, lo):min(hi, len(all_sources))]
+    range_label = f"{lo+1}–{lo+len(sources)}" if (from_idx or to_idx) else f"1–{len(all_sources)}"
     started_at = datetime.now()
     run_at     = started_at.strftime("%Y-%m-%d %H:%M:%S")
     persona    = agent_cfg.get("persona", "")
@@ -298,6 +298,7 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to
         "run_at":           run_at,
         "duration_s":       duration_s,
         "model":            model,
+        "range":            range_label,
         "sources_total":    len(sources),
         "batches":          len(batches),
         "endpoints_added":  updated,

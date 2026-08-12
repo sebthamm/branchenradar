@@ -67,7 +67,24 @@
 
   {# ── Maja Report ── #}
   <div style="margin-bottom:32px">
-    <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Maja — Quellen-Pflege</div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
+        <circle cx="22" cy="22" r="22" fill="#C88035"/>
+        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#7A4A1E"/>
+        <rect x="19" y="29" width="6" height="4" rx="2" fill="#F5C9A0"/>
+        <circle cx="22" cy="20" r="10" fill="#F5C9A0"/>
+        <path d="M12 21 C12 8 32 8 32 21 L30 17 Q22 11 14 17 Z" fill="#9C6438"/>
+        <path d="M13 17 Q12 24 13 31" stroke="#9C6438" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M31 17 Q32 24 31 31" stroke="#9C6438" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <path d="M18 24 Q22 27.5 26 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-size:16px;font-weight:600">Maja</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Quellen-Pflege-Agent</div>
+      </div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="maja-report-grid">
 
       {# Qualität #}
@@ -87,6 +104,7 @@
               <tr style="background:var(--surface2);text-align:left">
                 <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border)">Datum</th>
                 <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border)">Modell</th>
+                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:center">Bereich</th>
                 <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Quellen</th>
                 <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Endpunkte ergänzt</th>
                 <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Dauer</th>
@@ -239,6 +257,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailB
       return `<tr style="${bg}">
         <td style="padding:7px 14px">${r.run_at || '—'}</td>
         <td style="padding:7px 14px;color:var(--muted)">${modelShort(r.model || '')}</td>
+        <td style="padding:7px 14px;text-align:center;font-variant-numeric:tabular-nums;color:var(--navy);font-weight:600">${r.range || '—'}</td>
         <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums">${r.sources_total ?? '—'}</td>
         <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${r.endpoints_added ?? '—'}</td>
         <td style="padding:7px 14px;text-align:right;color:var(--muted)">${r.duration_s != null ? dur(r.duration_s) : '—'}</td>
