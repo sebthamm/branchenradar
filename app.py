@@ -1429,33 +1429,47 @@ def selector_status():
         "remaining":          data.get("remaining", 0),
     })
 
+_maja_running = False
+
 @app.route("/admin/maja/run", methods=["POST"])
 @role_required("superadmin")
 def maja_run():
-    import maja_runner
+    global _maja_running
+    if _maja_running:
+        return jsonify({"ok": False, "error": "Maja läuft bereits."})
+    import maja_runner, threading
     cfg     = load_agent_configs()
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
         return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt."})
     maja_cfg = cfg.get("agents", {}).get("source_maintenance", {})
     model    = maja_cfg.get("maja_model", "claude-haiku-4-5-20251001")
-    try:
-        result = maja_runner.run(maja_cfg, api_key, model=model)
-        return jsonify({"ok": True, "result": result})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)})
+
+    def _run():
+        global _maja_running
+        _maja_running = True
+        try:
+            maja_runner.run(maja_cfg, api_key, model=model)
+        finally:
+            _maja_running = False
+
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({"ok": True, "started": True})
 
 @app.route("/admin/maja/status")
 @role_required("admin", "superadmin")
 def maja_status():
-    if not os.path.exists(MAJA_STATUS_FILE):
-        return jsonify({"exists": False})
-    with open(MAJA_STATUS_FILE, encoding="utf-8") as f:
-        data = json.load(f)
     job = _scheduler.get_job("maja_scheduled")
     next_run = job.next_run_time.strftime("%Y-%m-%d %H:%M") if job and job.next_run_time else None
+    if _maja_running:
+        return jsonify({"exists": False, "running": True, "next_run": next_run})
+    if not os.path.exists(MAJA_STATUS_FILE):
+        return jsonify({"exists": False, "running": False, "next_run": next_run})
+    with open(MAJA_STATUS_FILE, encoding="utf-8") as f:
+        data = json.load(f)
     return jsonify({
         "exists":          True,
+        "running":         False,
         "run_at":          data.get("run_at", ""),
         "sources_total":   data.get("sources_total", 0),
         "batches":         data.get("batches", 0),

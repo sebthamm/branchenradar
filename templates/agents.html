@@ -860,31 +860,50 @@ function _setMajaStatus(text, cls) {
   el.className = 'fletcher-status-text' + (cls ? ' ' + cls : '');
 }
 
+let _majaPoller = null;
+
+function _pollMajaStatus() {
+  fetch('{{ url_for("maja_status") }}')
+    .then(r => r.json())
+    .then(data => {
+      const btn = document.getElementById('maja-run-btn');
+      if (data.running) {
+        _setMajaStatus('Läuft… (wird automatisch aktualisiert)');
+        return;
+      }
+      if (_majaPoller) { clearInterval(_majaPoller); _majaPoller = null; }
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Starten'; }
+      if (data.exists) {
+        const r = data;
+        const errs = r.errors && r.errors.length ? ` · ${r.errors.length} Fehler` : '';
+        _setMajaStatus(
+          `Letzter Lauf: ${r.run_at} · ${r.endpoints_added} Endpunkte ergänzt · ` +
+          `${r.batches} Batches (${r.sources_total} Quellen)${errs}`,
+          r.errors && r.errors.length ? 'error' : 'ok'
+        );
+      }
+    })
+    .catch(() => {});
+}
+
 async function runMaja() {
   const btn = document.getElementById('maja-run-btn');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Maja läuft…'; }
-  _setMajaStatus('Läuft… (kann einige Minuten dauern)');
+  _setMajaStatus('Wird gestartet…');
   try {
     const resp = await fetch('{{ url_for("maja_run") }}', { method: 'POST' });
     const data = await resp.json();
-    if (data.ok) {
-      const r = data.result;
-      const errs = r.errors && r.errors.length ? ` · ${r.errors.length} Fehler` : '';
-      _setMajaStatus(
-        `Letzter Lauf: ${r.run_at} · ${r.endpoints_added} Endpunkte ergänzt · ` +
-        `${r.batches} Batches (${r.sources_total} Quellen)${errs}`,
-        r.errors && r.errors.length ? 'error' : 'ok'
-      );
-      if (btn) btn.textContent = '✓ Fertig';
+    if (data.ok && data.started) {
+      _setMajaStatus('Läuft… (wird automatisch aktualisiert)');
+      _majaPoller = setInterval(_pollMajaStatus, 10000);
     } else {
       _setMajaStatus('Fehler: ' + (data.error || 'unbekannt'), 'error');
-      if (btn) btn.textContent = '✗ Fehler';
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Starten'; }
     }
   } catch (e) {
-    _setMajaStatus('Netzwerkfehler', 'error');
-    if (btn) btn.textContent = '✗ Fehler';
+    _setMajaStatus('Fehler beim Starten', 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Starten'; }
   }
-  setTimeout(() => { if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Starten'; } }, 3000);
 }
 
 function majaScheduleToggle() {
