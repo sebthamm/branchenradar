@@ -333,7 +333,7 @@
         <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Gruppierungs-Agent</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="theo-report-grid">
+    <div style="display:flex;flex-direction:column;gap:20px" id="theo-report-grid">
 
       {# Matching-Zustand #}
       <div class="agent-card">
@@ -343,16 +343,8 @@
         </div>
       </div>
 
-      {# Letzter Lauf #}
-      <div class="agent-card">
-        <div class="agent-card-head"><div class="agent-card-label">Letzter Lauf</div></div>
-        <div class="agent-card-body" id="theo-run-body">
-          <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
-        </div>
-      </div>
-
       {# Lauf-History #}
-      <div class="agent-card" style="grid-column:1/-1">
+      <div class="agent-card">
         <div class="agent-card-head"><div class="agent-card-label">Lauf-History (letzte 10)</div></div>
         <div style="overflow-x:auto">
           <table class="run-history-table">
@@ -392,7 +384,7 @@
         <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Bewertungs-Agent</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="ida-report-grid">
+    <div style="display:flex;flex-direction:column;gap:20px" id="ida-report-grid">
 
       {# Signal-Verteilung #}
       <div class="agent-card">
@@ -402,16 +394,8 @@
         </div>
       </div>
 
-      {# Letzter Lauf #}
-      <div class="agent-card">
-        <div class="agent-card-head"><div class="agent-card-label">Letzter Lauf</div></div>
-        <div class="agent-card-body" id="ida-run-body">
-          <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
-        </div>
-      </div>
-
       {# Lauf-History #}
-      <div class="agent-card" style="grid-column:1/-1">
+      <div class="agent-card">
         <div class="agent-card-head"><div class="agent-card-label">Lauf-History (letzte 10)</div></div>
         <div style="overflow-x:auto">
           <table class="run-history-table">
@@ -587,7 +571,6 @@ loadInsights();
 // ── Theo Report ───────────────────────────────────────────────────────────────
 (async () => {
   const matchBody = document.getElementById('theo-match-body');
-  const runBody   = document.getElementById('theo-run-body');
   try {
     const resp = await fetch('/admin/theo/report');
     const data = await resp.json();
@@ -607,29 +590,6 @@ loadInsights();
       </div>`
     ).join('');
 
-    if (r.error) {
-      runBody.innerHTML = `
-        <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-error"></span>Fehler</span><span style="font-size:11px;color:var(--s-action);max-width:180px;text-align:right">${r.error}</span></div>
-        <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-zero"></span>Zeitpunkt</span><span style="font-size:12px;color:var(--muted)">${r.run_at || '—'}</span></div>`;
-    } else if (r.run_at) {
-      const ms = m => (m || '').replace('claude-', '').replace('-20251001', '');
-      runBody.innerHTML = [
-        ['Letzter Lauf',            r.run_at,                               'dot-high'],
-        ['Modell',                  ms(r.model),                            'dot-zero'],
-        ['RAW-Signale verarbeitet', r.signals_processed ?? '—',             'dot-mid'],
-        ['Neue Gruppen erstellt',   r.groups_added ?? '—',                  'dot-mid'],
-        ['Input-Token',             (r.input_tokens ?? 0).toLocaleString('de'), 'dot-zero'],
-        ['Output-Token',            (r.output_tokens ?? 0).toLocaleString('de'),'dot-zero'],
-        ['Kosten (USD)',            r.cost_usd != null ? `$${r.cost_usd.toFixed(4)}` : '—', 'dot-mid'],
-      ].map(([label, val, dot]) =>
-        `<div class="stat-row">
-          <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
-          <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
-        </div>`
-      ).join('');
-    } else {
-      runBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Noch kein Lauf aufgezeichnet</span></div>';
-    }
     // Theo history table
     const theoTbody = document.getElementById('theo-history-tbody');
     const hist = data.history || [];
@@ -654,14 +614,12 @@ loadInsights();
     }
   } catch(e) {
     matchBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
-    runBody.innerHTML   = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
   }
 })();
 
 // ── Ida Report ────────────────────────────────────────────────────────────────
 (async () => {
   const distBody = document.getElementById('ida-dist-body');
-  const runBody  = document.getElementById('ida-run-body');
   try {
     const resp = await fetch('/admin/ida/report');
     const data = await resp.json();
@@ -686,29 +644,6 @@ loadInsights();
       </div>`
     ).join('');
 
-    if (r.error) {
-      runBody.innerHTML = `
-        <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-error"></span>Fehler</span><span style="font-size:11px;color:var(--s-action);max-width:180px;text-align:right">${r.error}</span></div>
-        <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-zero"></span>Zeitpunkt</span><span style="font-size:12px;color:var(--muted)">${r.run_at || '—'}</span></div>`;
-    } else if (r.run_at) {
-      const ms = m => (m || '').replace('claude-', '').replace('-20251001', '');
-      runBody.innerHTML = [
-        ['Letzter Lauf',             r.run_at,                                'dot-high'],
-        ['Modell',                   ms(r.model),                             'dot-zero'],
-        ['FINAL-Signale geschrieben',r.finals_written ?? '—',                 'dot-mid'],
-        ['Gruppen zusammengeführt',  r.groups_merged ?? '—',                  'dot-mid'],
-        ['Input-Token',              (r.input_tokens ?? 0).toLocaleString('de'), 'dot-zero'],
-        ['Output-Token',             (r.output_tokens ?? 0).toLocaleString('de'),'dot-zero'],
-        ['Kosten (USD)',             r.cost_usd != null ? `$${r.cost_usd.toFixed(4)}` : '—', 'dot-mid'],
-      ].map(([label, val, dot]) =>
-        `<div class="stat-row">
-          <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
-          <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
-        </div>`
-      ).join('');
-    } else {
-      runBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Noch kein Lauf aufgezeichnet</span></div>';
-    }
     // Ida history table
     const idaTbody = document.getElementById('ida-history-tbody');
     const idaHist = data.history || [];
@@ -733,7 +668,6 @@ loadInsights();
     }
   } catch(e) {
     distBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
-    runBody.innerHTML  = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
   }
 })();
 </script>
