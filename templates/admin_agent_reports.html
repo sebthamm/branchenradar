@@ -46,6 +46,12 @@
 
   .empty-state { text-align:center;padding:48px 20px;color:var(--faint);font-size:14px; }
   #maja-history-table th, #maja-history-table td { white-space: nowrap; }
+  .run-history-table { width:100%;border-collapse:collapse;font-size:12px; }
+  .run-history-table th { padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:left;background:var(--surface2); }
+  .run-history-table th.num { text-align:right; }
+  .run-history-table td { padding:7px 14px; }
+  .run-history-table td.num { text-align:right;font-variant-numeric:tabular-nums; }
+  .run-history-table tr:nth-child(even) { background:var(--surface2); }
   @media (max-width:700px) { .main { padding:14px 14px 60px; } .agents-grid { grid-template-columns: 1fr; } #maja-report-grid { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
@@ -174,6 +180,24 @@
   </script>
   {% endmacro %}
 
+  {# ── Macro: leere Lauf-History-Tabelle für Suchagenten ── #}
+  {% macro search_history_table() %}
+  <div class="agent-card" style="margin-top:12px">
+    <div class="agent-card-head"><div class="agent-card-label">Lauf-History (letzte 10)</div></div>
+    <div style="overflow-x:auto">
+      <table class="run-history-table">
+        <thead><tr>
+          <th>Datum</th><th>Modell</th>
+          <th class="num">Quellen</th><th class="num">Signale</th>
+          <th class="num">Input-Token</th><th class="num">Output-Token</th>
+          <th class="num">Kosten (USD)</th><th class="num">Fehler</th>
+        </tr></thead>
+        <tbody><tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Noch keine automatisierten Läufe aufgezeichnet</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  {% endmacro %}
+
   {# ── Fred (Feed-Agent) ── #}
   {% set s = stats['feed'] %}
   <div style="margin-bottom:32px">
@@ -199,6 +223,7 @@
       <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
       {{ stat_rows('feed', s) }}
     </div>
+    {{ search_history_table() }}
   </div>
 
   {# ── Finn (Scrape-Agent) ── #}
@@ -227,6 +252,7 @@
       <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
       {{ stat_rows('scrape', s) }}
     </div>
+    {{ search_history_table() }}
   </div>
 
   {# ── Mats (PDF-Agent) ── #}
@@ -256,6 +282,7 @@
       <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
       {{ stat_rows('pdf', s) }}
     </div>
+    {{ search_history_table() }}
   </div>
 
   {# ── Lena (Search-Agent) ── #}
@@ -283,6 +310,7 @@
       <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
       {{ stat_rows('search', s) }}
     </div>
+    {{ search_history_table() }}
   </div>
 
   {# ── Theo Report ── #}
@@ -320,6 +348,24 @@
         <div class="agent-card-head"><div class="agent-card-label">Letzter Lauf</div></div>
         <div class="agent-card-body" id="theo-run-body">
           <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
+        </div>
+      </div>
+
+      {# Lauf-History #}
+      <div class="agent-card" style="grid-column:1/-1">
+        <div class="agent-card-head"><div class="agent-card-label">Lauf-History (letzte 10)</div></div>
+        <div style="overflow-x:auto">
+          <table class="run-history-table">
+            <thead><tr>
+              <th>Datum</th><th>Modell</th>
+              <th class="num">Signale</th><th class="num">Gruppen erstellt</th>
+              <th class="num">Input-Token</th><th class="num">Output-Token</th>
+              <th class="num">Kosten (USD)</th><th class="num">Fehler</th>
+            </tr></thead>
+            <tbody id="theo-history-tbody">
+              <tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Wird geladen…</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -361,6 +407,24 @@
         <div class="agent-card-head"><div class="agent-card-label">Letzter Lauf</div></div>
         <div class="agent-card-body" id="ida-run-body">
           <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
+        </div>
+      </div>
+
+      {# Lauf-History #}
+      <div class="agent-card" style="grid-column:1/-1">
+        <div class="agent-card-head"><div class="agent-card-label">Lauf-History (letzte 10)</div></div>
+        <div style="overflow-x:auto">
+          <table class="run-history-table">
+            <thead><tr>
+              <th>Datum</th><th>Modell</th>
+              <th class="num">FINAL-Signale</th><th class="num">Gruppen zusammengeführt</th>
+              <th class="num">Input-Token</th><th class="num">Output-Token</th>
+              <th class="num">Kosten (USD)</th><th class="num">Fehler</th>
+            </tr></thead>
+            <tbody id="ida-history-tbody">
+              <tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Wird geladen…</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -566,6 +630,28 @@ loadInsights();
     } else {
       runBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Noch kein Lauf aufgezeichnet</span></div>';
     }
+    // Theo history table
+    const theoTbody = document.getElementById('theo-history-tbody');
+    const hist = data.history || [];
+    if (!hist.length) {
+      theoTbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Noch keine Läufe aufgezeichnet</td></tr>';
+    } else {
+      const ms = m => (m || '').replace('claude-', '').replace('-20251001', '');
+      theoTbody.innerHTML = hist.map((r, i) => {
+        const err = r.error ? `<span style="color:var(--s-action);font-weight:600">1</span>` : `<span style="color:var(--faint)">—</span>`;
+        const bg = i % 2 === 1 ? 'background:var(--surface2)' : '';
+        return `<tr style="${bg}">
+          <td style="padding:7px 14px">${r.run_at || '—'}</td>
+          <td style="padding:7px 14px;color:var(--muted)">${ms(r.model)}</td>
+          <td class="num" style="padding:7px 14px">${r.signals_processed ?? '—'}</td>
+          <td class="num" style="padding:7px 14px;font-weight:600">${r.groups_added ?? '—'}</td>
+          <td class="num" style="padding:7px 14px;color:var(--muted)">${(r.input_tokens ?? 0).toLocaleString('de')}</td>
+          <td class="num" style="padding:7px 14px;color:var(--muted)">${(r.output_tokens ?? 0).toLocaleString('de')}</td>
+          <td class="num" style="padding:7px 14px">${r.cost_usd != null ? '$'+r.cost_usd.toFixed(4) : '—'}</td>
+          <td class="num" style="padding:7px 14px">${err}</td>
+        </tr>`;
+      }).join('');
+    }
   } catch(e) {
     matchBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
     runBody.innerHTML   = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
@@ -622,6 +708,28 @@ loadInsights();
       ).join('');
     } else {
       runBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Noch kein Lauf aufgezeichnet</span></div>';
+    }
+    // Ida history table
+    const idaTbody = document.getElementById('ida-history-tbody');
+    const idaHist = data.history || [];
+    if (!idaHist.length) {
+      idaTbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Noch keine Läufe aufgezeichnet</td></tr>';
+    } else {
+      const ms = m => (m || '').replace('claude-', '').replace('-20251001', '');
+      idaTbody.innerHTML = idaHist.map((r, i) => {
+        const err = r.error ? `<span style="color:var(--s-action);font-weight:600">1</span>` : `<span style="color:var(--faint)">—</span>`;
+        const bg = i % 2 === 1 ? 'background:var(--surface2)' : '';
+        return `<tr style="${bg}">
+          <td style="padding:7px 14px">${r.run_at || '—'}</td>
+          <td style="padding:7px 14px;color:var(--muted)">${ms(r.model)}</td>
+          <td class="num" style="padding:7px 14px;font-weight:600">${r.finals_written ?? '—'}</td>
+          <td class="num" style="padding:7px 14px">${r.groups_merged ?? '—'}</td>
+          <td class="num" style="padding:7px 14px;color:var(--muted)">${(r.input_tokens ?? 0).toLocaleString('de')}</td>
+          <td class="num" style="padding:7px 14px;color:var(--muted)">${(r.output_tokens ?? 0).toLocaleString('de')}</td>
+          <td class="num" style="padding:7px 14px">${r.cost_usd != null ? '$'+r.cost_usd.toFixed(4) : '—'}</td>
+          <td class="num" style="padding:7px 14px">${err}</td>
+        </tr>`;
+      }).join('');
     }
   } catch(e) {
     distBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';

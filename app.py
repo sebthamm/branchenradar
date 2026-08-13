@@ -1708,6 +1708,7 @@ def theo_report():
     if os.path.exists(THEO_STATUS_FILE):
         with open(THEO_STATUS_FILE, encoding="utf-8") as f:
             status = json.load(f)
+    theo_history = _load(THEO_HISTORY_FILE) if os.path.exists(THEO_HISTORY_FILE) else []
     return jsonify({
         "match_state": {
             "groups_total":   len(groups),
@@ -1717,6 +1718,7 @@ def theo_report():
             "max_group_size": max(groups) if groups else 0,
         },
         "last_run": status,
+        "history":  theo_history,
     })
 
 @app.route("/admin/ida/report")
@@ -1742,6 +1744,7 @@ def ida_report():
     if os.path.exists(IDA_STATUS_FILE):
         with open(IDA_STATUS_FILE, encoding="utf-8") as f:
             status = json.load(f)
+    ida_history = _load(IDA_HISTORY_FILE) if os.path.exists(IDA_HISTORY_FILE) else []
     return jsonify({
         "signal_state": {
             "total":          len(final),
@@ -1750,6 +1753,7 @@ def ida_report():
             "review_needed":  review_needed,
         },
         "last_run": status,
+        "history":  ida_history,
     })
 
 # ── Theo (group/match agent) ──────────────────────────────────────────────────
@@ -1757,6 +1761,20 @@ def ida_report():
 _theo_running = False
 
 THEO_STATUS_FILE = os.path.join(DATA_DIR, "theo_status.json")
+
+THEO_HISTORY_FILE = os.path.join(DATA_DIR, "theo_history.json")
+IDA_HISTORY_FILE  = os.path.join(DATA_DIR, "ida_history.json")
+_AGENT_HISTORY_MAX = 10
+
+def _append_agent_history(path, entry):
+    try:
+        hist = _load(path) if os.path.exists(path) else []
+        if not isinstance(hist, list):
+            hist = []
+        hist.insert(0, entry)
+        _save(path, hist[:_AGENT_HISTORY_MAX])
+    except Exception:
+        pass
 
 _AGENT_MODEL_PRICES = {
     "claude-haiku-4-5-20251001": (1.0,  5.0),
@@ -1852,12 +1870,15 @@ def theo_run():
                 "cost_usd":          _agent_cost(model, in_tok, out_tok),
             }
             _save(THEO_STATUS_FILE, status)
+            _append_agent_history(THEO_HISTORY_FILE, status)
         except Exception as e:
             import traceback
             tb = traceback.format_exc()
             app.logger.error("Theo thread error: %s", tb)
             try:
-                _save(THEO_STATUS_FILE, {"run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)})
+                err = {"run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)}
+                _save(THEO_STATUS_FILE, err)
+                _append_agent_history(THEO_HISTORY_FILE, err)
             except Exception:
                 pass
         finally:
@@ -1980,7 +2001,7 @@ def ida_run():
             ts = _dt.now().strftime("%y%m%d%H%M")
             archive_signal_final()
             save_signal_final(final_signals, ts)
-            _save(IDA_STATUS_FILE, {
+            status = {
                 "run_at":         _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "model":          model,
                 "finals_written": len(final_signals),
@@ -1988,13 +2009,17 @@ def ida_run():
                 "input_tokens":   total_in_tok,
                 "output_tokens":  total_out_tok,
                 "cost_usd":       _agent_cost(model, total_in_tok, total_out_tok),
-            })
+            }
+            _save(IDA_STATUS_FILE, status)
+            _append_agent_history(IDA_HISTORY_FILE, status)
         except Exception as e:
             import traceback
             tb = traceback.format_exc()
             app.logger.error("Ida thread error: %s", tb)
             try:
-                _save(IDA_STATUS_FILE, {"run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e), "traceback": tb[:500]})
+                err = {"run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e), "traceback": tb[:500]}
+                _save(IDA_STATUS_FILE, err)
+                _append_agent_history(IDA_HISTORY_FILE, err)
             except Exception:
                 pass
         finally:
