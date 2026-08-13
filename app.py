@@ -607,6 +607,25 @@ def load_agent_reports():
 
 def save_agent_reports(data): _save(AGENT_REPORTS_FILE, data)
 
+def _flag_final_review_needed(raw_sig_id):
+    """Mark FINAL signals as review_needed when a linked RAW signal changes."""
+    matches = load_signal_matches()
+    affected_final_ids = set()
+    for m in matches:
+        linked = [m.get("sig1", "")] + [p.get("id", "") for p in m.get("pairs", [])]
+        if raw_sig_id in linked:
+            affected_final_ids.add(m.get("sig1", ""))
+    if not affected_final_ids:
+        return
+    data = load_signal_final()
+    changed = False
+    for sig in data["signals"]:
+        if sig.get("id") in affected_final_ids and not sig.get("review_needed"):
+            sig["review_needed"] = True
+            changed = True
+    if changed:
+        save_signal_final(data["signals"], data.get("timestamp"))
+
 def load_signal_matches():
     if not os.path.exists(SIGNAL_MATCHES_FILE):
         return []
@@ -1133,6 +1152,7 @@ def signal_edit(sig_id):
                 signals[i] = updated
                 break
         save_signals(signals)
+        _flag_final_review_needed(sig_id)
         flash("Signal aktualisiert.", "success")
         return redirect(url_for("signal_list"))
     return render_template("signal_form.html", signal=sig,

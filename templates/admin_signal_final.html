@@ -174,7 +174,10 @@
             {% elif prio == 'kann' %}<span class="prio-kann">KANN</span>
             {% endif %}
           </td>
-          <td style="max-width:280px">{{ s.get('title','') }}</td>
+          <td style="max-width:280px">
+            {{ s.get('title','') }}
+            {% if s.get('review_needed') %}<span style="margin-left:6px;font-size:10px;font-weight:700;color:#fff;background:#C0402A;border-radius:4px;padding:1px 5px">PRÜFEN</span>{% endif %}
+          </td>
           <td>{{ categories.get(s.get('category',''), s.get('category','')) }}</td>
           <td>{{ entwicklungsstand_labels.get(s.get('entwicklungsstand',''), s.get('entwicklungsstand','')) }}</td>
           <td style="font-size:11px">{{ s.get('handlungszeitpunkt','') }}</td>
