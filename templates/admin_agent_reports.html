@@ -135,6 +135,156 @@
     </div>
   </div>
 
+  {# ── Macro: stat card rows ── #}
+  {% macro stat_rows(key, s) %}
+  <div class="agent-card-body">
+    <div class="stat-row">
+      <span class="stat-label"><span class="stat-dot dot-high"></span>≥ 5 Signale</span>
+      {% if s.high %}<span class="stat-count" onclick="showDetail('{{ key }}_high')">{{ s.high | length }}</span>
+      {% else %}<span class="stat-empty">0</span>{% endif %}
+    </div>
+    <div class="stat-row">
+      <span class="stat-label"><span class="stat-dot dot-mid"></span>2–4 Signale</span>
+      {% if s.mid %}<span class="stat-count" onclick="showDetail('{{ key }}_mid')">{{ s.mid | length }}</span>
+      {% else %}<span class="stat-empty">0</span>{% endif %}
+    </div>
+    <div class="stat-row">
+      <span class="stat-label"><span class="stat-dot dot-low"></span>1 Signal</span>
+      {% if s.low %}<span class="stat-count" onclick="showDetail('{{ key }}_low')">{{ s.low | length }}</span>
+      {% else %}<span class="stat-empty">0</span>{% endif %}
+    </div>
+    <div class="stat-row">
+      <span class="stat-label"><span class="stat-dot dot-zero"></span>0 Signale</span>
+      {% if s.zero %}<span class="stat-count" onclick="showDetail('{{ key }}_zero')">{{ s.zero | length }}</span>
+      {% else %}<span class="stat-empty">0</span>{% endif %}
+    </div>
+    <div class="stat-row">
+      <span class="stat-label"><span class="stat-dot dot-error"></span>Technischer Fehler</span>
+      {% if s.error %}<span class="stat-count" style="color:var(--s-action)" onclick="showDetail('{{ key }}_error')">{{ s.error | length }}</span>
+      {% else %}<span class="stat-empty">0</span>{% endif %}
+    </div>
+  </div>
+  <script>
+  window._detail = window._detail || {};
+  window._detail['{{ key }}_high']  = {{ s.high  | tojson }};
+  window._detail['{{ key }}_mid']   = {{ s.mid   | tojson }};
+  window._detail['{{ key }}_low']   = {{ s.low   | tojson }};
+  window._detail['{{ key }}_zero']  = {{ s.zero  | tojson }};
+  window._detail['{{ key }}_error'] = {{ s.error | tojson }};
+  </script>
+  {% endmacro %}
+
+  {# ── Fred (Feed-Agent) ── #}
+  {% set s = stats['feed'] %}
+  <div style="margin-bottom:32px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
+        <circle cx="22" cy="22" r="22" fill="#4B8DC6"/>
+        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#1E3C6E"/>
+        <rect x="19" y="29" width="6" height="4" rx="2" fill="#FDDBB4"/>
+        <circle cx="22" cy="20" r="10" fill="#FDDBB4"/>
+        <path d="M12 20 C12 8 32 8 32 20 L30 16 Q22 11 14 16 Z" fill="#E0C845"/>
+        <rect x="11.5" y="14" width="2.5" height="6" rx="1.2" fill="#E0C845"/>
+        <rect x="30" y="14" width="2.5" height="6" rx="1.2" fill="#E0C845"/>
+        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <path d="M18.5 24 Q22 27 25.5 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-size:16px;font-weight:600">Fred</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Feed-Agent</div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
+      {{ stat_rows('feed', s) }}
+    </div>
+  </div>
+
+  {# ── Finn (Scrape-Agent) ── #}
+  {% set s = stats['scrape'] %}
+  <div style="margin-bottom:32px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
+        <circle cx="22" cy="22" r="22" fill="#D86A38"/>
+        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#7A3818"/>
+        <rect x="19" y="29" width="6" height="4" rx="2" fill="#FDDBB4"/>
+        <circle cx="22" cy="20" r="10" fill="#FDDBB4"/>
+        <path d="M12 20 C12 8 32 8 32 20 L30 15 Q22 9 14 15 Z" fill="#3C2010"/>
+        <path d="M19 10 Q22 7 26 10" stroke="#3C2010" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <rect x="11.5" y="14" width="2.5" height="6" rx="1.2" fill="#3C2010"/>
+        <rect x="30" y="14" width="2.5" height="6" rx="1.2" fill="#3C2010"/>
+        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <path d="M18 24 Q22 28 26 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-size:16px;font-weight:600">Finn</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Scrape-Agent</div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
+      {{ stat_rows('scrape', s) }}
+    </div>
+  </div>
+
+  {# ── Mats (PDF-Agent) ── #}
+  {% set s = stats['pdf'] %}
+  <div style="margin-bottom:32px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
+        <circle cx="22" cy="22" r="22" fill="#5A9855"/>
+        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#2C5828"/>
+        <rect x="19" y="29" width="6" height="4" rx="2" fill="#FDDBB4"/>
+        <circle cx="22" cy="20" r="10" fill="#FDDBB4"/>
+        <path d="M13 19 C14 8 30 8 31 19 L29 15 Q22 11 15 15 Z" fill="#7A5430"/>
+        <path d="M17 12 L17 15" stroke="#6A4428" stroke-width="2" stroke-linecap="round"/>
+        <rect x="14" y="18" width="5.5" height="3.5" rx="1.8" fill="none" stroke="#555" stroke-width="1.1"/>
+        <rect x="24.5" y="18" width="5.5" height="3.5" rx="1.8" fill="none" stroke="#555" stroke-width="1.1"/>
+        <line x1="19.5" y1="19.75" x2="24.5" y2="19.75" stroke="#555" stroke-width="1.1"/>
+        <circle cx="18.5" cy="19.75" r="1.1" fill="#2A2A2A"/>
+        <circle cx="27.25" cy="19.75" r="1.1" fill="#2A2A2A"/>
+        <path d="M18.5 24.5 Q22 26.5 25.5 24.5" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-size:16px;font-weight:600">Mats</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">PDF-Agent</div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
+      {{ stat_rows('pdf', s) }}
+    </div>
+  </div>
+
+  {# ── Lena (Search-Agent) ── #}
+  {% set s = stats['search'] %}
+  <div style="margin-bottom:32px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
+        <circle cx="22" cy="22" r="22" fill="#8860B8"/>
+        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#4A2870"/>
+        <rect x="19" y="29" width="6" height="4" rx="2" fill="#FDDBB4"/>
+        <circle cx="22" cy="20" r="10" fill="#FDDBB4"/>
+        <path d="M12 21 C11 8 33 8 32 21" fill="#1E1030"/>
+        <ellipse cx="12.5" cy="21" rx="2.5" ry="5" fill="#1E1030"/>
+        <ellipse cx="31.5" cy="21" rx="2.5" ry="5" fill="#1E1030"/>
+        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <path d="M18.5 24.5 Q22 27.5 25.5 24.5" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-size:16px;font-weight:600">Lena</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Search-Agent</div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
+      {{ stat_rows('search', s) }}
+    </div>
+  </div>
+
   {# ── Theo Report ── #}
   <div style="margin-bottom:32px">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
@@ -217,58 +367,6 @@
     </div>
   </div>
 
-  <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Agenten-Reports</div>
-  <div class="agents-grid">
-    {% for key, s in stats.items() %}
-    <div class="agent-card">
-      <div class="agent-card-head">
-        <div class="agent-card-label">{{ s.label }}</div>
-      </div>
-      <div class="agent-card-body">
-        <div class="stat-row">
-          <span class="stat-label"><span class="stat-dot dot-high"></span>≥ 5 Signale</span>
-          {% if s.high %}
-            <span class="stat-count" onclick="showDetail('{{ key }}_high')">{{ s.high | length }}</span>
-          {% else %}<span class="stat-empty">0</span>{% endif %}
-        </div>
-        <div class="stat-row">
-          <span class="stat-label"><span class="stat-dot dot-mid"></span>2–4 Signale</span>
-          {% if s.mid %}
-            <span class="stat-count" onclick="showDetail('{{ key }}_mid')">{{ s.mid | length }}</span>
-          {% else %}<span class="stat-empty">0</span>{% endif %}
-        </div>
-        <div class="stat-row">
-          <span class="stat-label"><span class="stat-dot dot-low"></span>1 Signal</span>
-          {% if s.low %}
-            <span class="stat-count" onclick="showDetail('{{ key }}_low')">{{ s.low | length }}</span>
-          {% else %}<span class="stat-empty">0</span>{% endif %}
-        </div>
-        <div class="stat-row">
-          <span class="stat-label"><span class="stat-dot dot-zero"></span>0 Signale</span>
-          {% if s.zero %}
-            <span class="stat-count" onclick="showDetail('{{ key }}_zero')">{{ s.zero | length }}</span>
-          {% else %}<span class="stat-empty">0</span>{% endif %}
-        </div>
-        <div class="stat-row">
-          <span class="stat-label"><span class="stat-dot dot-error"></span>Technischer Fehler</span>
-          {% if s.error %}
-            <span class="stat-count" style="color:var(--s-action)" onclick="showDetail('{{ key }}_error')">{{ s.error | length }}</span>
-          {% else %}<span class="stat-empty">0</span>{% endif %}
-        </div>
-      </div>
-    </div>
-
-    {# Hidden detail data as JSON #}
-    <script>
-    window._detail = window._detail || {};
-    window._detail['{{ key }}_high']  = {{ s.high  | tojson }};
-    window._detail['{{ key }}_mid']   = {{ s.mid   | tojson }};
-    window._detail['{{ key }}_low']   = {{ s.low   | tojson }};
-    window._detail['{{ key }}_zero']  = {{ s.zero  | tojson }};
-    window._detail['{{ key }}_error'] = {{ s.error | tojson }};
-    </script>
-    {% endfor %}
-  </div>
 </div>
 
 <!-- Detail Overlay -->

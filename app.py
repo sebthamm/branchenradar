@@ -2719,7 +2719,7 @@ def agent_reports():
             filtered.append(r)
         reports = filtered
     # Build stats per agent
-    SEARCH_AGENTS = [("scrape", "Scrape-Agent"), ("feed", "Feed-Agent"),
+    SEARCH_AGENTS = [("feed", "Feed-Agent"), ("scrape", "Scrape-Agent"),
                      ("pdf", "PDF-Agent"), ("search", "Search-Agent")]
     stats = {}
     for key, label in SEARCH_AGENTS:
