@@ -24,6 +24,10 @@
   .ingestion-block-desc { font-size: 12px; color: var(--muted); line-height: 1.65; }
   .ingestion-todo { margin-top: 10px; font-size: 11px; color: var(--s-announced); background: color-mix(in srgb, var(--s-announced) 8%, transparent); border: 1px solid color-mix(in srgb, var(--s-announced) 25%, transparent); border-radius: 5px; padding: 6px 10px; display: inline-block; }
 
+  /* Manual action group label */
+  .manual-group { display: flex; align-items: center; gap: 6px; }
+  .manual-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; white-space: nowrap; }
+
   /* Agent cards */
   .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
   .agent-card-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); gap: 12px; }
@@ -252,8 +256,8 @@
   {% endmacro %}
 
   {# ── Macro: renders one editable section ─────────────────────────────────── #}
-  {% macro section(agent_key, field, label, value, extra_style='') %}
-  {% set is_long = value and value|length > 200 %}
+  {% macro section(agent_key, field, label, value, extra_style='', always_open=false) %}
+  {% set is_long = (not always_open) and value and value|length > 200 %}
   <div class="agent-section{% if is_long %} has-collapse{% endif %}" style="{{ extra_style }}">
     <div class="section-label">
       {{ label }}
@@ -292,8 +296,11 @@
           </div>
         </div>
         <div class="agent-card-actions">
-          <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm">↓ Quellen-Export</a>
-          <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+          <div class="manual-group">
+            <span class="manual-group-label">Manuell via externe KI</span>
+            <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm">↓ Quellen-Export</a>
+            <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+          </div>
         </div>
       </div>
       <div class="agent-sections">
@@ -329,7 +336,10 @@
           <button class="btn btn-primary btn-sm" id="maja-run-btn" onclick="runMaja()">&#9654; Starten</button>
           <button class="btn btn-secondary btn-sm" id="maja-test-btn" onclick="runMajaTest()">Test (3 Quellen)</button>
           {% endif %}
-          <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+          <div class="manual-group">
+            <span class="manual-group-label">Manuell via externe KI</span>
+            <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+          </div>
         </div>
       </div>
 
@@ -489,6 +499,10 @@
           <div class="agent-card-actions">
             <button class="btn btn-primary btn-sm" id="fletcher-run-btn" onclick="runFletcher()">&#9654; Starten</button>
             <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export für Lars</a>
+            <div class="manual-group">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('feed','search')">Prompt Lars</button>
+            </div>
           </div>
         </div>
         <div class="agent-sections">
@@ -511,7 +525,10 @@
             </div>
           </div>
           <div class="agent-card-actions">
-            <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+            <div class="manual-group">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+            </div>
           </div>
         </div>
         <div class="agent-sections">
@@ -548,6 +565,10 @@
           <div class="agent-card-actions">
             <button class="btn btn-primary btn-sm" id="frank-run-btn" onclick="runFrank()">&#9654; Starten</button>
             <a href="{{ url_for('fetcher_scrape_export') }}" class="btn btn-secondary btn-sm">&#8595; Export für Finn</a>
+            <div class="manual-group">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('scrape','search')">Prompt Finn</button>
+            </div>
           </div>
         </div>
         <div class="agent-sections">
@@ -594,6 +615,7 @@
             <div class="section-text{% if not shared_fmt %} placeholder{% endif %}" id="text-__shared__-output_format">{{ shared_fmt if shared_fmt else '—  noch nicht konfiguriert' }}</div>
             <textarea class="section-textarea" id="ta-__shared__-output_format">{{ shared_fmt }}</textarea>
           </div>
+          {# Ausgabeformat always expanded for Finn — no collapse #}
         </div>
       </div>
     </div>
@@ -616,7 +638,10 @@
             </div>
           </div>
           <div class="agent-card-actions">
-            <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+            <div class="manual-group">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+            </div>
           </div>
         </div>
         <div class="agent-sections">
@@ -649,7 +674,10 @@
             </div>
           </div>
           <div class="agent-card-actions">
-            <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+            <div class="manual-group">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+            </div>
           </div>
         </div>
         <div class="agent-sections">
@@ -685,16 +713,23 @@
         </div>
         <div class="agent-card-actions">
           {% if key == 'group' %}
-            <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
-            <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
-            <button id="theo-run-btn" class="btn btn-primary btn-sm" onclick="runTheo()">Theo starten</button>
+            <button id="theo-run-btn" class="btn btn-primary btn-sm" onclick="runTheo()">&#9654; Theo starten</button>
+            <div class="manual-group">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
+              <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
+            </div>
           {% elif key == 'bewertung' %}
-            <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
-            <a href="{{ url_for('signal_export_match') }}" class="btn btn-secondary btn-sm">↓ MATCH</a>
-            <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
-            <button id="ida-run-btn" class="btn btn-primary btn-sm" onclick="runIda()">Ida starten</button>
+            <button id="ida-run-btn" class="btn btn-primary btn-sm" onclick="runIda()">&#9654; Ida starten</button>
+            <div class="manual-group">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
+              <a href="{{ url_for('signal_export_match') }}" class="btn btn-secondary btn-sm">↓ MATCH</a>
+              <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
+            </div>
           {% endif %}
-          <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
         </div>
       </div>
       {% if key == 'group' %}
