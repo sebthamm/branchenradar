@@ -135,6 +135,88 @@
     </div>
   </div>
 
+  {# ── Theo Report ── #}
+  <div style="margin-bottom:32px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
+        <circle cx="22" cy="22" r="22" fill="#2E6E8E"/>
+        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#1A4A62"/>
+        <rect x="19" y="29" width="6" height="4" rx="2" fill="#C8DDE8"/>
+        <circle cx="22" cy="20" r="10" fill="#C8DDE8"/>
+        <path d="M12 19 C12 6 32 6 32 19 L30 15 Q22 9 14 15 Z" fill="#1A4A62"/>
+        <path d="M13 15 Q12 22 13 29" stroke="#1A4A62" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M31 15 Q32 22 31 29" stroke="#1A4A62" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <path d="M19 24 Q22 26.5 25 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-size:16px;font-weight:600">Theo</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Gruppierungs-Agent</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="theo-report-grid">
+
+      {# Matching-Zustand #}
+      <div class="agent-card">
+        <div class="agent-card-head"><div class="agent-card-label">Matching-Zustand</div></div>
+        <div class="agent-card-body" id="theo-match-body">
+          <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
+        </div>
+      </div>
+
+      {# Letzter Lauf #}
+      <div class="agent-card">
+        <div class="agent-card-head"><div class="agent-card-label">Letzter Lauf</div></div>
+        <div class="agent-card-body" id="theo-run-body">
+          <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {# ── Ida Report ── #}
+  <div style="margin-bottom:32px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
+        <circle cx="22" cy="22" r="22" fill="#5E3A8C"/>
+        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#3A1E5E"/>
+        <rect x="19" y="29" width="6" height="4" rx="2" fill="#D8C8EE"/>
+        <circle cx="22" cy="20" r="10" fill="#D8C8EE"/>
+        <path d="M12 20 C12 7 32 7 32 20 L30 16 Q22 10 14 16 Z" fill="#3A1E5E"/>
+        <path d="M13 16 Q12 23 13 30" stroke="#3A1E5E" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M31 16 Q32 23 31 30" stroke="#3A1E5E" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
+        <path d="M18 24 Q22 27 26 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-size:16px;font-weight:600">Ida</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Bewertungs-Agent</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="ida-report-grid">
+
+      {# Signal-Verteilung #}
+      <div class="agent-card">
+        <div class="agent-card-head"><div class="agent-card-label">Signal-Verteilung (FINAL)</div></div>
+        <div class="agent-card-body" id="ida-dist-body">
+          <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
+        </div>
+      </div>
+
+      {# Letzter Lauf #}
+      <div class="agent-card">
+        <div class="agent-card-head"><div class="agent-card-label">Letzter Lauf</div></div>
+        <div class="agent-card-body" id="ida-run-body">
+          <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Agenten-Reports</div>
   <div class="agents-grid">
     {% for key, s in stats.items() %}
@@ -339,5 +421,103 @@ async function loadInsights() {
   }
 }
 loadInsights();
+
+// ── Theo Report ───────────────────────────────────────────────────────────────
+(async () => {
+  const matchBody = document.getElementById('theo-match-body');
+  const runBody   = document.getElementById('theo-run-body');
+  try {
+    const resp = await fetch('/admin/theo/report');
+    const data = await resp.json();
+    const m = data.match_state || {};
+    const r = data.last_run   || {};
+
+    matchBody.innerHTML = [
+      ['Einträge in MATCH gesamt', m.entries_total ?? '—', 'dot-mid'],
+      ['Davon Gruppen (≥ 2 Signale)', m.groups_total ?? '—', m.groups_total > 0 ? 'dot-high' : 'dot-zero'],
+      ['Einzelsignale (kein Match)', m.singles_total ?? '—', 'dot-low'],
+      ['Ø Signale pro Gruppe', m.avg_group_size ?? '—', 'dot-mid'],
+      ['Größte Gruppe', m.max_group_size ?? '—', 'dot-mid'],
+    ].map(([label, val, dot]) =>
+      `<div class="stat-row">
+        <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
+        <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
+      </div>`
+    ).join('');
+
+    if (r.error) {
+      runBody.innerHTML = `
+        <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-error"></span>Fehler</span><span style="font-size:11px;color:var(--s-action);max-width:180px;text-align:right">${r.error}</span></div>
+        <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-zero"></span>Zeitpunkt</span><span style="font-size:12px;color:var(--muted)">${r.run_at || '—'}</span></div>`;
+    } else if (r.run_at) {
+      runBody.innerHTML = [
+        ['Letzter Lauf', r.run_at, 'dot-high'],
+        ['RAW-Signale verarbeitet', r.signals_processed ?? '—', 'dot-mid'],
+        ['Neue Gruppen erstellt', r.groups_added ?? '—', 'dot-mid'],
+      ].map(([label, val, dot]) =>
+        `<div class="stat-row">
+          <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
+          <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
+        </div>`
+      ).join('');
+    } else {
+      runBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Noch kein Lauf aufgezeichnet</span></div>';
+    }
+  } catch(e) {
+    matchBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
+    runBody.innerHTML   = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
+  }
+})();
+
+// ── Ida Report ────────────────────────────────────────────────────────────────
+(async () => {
+  const distBody = document.getElementById('ida-dist-body');
+  const runBody  = document.getElementById('ida-run-body');
+  try {
+    const resp = await fetch('/admin/ida/report');
+    const data = await resp.json();
+    const s = data.signal_state || {};
+    const r = data.last_run     || {};
+    const p = s.priority        || {};
+    const rs = s.rep_status     || {};
+
+    distBody.innerHTML = [
+      ['FINAL-Signale gesamt', s.total ?? '—', 'dot-mid'],
+      ['Priorität MUSS',  p['MUSS']  ?? 0, p['MUSS']  > 0 ? 'dot-error' : 'dot-zero'],
+      ['Priorität SOLLTE', p['SOLLTE'] ?? 0, p['SOLLTE'] > 0 ? 'dot-mid' : 'dot-zero'],
+      ['Priorität KANN',  p['KANN']  ?? 0, 'dot-low'],
+      ['Status NEU',        rs['NEU']        ?? 0, rs['NEU']   > 0 ? 'dot-high' : 'dot-zero'],
+      ['Status UPDATE',     rs['UPDATE']     ?? 0, rs['UPDATE'] > 0 ? 'dot-mid' : 'dot-zero'],
+      ['Unverändert',       rs['unverändert'] ?? 0, 'dot-zero'],
+      ['Zur Prüfung markiert', s.review_needed ?? 0, s.review_needed > 0 ? 'dot-error' : 'dot-high'],
+    ].map(([label, val, dot]) =>
+      `<div class="stat-row">
+        <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
+        <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
+      </div>`
+    ).join('');
+
+    if (r.error) {
+      runBody.innerHTML = `
+        <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-error"></span>Fehler</span><span style="font-size:11px;color:var(--s-action);max-width:180px;text-align:right">${r.error}</span></div>
+        <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-zero"></span>Zeitpunkt</span><span style="font-size:12px;color:var(--muted)">${r.run_at || '—'}</span></div>`;
+    } else if (r.run_at) {
+      runBody.innerHTML = [
+        ['Letzter Lauf', r.run_at, 'dot-high'],
+        ['FINAL-Signale geschrieben', r.finals_written ?? '—', 'dot-mid'],
+      ].map(([label, val, dot]) =>
+        `<div class="stat-row">
+          <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
+          <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
+        </div>`
+      ).join('');
+    } else {
+      runBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Noch kein Lauf aufgezeichnet</span></div>';
+    }
+  } catch(e) {
+    distBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
+    runBody.innerHTML  = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
+  }
+})();
 </script>
 {% endblock %}

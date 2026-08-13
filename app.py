@@ -1697,6 +1697,61 @@ def maja_report():
             history = json.load(f)[:10]
     return jsonify({"quality": quality, "history": history})
 
+@app.route("/admin/theo/report")
+@role_required("superadmin")
+def theo_report():
+    matches = load_signal_matches()
+    group_sizes = [1 + len(m.get("pairs", [])) for m in matches]
+    groups = [s for s in group_sizes if s >= 2]
+    singles = [s for s in group_sizes if s == 1]
+    status = {}
+    if os.path.exists(THEO_STATUS_FILE):
+        with open(THEO_STATUS_FILE, encoding="utf-8") as f:
+            status = json.load(f)
+    return jsonify({
+        "match_state": {
+            "groups_total":   len(groups),
+            "singles_total":  len(singles),
+            "entries_total":  len(matches),
+            "avg_group_size": round(sum(groups) / len(groups), 1) if groups else 0,
+            "max_group_size": max(groups) if groups else 0,
+        },
+        "last_run": status,
+    })
+
+@app.route("/admin/ida/report")
+@role_required("superadmin")
+def ida_report():
+    final = load_signal_final().get("signals", [])
+    priority = {"MUSS": 0, "SOLLTE": 0, "KANN": 0, "—": 0}
+    rep_status = {"NEU": 0, "UPDATE": 0, "unverändert": 0}
+    review_needed = 0
+    for s in final:
+        p = s.get("priority", "").strip()
+        priority[p] = priority.get(p, 0) + 1
+        st = s.get("status", "").strip()
+        if st == "NEU":
+            rep_status["NEU"] += 1
+        elif st == "UPDATE":
+            rep_status["UPDATE"] += 1
+        else:
+            rep_status["unverändert"] += 1
+        if s.get("review_needed"):
+            review_needed += 1
+    status = {}
+    if os.path.exists(IDA_STATUS_FILE):
+        with open(IDA_STATUS_FILE, encoding="utf-8") as f:
+            status = json.load(f)
+    return jsonify({
+        "signal_state": {
+            "total":          len(final),
+            "priority":       priority,
+            "rep_status":     rep_status,
+            "review_needed":  review_needed,
+        },
+        "last_run": status,
+    })
+
 # ── Theo (group/match agent) ──────────────────────────────────────────────────
 
 _theo_running = False
