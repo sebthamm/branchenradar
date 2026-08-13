@@ -609,7 +609,7 @@
           {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
           {{ section(key, 'method',  'Methode',           ag.method) }}
           {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
-          <div class="agent-section" style="border-right:none">
+          <div class="agent-section has-collapse" style="border-right:none">
             <div class="section-label">
               Ausgabeformat
               {% if session.get('role') == 'superadmin' %}
@@ -623,10 +623,12 @@
               <span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span>
               {% endif %}
             </div>
-            <div class="section-text{% if not shared_fmt %} placeholder{% endif %}" id="text-__shared__-output_format">{{ shared_fmt if shared_fmt else '—  noch nicht konfiguriert' }}</div>
+            <div class="section-text{% if not shared_fmt %} placeholder{% endif %} section-collapsible collapsed"
+                 id="text-__shared__-output_format"
+                 onclick="toggleSection(this)">{{ shared_fmt if shared_fmt else '—  noch nicht konfiguriert' }}</div>
+            <div class="section-toggle-hint" onclick="toggleSection(document.getElementById('text-__shared__-output_format'))">▼ mehr anzeigen</div>
             <textarea class="section-textarea" id="ta-__shared__-output_format">{{ shared_fmt }}</textarea>
           </div>
-          {# Ausgabeformat always expanded for Finn — no collapse #}
         </div>
       </div>
     </div>
