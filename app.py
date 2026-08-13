@@ -1737,10 +1737,16 @@ def theo_run():
                 f'- ID: {s["id"]} | Titel: {s.get("title","")} | Kategorie: {s.get("category","")} | Datum: {s.get("date","")}'
                 for s in signals
             )
+            _auto_fmt = (
+                "## Ausgabeformat (automatisierter Lauf)\n\n"
+                "Antworte NUR mit einem JSON-Array. Jede Gruppe ist ein Array von Signal-IDs.\n"
+                "Führe nur Gruppen mit ≥2 Signalen auf. Einzelne Signale weglassen.\n"
+                "Beispiel: [[\"id1\",\"id2\"],[\"id3\",\"id4\",\"id5\"]]"
+            )
             prompt = (
                 f'{theo_cfg.get("persona","")}\n\n'
                 f'{theo_cfg.get("method","")}\n\n'
-                f'Ausgabeformat:\n{theo_cfg.get("output_format","")}\n\n'
+                f'{_auto_fmt}\n\n'
                 f'## Signale\n{sig_list}'
             )
             msg = client.messages.create(
@@ -1835,10 +1841,29 @@ def ida_run():
                     continue
                 processed_ids.update(ids)
                 grp_text = json.dumps(grp, ensure_ascii=False, indent=2)
+                _auto_fmt = (
+                    "## Ausgabeformat (automatisierter Lauf)\n\n"
+                    "Antworte NUR mit einem JSON-Objekt für das zusammengeführte Signal:\n"
+                    "{\n"
+                    "  \"id\": \"<ID des primären RAW-Signals>\",\n"
+                    "  \"title\": \"<Sprechender Action-Titel>\",\n"
+                    "  \"summary\": \"<Vollständige Zusammenfassung>\",\n"
+                    "  \"priority\": \"MUSS|SOLLTE|KANN\",\n"
+                    "  \"action\": \"<Konkreter Handlungsschritt im Imperativ>\",\n"
+                    "  \"action_time\": \"<z.B. 1-2 Stunden | 1 Tag | 1-2 Wochen | 1-3 Monate>\",\n"
+                    "  \"roles\": [\"<Rolle1>\", \"<Rolle2>\"],\n"
+                    "  \"action_timing\": \"Sofort|Kurzfristig|Mittelfristig|Langfristig|Beobachten\",\n"
+                    "  \"category\": \"<Krankenkassen & GKV|Digitalisierung & TI|Gesetze & Regulatorien|Personal & Tarife|Praxismanagement>\",\n"
+                    "  \"status\": \"NEU|UPDATE|\",\n"
+                    "  \"date\": \"YYYY-MM-DD\",\n"
+                    "  \"development_stage\": \"Beobachtung|Veröffentlicht|Beschlossen|In Kraft\",\n"
+                    "  \"sources\": [{\"name\": \"<Name>\", \"url\": \"<URL>\"}]\n"
+                    "}"
+                )
                 prompt = (
                     f'{ida_cfg.get("persona","")}\n\n'
                     f'{ida_cfg.get("method","")}\n\n'
-                    f'Ausgabeformat:\n{ida_cfg.get("output_format","")}\n\n'
+                    f'{_auto_fmt}\n\n'
                     f'## Zu aggregierende Signale\n{grp_text}'
                 )
                 msg = client.messages.create(
