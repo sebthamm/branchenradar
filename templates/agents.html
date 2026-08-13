@@ -25,8 +25,9 @@
   .ingestion-todo { margin-top: 10px; font-size: 11px; color: var(--s-announced); background: color-mix(in srgb, var(--s-announced) 8%, transparent); border: 1px solid color-mix(in srgb, var(--s-announced) 25%, transparent); border-radius: 5px; padding: 6px 10px; display: inline-block; }
 
   /* Manual action group label */
-  .manual-group { display: flex; align-items: center; gap: 6px; }
-  .manual-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; white-space: nowrap; }
+  .manual-group { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; }
+  .manual-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); white-space: nowrap; }
+  .manual-group-buttons { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
   /* Agent cards */
   .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
@@ -298,8 +299,10 @@
         <div class="agent-card-actions">
           <div class="manual-group">
             <span class="manual-group-label">Manuell via externe KI</span>
-            <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm">↓ Quellen-Export</a>
-            <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+            <div class="manual-group-buttons">
+              <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm">↓ Quellen-Export</a>
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+            </div>
           </div>
         </div>
       </div>
@@ -338,7 +341,9 @@
           {% endif %}
           <div class="manual-group">
             <span class="manual-group-label">Manuell via externe KI</span>
-            <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+            <div class="manual-group-buttons">
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+            </div>
           </div>
         </div>
       </div>
@@ -501,7 +506,9 @@
             <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export für Lars</a>
             <div class="manual-group">
               <span class="manual-group-label">Manuell via externe KI</span>
-              <button class="btn btn-secondary btn-sm" onclick="openPrompt('feed','search')">Prompt Lars</button>
+              <div class="manual-group-buttons">
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('feed','search')">Prompt Lars</button>
+              </div>
             </div>
           </div>
         </div>
@@ -527,7 +534,9 @@
           <div class="agent-card-actions">
             <div class="manual-group">
               <span class="manual-group-label">Manuell via externe KI</span>
-              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+              <div class="manual-group-buttons">
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+              </div>
             </div>
           </div>
         </div>
@@ -567,7 +576,9 @@
             <a href="{{ url_for('fetcher_scrape_export') }}" class="btn btn-secondary btn-sm">&#8595; Export für Finn</a>
             <div class="manual-group">
               <span class="manual-group-label">Manuell via externe KI</span>
-              <button class="btn btn-secondary btn-sm" onclick="openPrompt('scrape','search')">Prompt Finn</button>
+              <div class="manual-group-buttons">
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('scrape','search')">Prompt Finn</button>
+              </div>
             </div>
           </div>
         </div>
@@ -640,7 +651,9 @@
           <div class="agent-card-actions">
             <div class="manual-group">
               <span class="manual-group-label">Manuell via externe KI</span>
-              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+              <div class="manual-group-buttons">
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+              </div>
             </div>
           </div>
         </div>
@@ -676,7 +689,9 @@
           <div class="agent-card-actions">
             <div class="manual-group">
               <span class="manual-group-label">Manuell via externe KI</span>
-              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+              <div class="manual-group-buttons">
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+              </div>
             </div>
           </div>
         </div>
@@ -716,18 +731,22 @@
             <button id="theo-run-btn" class="btn btn-primary btn-sm" onclick="runTheo()">&#9654; Theo starten</button>
             <div class="manual-group">
               <span class="manual-group-label">Manuell via externe KI</span>
-              <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
-              <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
-              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
+              <div class="manual-group-buttons">
+                <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
+                <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
+              </div>
             </div>
           {% elif key == 'bewertung' %}
             <button id="ida-run-btn" class="btn btn-primary btn-sm" onclick="runIda()">&#9654; Ida starten</button>
             <div class="manual-group">
               <span class="manual-group-label">Manuell via externe KI</span>
-              <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
-              <a href="{{ url_for('signal_export_match') }}" class="btn btn-secondary btn-sm">↓ MATCH</a>
-              <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
-              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
+              <div class="manual-group-buttons">
+                <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
+                <a href="{{ url_for('signal_export_match') }}" class="btn btn-secondary btn-sm">↓ MATCH</a>
+                <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
+              </div>
             </div>
           {% endif %}
         </div>
