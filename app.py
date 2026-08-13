@@ -1758,6 +1758,16 @@ _theo_running = False
 
 THEO_STATUS_FILE = os.path.join(DATA_DIR, "theo_status.json")
 
+_AGENT_MODEL_PRICES = {
+    "claude-haiku-4-5-20251001": (1.0,  5.0),
+    "claude-sonnet-4-6":         (3.0, 15.0),
+    "claude-opus-4-8":           (5.0, 25.0),
+}
+
+def _agent_cost(model, in_tok, out_tok):
+    p_in, p_out = _AGENT_MODEL_PRICES.get(model, (3.0, 15.0))
+    return round((in_tok * p_in + out_tok * p_out) / 1_000_000, 4)
+
 @app.route("/admin/theo/run", methods=["POST"])
 @role_required("superadmin")
 def theo_run():
@@ -1808,6 +1818,8 @@ def theo_run():
                 model=model, max_tokens=4096,
                 messages=[{"role": "user", "content": prompt}]
             )
+            in_tok  = msg.usage.input_tokens  if msg.usage else 0
+            out_tok = msg.usage.output_tokens if msg.usage else 0
             raw_text = msg.content[0].text if msg.content else "[]"
             match = _re.search(r"\[.*\]", raw_text, _re.DOTALL)
             groups = json.loads(match.group(0)) if match else []
@@ -1830,12 +1842,24 @@ def theo_run():
                 existing_ids.add(key)
                 added += 1
             save_signal_matches(existing)
-            status = {"run_at": _dt.now().strftime("%Y-%m-%d %H:%M:%S"), "groups_added": added, "signals_processed": len(signals)}
+            status = {
+                "run_at":            _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "model":             model,
+                "groups_added":      added,
+                "signals_processed": len(signals),
+                "input_tokens":      in_tok,
+                "output_tokens":     out_tok,
+                "cost_usd":          _agent_cost(model, in_tok, out_tok),
+            }
             _save(THEO_STATUS_FILE, status)
         except Exception as e:
             import traceback
-            _save(THEO_STATUS_FILE, {"run_at": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)})
-            app.logger.error("Theo thread error: %s", traceback.format_exc())
+            tb = traceback.format_exc()
+            app.logger.error("Theo thread error: %s", tb)
+            try:
+                _save(THEO_STATUS_FILE, {"run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)})
+            except Exception:
+                pass
         finally:
             _theo_running = False
 
@@ -1887,6 +1911,8 @@ def ida_run():
 
             final_signals = []
             processed_ids = set()
+            total_in_tok  = 0
+            total_out_tok = 0
 
             # Grouped signals → aggregated FINAL via Claude
             for m in matches:
@@ -1925,6 +1951,8 @@ def ida_run():
                     model=model, max_tokens=2048,
                     messages=[{"role": "user", "content": prompt}]
                 )
+                total_in_tok  += msg.usage.input_tokens  if msg.usage else 0
+                total_out_tok += msg.usage.output_tokens if msg.usage else 0
                 raw = msg.content[0].text if msg.content else "{}"
                 import re as _re
                 match = _re.search(r"\{.*\}", raw, _re.DOTALL)
@@ -1952,11 +1980,23 @@ def ida_run():
             ts = _dt.now().strftime("%y%m%d%H%M")
             archive_signal_final()
             save_signal_final(final_signals, ts)
-            _save(IDA_STATUS_FILE, {"run_at": _dt.now().strftime("%Y-%m-%d %H:%M:%S"), "finals_written": len(final_signals)})
+            _save(IDA_STATUS_FILE, {
+                "run_at":         _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "model":          model,
+                "finals_written": len(final_signals),
+                "groups_merged":  len(matches),
+                "input_tokens":   total_in_tok,
+                "output_tokens":  total_out_tok,
+                "cost_usd":       _agent_cost(model, total_in_tok, total_out_tok),
+            })
         except Exception as e:
             import traceback
-            _save(IDA_STATUS_FILE, {"run_at": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)})
-            app.logger.error("Ida thread error: %s", traceback.format_exc())
+            tb = traceback.format_exc()
+            app.logger.error("Ida thread error: %s", tb)
+            try:
+                _save(IDA_STATUS_FILE, {"run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e), "traceback": tb[:500]})
+            except Exception:
+                pass
         finally:
             _ida_running = False
 

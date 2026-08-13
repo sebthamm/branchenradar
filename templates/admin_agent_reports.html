@@ -548,10 +548,15 @@ loadInsights();
         <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-error"></span>Fehler</span><span style="font-size:11px;color:var(--s-action);max-width:180px;text-align:right">${r.error}</span></div>
         <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-zero"></span>Zeitpunkt</span><span style="font-size:12px;color:var(--muted)">${r.run_at || '—'}</span></div>`;
     } else if (r.run_at) {
+      const ms = m => (m || '').replace('claude-', '').replace('-20251001', '');
       runBody.innerHTML = [
-        ['Letzter Lauf', r.run_at, 'dot-high'],
-        ['RAW-Signale verarbeitet', r.signals_processed ?? '—', 'dot-mid'],
-        ['Neue Gruppen erstellt', r.groups_added ?? '—', 'dot-mid'],
+        ['Letzter Lauf',            r.run_at,                               'dot-high'],
+        ['Modell',                  ms(r.model),                            'dot-zero'],
+        ['RAW-Signale verarbeitet', r.signals_processed ?? '—',             'dot-mid'],
+        ['Neue Gruppen erstellt',   r.groups_added ?? '—',                  'dot-mid'],
+        ['Input-Token',             (r.input_tokens ?? 0).toLocaleString('de'), 'dot-zero'],
+        ['Output-Token',            (r.output_tokens ?? 0).toLocaleString('de'),'dot-zero'],
+        ['Kosten (USD)',            r.cost_usd != null ? `$${r.cost_usd.toFixed(4)}` : '—', 'dot-mid'],
       ].map(([label, val, dot]) =>
         `<div class="stat-row">
           <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
@@ -600,9 +605,15 @@ loadInsights();
         <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-error"></span>Fehler</span><span style="font-size:11px;color:var(--s-action);max-width:180px;text-align:right">${r.error}</span></div>
         <div class="stat-row"><span class="stat-label"><span class="stat-dot dot-zero"></span>Zeitpunkt</span><span style="font-size:12px;color:var(--muted)">${r.run_at || '—'}</span></div>`;
     } else if (r.run_at) {
+      const ms = m => (m || '').replace('claude-', '').replace('-20251001', '');
       runBody.innerHTML = [
-        ['Letzter Lauf', r.run_at, 'dot-high'],
-        ['FINAL-Signale geschrieben', r.finals_written ?? '—', 'dot-mid'],
+        ['Letzter Lauf',             r.run_at,                                'dot-high'],
+        ['Modell',                   ms(r.model),                             'dot-zero'],
+        ['FINAL-Signale geschrieben',r.finals_written ?? '—',                 'dot-mid'],
+        ['Gruppen zusammengeführt',  r.groups_merged ?? '—',                  'dot-mid'],
+        ['Input-Token',              (r.input_tokens ?? 0).toLocaleString('de'), 'dot-zero'],
+        ['Output-Token',             (r.output_tokens ?? 0).toLocaleString('de'),'dot-zero'],
+        ['Kosten (USD)',             r.cost_usd != null ? `$${r.cost_usd.toFixed(4)}` : '—', 'dot-mid'],
       ].map(([label, val, dot]) =>
         `<div class="stat-row">
           <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
