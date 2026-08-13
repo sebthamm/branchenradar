@@ -831,7 +831,7 @@ def logout():
 @app.route("/")
 @login_required
 def dashboard():
-    all_signals = load_signals()
+    all_signals = load_signal_final().get("signals", [])
     sections    = load_sections()
     sec_map     = {s["id"]: s for s in sections}
 
