@@ -707,7 +707,7 @@ def _csrf_check():
 app.jinja_env.globals["csrf_token"] = _csrf_token
 
 _CSRF_EXEMPT_PREFIXES = ("/admin/maja/", "/admin/selector/run", "/agents/save",
-                         "/deploy-webhook", "/deploy")
+                         "/deploy-webhook", "/deploy", "/admin/theo/", "/admin/ida/")
 
 @app.before_request
 def csrf_protect():
@@ -1696,6 +1696,203 @@ def maja_report():
         with open(MAJA_HISTORY_FILE, encoding="utf-8") as f:
             history = json.load(f)[:10]
     return jsonify({"quality": quality, "history": history})
+
+# ── Theo (group/match agent) ──────────────────────────────────────────────────
+
+_theo_running = False
+
+THEO_STATUS_FILE = os.path.join(DATA_DIR, "theo_status.json")
+
+@app.route("/admin/theo/run", methods=["POST"])
+@role_required("superadmin")
+def theo_run():
+    global _theo_running
+    if _theo_running:
+        return jsonify({"ok": False, "error": "Theo läuft bereits."})
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt."})
+    cfg      = load_agent_configs()
+    theo_cfg = cfg.get("agents", {}).get("group", {})
+    model    = theo_cfg.get("model", "claude-haiku-4-5-20251001")
+
+    import threading
+
+    def _run():
+        global _theo_running
+        _theo_running = True
+        try:
+            import anthropic, re as _re
+            from datetime import datetime as _dt
+            client   = anthropic.Anthropic(api_key=api_key)
+            signals  = load_signals()
+            date_from = theo_cfg.get("date_from", "")
+            date_to   = theo_cfg.get("date_to", "")
+            if date_from:
+                signals = [s for s in signals if s.get("date", "") >= date_from]
+            if date_to:
+                signals = [s for s in signals if s.get("date", "") <= date_to]
+
+            sig_list = "\n".join(
+                f'- ID: {s["id"]} | Titel: {s.get("title","")} | Kategorie: {s.get("category","")} | Datum: {s.get("date","")}'
+                for s in signals
+            )
+            prompt = (
+                f'{theo_cfg.get("persona","")}\n\n'
+                f'{theo_cfg.get("method","")}\n\n'
+                f'Ausgabeformat:\n{theo_cfg.get("output_format","")}\n\n'
+                f'## Signale\n{sig_list}'
+            )
+            msg = client.messages.create(
+                model=model, max_tokens=4096,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            raw_text = msg.content[0].text if msg.content else "[]"
+            match = _re.search(r"\[.*\]", raw_text, _re.DOTALL)
+            groups = json.loads(match.group(0)) if match else []
+
+            existing = load_signal_matches()
+            existing_ids = {tuple(sorted([m.get("sig1","")] + [p.get("id","") for p in m.get("pairs",[])])) for m in existing}
+            added = 0
+            for g in groups:
+                ids = g if isinstance(g, list) else g.get("ids", [])
+                if len(ids) < 2:
+                    continue
+                key = tuple(sorted(ids))
+                if key in existing_ids:
+                    continue
+                existing.append({
+                    "id":    str(__import__("uuid").uuid4()),
+                    "sig1":  ids[0],
+                    "pairs": [{"id": i, "type": "ähnlich"} for i in ids[1:]]
+                })
+                existing_ids.add(key)
+                added += 1
+            save_signal_matches(existing)
+            status = {"run_at": _dt.now().strftime("%Y-%m-%d %H:%M:%S"), "groups_added": added, "signals_processed": len(signals)}
+            _save(THEO_STATUS_FILE, status)
+        except Exception as e:
+            import traceback
+            _save(THEO_STATUS_FILE, {"run_at": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)})
+            app.logger.error("Theo thread error: %s", traceback.format_exc())
+        finally:
+            _theo_running = False
+
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({"ok": True, "started": True})
+
+@app.route("/admin/theo/status")
+@role_required("superadmin")
+def theo_status():
+    if _theo_running:
+        return jsonify({"running": True})
+    if not os.path.exists(THEO_STATUS_FILE):
+        return jsonify({"running": False, "exists": False})
+    with open(THEO_STATUS_FILE, encoding="utf-8") as f:
+        data = json.load(f)
+    return jsonify({"running": False, "exists": True, **data})
+
+# ── Ida (bewertung/final agent) ────────────────────────────────────────────────
+
+_ida_running = False
+
+IDA_STATUS_FILE = os.path.join(DATA_DIR, "ida_status.json")
+
+@app.route("/admin/ida/run", methods=["POST"])
+@role_required("superadmin")
+def ida_run():
+    global _ida_running
+    if _ida_running:
+        return jsonify({"ok": False, "error": "Ida läuft bereits."})
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt."})
+    cfg     = load_agent_configs()
+    ida_cfg = cfg.get("agents", {}).get("bewertung", {})
+    model   = ida_cfg.get("model", "claude-haiku-4-5-20251001")
+
+    import threading
+
+    def _run():
+        global _ida_running
+        _ida_running = True
+        try:
+            import anthropic
+            from datetime import datetime as _dt
+            client  = anthropic.Anthropic(api_key=api_key)
+            signals = load_signals()
+            sig_map = {s["id"]: s for s in signals}
+            matches = load_signal_matches()
+
+            final_signals = []
+            processed_ids = set()
+
+            # Grouped signals → aggregated FINAL via Claude
+            for m in matches:
+                ids = [m.get("sig1","")] + [p.get("id","") for p in m.get("pairs",[])]
+                grp = [sig_map[i] for i in ids if i in sig_map]
+                if not grp:
+                    continue
+                processed_ids.update(ids)
+                grp_text = json.dumps(grp, ensure_ascii=False, indent=2)
+                prompt = (
+                    f'{ida_cfg.get("persona","")}\n\n'
+                    f'{ida_cfg.get("method","")}\n\n'
+                    f'Ausgabeformat:\n{ida_cfg.get("output_format","")}\n\n'
+                    f'## Zu aggregierende Signale\n{grp_text}'
+                )
+                msg = client.messages.create(
+                    model=model, max_tokens=2048,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                raw = msg.content[0].text if msg.content else "{}"
+                import re as _re
+                match = _re.search(r"\{.*\}", raw, _re.DOTALL)
+                if match:
+                    try:
+                        merged = json.loads(match.group(0))
+                        merged["raw_ids"] = ids
+                        merged["review_needed"] = False
+                        merged["raw_synced_at"] = _dt.now().strftime("%Y-%m-%dT%H:%M:%S")
+                        if not merged.get("id"):
+                            merged["id"] = "FIN-" + _dt.now().strftime("%Y%m%d") + "-" + str(__import__("uuid").uuid4())[:8]
+                        final_signals.append(merged)
+                    except Exception:
+                        pass
+
+            # Unmatched signals → 1:1 into FINAL
+            for s in signals:
+                if s["id"] not in processed_ids:
+                    fin = dict(s)
+                    fin["raw_ids"] = [s["id"]]
+                    fin["review_needed"] = False
+                    fin["raw_synced_at"] = _dt.now().strftime("%Y-%m-%dT%H:%M:%S")
+                    final_signals.append(fin)
+
+            ts = _dt.now().strftime("%y%m%d%H%M")
+            archive_signal_final()
+            save_signal_final(final_signals, ts)
+            _save(IDA_STATUS_FILE, {"run_at": _dt.now().strftime("%Y-%m-%d %H:%M:%S"), "finals_written": len(final_signals)})
+        except Exception as e:
+            import traceback
+            _save(IDA_STATUS_FILE, {"run_at": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)})
+            app.logger.error("Ida thread error: %s", traceback.format_exc())
+        finally:
+            _ida_running = False
+
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({"ok": True, "started": True})
+
+@app.route("/admin/ida/status")
+@role_required("superadmin")
+def ida_status():
+    if _ida_running:
+        return jsonify({"running": True})
+    if not os.path.exists(IDA_STATUS_FILE):
+        return jsonify({"running": False, "exists": False})
+    with open(IDA_STATUS_FILE, encoding="utf-8") as f:
+        data = json.load(f)
+    return jsonify({"running": False, "exists": True, **data})
 
 @app.route("/superadmin/backup/download")
 @role_required("superadmin")

@@ -685,14 +685,16 @@
         </div>
         <div class="agent-card-actions">
           {% if key == 'group' %}
-            <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm" title="Signale (RAW) als Excel exportieren">↓ RAW</a>
-            <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm" title="Signale (FINAL) als Excel exportieren">↓ FINAL</a>
+            <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
+            <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
+            <button id="theo-run-btn" class="btn btn-primary btn-sm" onclick="runTheo()">Theo starten</button>
           {% elif key == 'bewertung' %}
-            <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm" title="Signale (RAW) als Excel exportieren">↓ RAW</a>
-            <a href="{{ url_for('signal_export_match') }}" class="btn btn-secondary btn-sm" title="Signale (MATCH) als Excel exportieren">↓ MATCH</a>
-            <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm" title="Signale (FINAL) als Excel exportieren">↓ FINAL</a>
+            <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
+            <a href="{{ url_for('signal_export_match') }}" class="btn btn-secondary btn-sm">↓ MATCH</a>
+            <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
+            <button id="ida-run-btn" class="btn btn-primary btn-sm" onclick="runIda()">Ida starten</button>
           {% endif %}
-          <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
+          <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
         </div>
       </div>
       {% if key == 'group' %}
@@ -1290,6 +1292,48 @@ function saveDates() {
     AGENT_CONFIGS.agents.group.date_to   = dt;
     ok.style.display = 'inline';
     setTimeout(() => ok.style.display = 'none', 2000);
+  });
+}
+
+async function runTheo() {
+  const btn = document.getElementById('theo-run-btn');
+  btn.disabled = true; btn.textContent = 'Läuft…';
+  try {
+    const r = await fetch('/admin/theo/run', {method:'POST', headers:{'X-CSRFToken': document.querySelector('input[name=csrf_token]')?.value || ''}});
+    const d = await r.json();
+    if (!d.ok) { alert('Fehler: ' + d.error); btn.disabled = false; btn.textContent = 'Theo starten'; return; }
+    _pollTheo();
+  } catch(e) { alert('Netzwerkfehler'); btn.disabled = false; btn.textContent = 'Theo starten'; }
+}
+
+function _pollTheo() {
+  fetch('/admin/theo/status').then(r=>r.json()).then(d => {
+    if (d.running) { setTimeout(_pollTheo, 3000); return; }
+    const btn = document.getElementById('theo-run-btn');
+    btn.disabled = false; btn.textContent = 'Theo starten';
+    if (d.error) { alert('Theo Fehler: ' + d.error); }
+    else if (d.exists) { alert('Theo fertig — ' + (d.groups_added||0) + ' neue Gruppen aus ' + (d.signals_processed||0) + ' Signalen.'); }
+  });
+}
+
+async function runIda() {
+  const btn = document.getElementById('ida-run-btn');
+  btn.disabled = true; btn.textContent = 'Läuft…';
+  try {
+    const r = await fetch('/admin/ida/run', {method:'POST', headers:{'X-CSRFToken': document.querySelector('input[name=csrf_token]')?.value || ''}});
+    const d = await r.json();
+    if (!d.ok) { alert('Fehler: ' + d.error); btn.disabled = false; btn.textContent = 'Ida starten'; return; }
+    _pollIda();
+  } catch(e) { alert('Netzwerkfehler'); btn.disabled = false; btn.textContent = 'Ida starten'; }
+}
+
+function _pollIda() {
+  fetch('/admin/ida/status').then(r=>r.json()).then(d => {
+    if (d.running) { setTimeout(_pollIda, 3000); return; }
+    const btn = document.getElementById('ida-run-btn');
+    btn.disabled = false; btn.textContent = 'Ida starten';
+    if (d.error) { alert('Ida Fehler: ' + d.error); }
+    else if (d.exists) { alert('Ida fertig — ' + (d.finals_written||0) + ' FINAL-Signale geschrieben.'); }
   });
 }
 </script>
