@@ -1,23 +1,32 @@
 #!/bin/bash
 # Wird beim Sitzungsstart aufgerufen. Meldet wenn der lokale Stand hinter GitHub liegt.
 
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$REPO_DIR"
+check_repo() {
+  local LABEL="$1"
+  local DIR="$2"
 
-git fetch origin main --quiet 2>/dev/null || { echo "⚠ Git fetch fehlgeschlagen (kein Netz?). Stand unbekannt."; exit 0; }
+  if [ ! -d "$DIR/.git" ]; then
+    echo "⚠ $LABEL: Kein Git-Repo unter $DIR"
+    return
+  fi
 
-BEHIND=$(git rev-list HEAD..origin/main --count 2>/dev/null)
-AHEAD=$(git rev-list origin/main..HEAD --count 2>/dev/null)
-DIRTY=$(git status --porcelain 2>/dev/null)
+  cd "$DIR"
+  git fetch origin main --quiet 2>/dev/null || { echo "⚠ $LABEL: Git fetch fehlgeschlagen (kein Netz?)."; return; }
 
-if [ "$BEHIND" -gt 0 ]; then
-  echo "⚠ BRANCHENRADAR: Lokal ist $BEHIND Commit(s) hinter GitHub."
-  echo "  Bitte zuerst: git pull"
-  echo "  (Sonst geht Arbeit vom anderen Rechner verloren)"
-elif [ "$AHEAD" -gt 0 ]; then
-  echo "ℹ BRANCHENRADAR: $AHEAD lokaler Commit(s) noch nicht auf GitHub gepusht."
-elif [ -n "$DIRTY" ]; then
-  echo "ℹ BRANCHENRADAR: Lokale Änderungen vorhanden (noch nicht committet)."
-else
-  echo "✓ BRANCHENRADAR: Git-Stand aktuell."
-fi
+  BEHIND=$(git rev-list HEAD..origin/main --count 2>/dev/null)
+  AHEAD=$(git rev-list origin/main..HEAD --count 2>/dev/null)
+  DIRTY=$(git status --porcelain 2>/dev/null)
+
+  if [ "$BEHIND" -gt 0 ]; then
+    echo "⚠ $LABEL: Lokal ist $BEHIND Commit(s) hinter GitHub — bitte zuerst: git pull"
+  elif [ "$AHEAD" -gt 0 ]; then
+    echo "ℹ $LABEL: $AHEAD Commit(s) noch nicht gepusht."
+  elif [ -n "$DIRTY" ]; then
+    echo "ℹ $LABEL: Lokale Änderungen vorhanden (noch nicht committet)."
+  else
+    echo "✓ $LABEL: aktuell."
+  fi
+}
+
+check_repo "BRANCHENRADAR" "$HOME/praxis-radar"
+check_repo "GEDÄCHTNIS    " "$HOME/.claude/projects/C--Users-thamm/memory"
