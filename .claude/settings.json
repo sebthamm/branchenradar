@@ -1,0 +1,32 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/praxis-radar/sync-check.sh\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(ssh root@178.105.170.27 *)",
+      "Bash(scp *)",
+      "Bash(git *)",
+      "Bash(python3 *)",
+      "Bash(node *)",
+      "Bash(npm *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(ls *)",
+      "Bash(curl *)",
+      "Bash(sed *)",
+      "Bash(echo *)"
+    ]
+  }
+}
