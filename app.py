@@ -2225,8 +2225,8 @@ def _maja_scheduled_job():
     model    = maja_cfg.get("maja_model", "claude-haiku-4-5-20251001")
     try:
         maja_runner.run(maja_cfg, api_key, model=model)
-    except Exception:
-        pass
+    except Exception as _e:
+        import logging; logging.getLogger("scheduler").error("Startup schedule error: %s", _e)
 
 def _apply_maja_schedule(cfg):
     """Read schedule config and register/replace the APScheduler job."""
@@ -2238,7 +2238,7 @@ def _apply_maja_schedule(cfg):
     # "after_nils" mode: no own schedule — triggered by _nils_scheduled_job
     if maja.get("trigger_mode") == "after_nils":
         return
-    interval_days = int(maja.get("interval_days", 30) or 30)
+    interval_days = int(maja.get("interval_days") or 30)
     s_time = maja.get("schedule_time", "08:00")
     try:
         hour, minute = s_time.split(":")
@@ -2307,7 +2307,7 @@ def _apply_nils_schedule(cfg):
     _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
     if not nils.get("schedule_enabled"):
         return
-    interval_days = int(nils.get("interval_days", 7))
+    interval_days = int(nils.get("interval_days") or 7)
     s_time  = nils.get("schedule_time", "08:00")
     try:
         hour, minute = s_time.split(":")
@@ -2451,7 +2451,7 @@ def _apply_fletcher_schedule(cfg):
     if not fl.get("schedule_enabled"):
         return
     from apscheduler.triggers.interval import IntervalTrigger as _IT
-    days = int(fl.get("interval_days", 7) or 7)
+    days = int(fl.get("interval_days") or 7)
     start = _make_interval_start(fl.get("schedule_time", "06:00"), days)
     _scheduler.add_job(_fletcher_scheduled_job, _IT(days=days, start_date=start),
                        id=job_id, replace_existing=True)
@@ -2488,7 +2488,7 @@ def _apply_frank_schedule(cfg):
     if not fr.get("schedule_enabled"):
         return
     from apscheduler.triggers.interval import IntervalTrigger as _IT
-    days = int(fr.get("interval_days", 7) or 7)
+    days = int(fr.get("interval_days") or 7)
     start = _make_interval_start(fr.get("schedule_time", "06:00"), days)
     _scheduler.add_job(_frank_scheduled_job, _IT(days=days, start_date=start),
                        id=job_id, replace_existing=True)
@@ -2535,7 +2535,7 @@ def _apply_theo_schedule(cfg):
     if th.get("trigger_mode") in ("after_finn", "after_fletcher", "after_frank"):
         return  # triggered by predecessor, no own timer
     from apscheduler.triggers.interval import IntervalTrigger as _IT
-    days = int(th.get("interval_days", 7) or 7)
+    days = int(th.get("interval_days") or 7)
     start = _make_interval_start(th.get("schedule_time", "08:00"), days)
     _scheduler.add_job(_theo_scheduled_job, _IT(days=days, start_date=start),
                        id=job_id, replace_existing=True)
@@ -2567,7 +2567,7 @@ def _apply_ida_schedule(cfg):
     if ida.get("trigger_mode") == "after_theo":
         return  # triggered by Theo, no own timer
     from apscheduler.triggers.interval import IntervalTrigger as _IT
-    days = int(ida.get("interval_days", 7) or 7)
+    days = int(ida.get("interval_days") or 7)
     start = _make_interval_start(ida.get("schedule_time", "08:00"), days)
     _scheduler.add_job(_ida_scheduled_job, _IT(days=days, start_date=start),
                        id=job_id, replace_existing=True)
