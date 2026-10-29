@@ -4201,7 +4201,26 @@ def agents_config():
             elif key == "maya":
                 _apply_maja_schedule(cfg)
         return jsonify({"ok": True})
-    return jsonify({"agents": cfg.get("agents", {})})
+    # Enrich with next_run from APScheduler
+    JOB_MAP = {
+        "source_research":   "nils_scheduled",
+        "source_maintenance":"maja_scheduled",
+        "fletcher_feed":     "fletcher_scheduled",
+        "frank_scrape":      "frank_scheduled",
+        "group":             "theo_scheduled",
+        "bewertung":         "ida_scheduled",
+    }
+    agents_out = {}
+    for key, val in cfg.get("agents", {}).items():
+        entry = dict(val)
+        job_id = JOB_MAP.get(key)
+        if job_id:
+            job = _scheduler.get_job(job_id)
+            entry["next_run"] = job.next_run_time.strftime("%d.%m.%Y %H:%M") if job and job.next_run_time else None
+        else:
+            entry["next_run"] = None
+        agents_out[key] = entry
+    return jsonify({"agents": agents_out})
 
 @app.route("/admin/agents/overview", methods=["GET"])
 @role_required("admin", "superadmin")
