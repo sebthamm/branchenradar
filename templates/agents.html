@@ -3290,19 +3290,15 @@ function saveFinnSched()     { saveAgentSched('finn','scrape',            () => 
 function saveTheoSched()     { saveAgentSched('theo','group',             () => loadAgentSched('theo','group')); }
 function saveIdaSched()      { saveAgentSched('ida','bewertung',          () => loadAgentSched('ida','bewertung')); }
 
-// Auto-load on panel open
-const _origToggleFletcherSched = toggleFletcherSched;
-toggleFletcherSched = function() { _origToggleFletcherSched(); loadAgentSched('fletcher','fletcher_feed'); };
-const _origToggleFrankSched = toggleFrankSched;
-toggleFrankSched = function() { _origToggleFrankSched(); loadAgentSched('frank','frank_scrape'); };
-const _origToggleFredSched = toggleFredSched;
-toggleFredSched = function() { _origToggleFredSched(); loadAgentSched('fred','feed'); };
-const _origToggleFinnSched = toggleFinnSched;
-toggleFinnSched = function() { _origToggleFinnSched(); loadAgentSched('finn','scrape'); };
-const _origToggleTheoSched = toggleTheoSched;
-toggleTheoSched = function() { _origToggleTheoSched(); loadAgentSched('theo','group'); };
-const _origToggleIdaSched = toggleIdaSched;
-toggleIdaSched = function() { _origToggleIdaSched(); loadAgentSched('ida','bewertung'); };
+// Load all schedule data once on page load
+document.addEventListener('DOMContentLoaded', function() {
+  loadAgentSched('fletcher','fletcher_feed');
+  loadAgentSched('frank','frank_scrape');
+  loadAgentSched('fred','feed');
+  loadAgentSched('finn','scrape');
+  loadAgentSched('theo','group');
+  loadAgentSched('ida','bewertung');
+});
 
 </script>
 {% endblock %}
