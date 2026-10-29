@@ -960,8 +960,39 @@
           <span>Dann arbeitet Fletcher <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
           <span class="nils-props-arrow" id="fletcher-sched-arrow">&#9658;</span>
         </div>
-        <div class="nils-props-panel" id="fletcher-sched-panel"><strong style="color:var(--text)">Fletcher l&#228;uft auf Abruf.</strong>
-              Kein automatischer Zeitplan hinterlegt. Fletcher wird manuell gestartet &#8212; typisch wenn neue Feed-Quellen hinzugekommen sind oder Lars frische Eintr&#228;ge f&#252;r seinen n&#228;chsten Analysezyklus ben&#246;tigt. Nach dem Lauf exportiert Fletcher die Ergebnisse direkt f&#252;r Lars.
+        <div class="nils-props-panel" id="fletcher-sched-panel">
+          <div id="fletcher-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:20px 24px;border-right:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <input type="checkbox" id="fletcher-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+                <label for="fletcher-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
+                <select id="fletcher-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+                  <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
+                </select>
+              </div>
+              <div id="fletcher-interval-row" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                  <input id="fletcher-interval-days" type="number" min="1" max="365" value="7"
+                    style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                  <input id="fletcher-sched-time" type="time" value="06:00"
+                    style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveFletcherSched()">Zeitplan speichern</button>
+              <span id="fletcher-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            </div>
+            <div style="padding:20px 24px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Status</div>
+              <div id="fletcher-next-run-info" style="font-size:12px;color:var(--muted)">&#8212;</div>
             </div>
           </div>
         </div>
@@ -1056,8 +1087,40 @@
           <span>Dann arbeitet Fred <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
           <span class="nils-props-arrow" id="fred-sched-arrow">&#9658;</span>
         </div>
-        <div class="nils-props-panel" id="fred-sched-panel"><strong style="color:var(--text)">Fred l&#228;uft nach Fletcher.</strong>
-              Nach jedem Fletcher-Lauf exportiert Fletcher die neuen Feed-Eintr&#228;ge &#8212; Fred &#252;bernimmt die inhaltliche Bewertung und Kategorisierung. Kein automatischer Zeitplan: Fred wird manuell oder &#252;ber den Prompt-Workflow ausgef&#252;hrt.
+        <div class="nils-props-panel" id="fred-sched-panel">
+          <div id="fred-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:20px 24px;border-right:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <input type="checkbox" id="fred-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+                <label for="fred-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
+                <select id="fred-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+                  <option value="after_fletcher">Nach Fletcher (empfohlen)</option>
+                  <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
+                </select>
+              </div>
+              <div id="fred-interval-row" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                  <input id="fred-interval-days" type="number" min="1" max="365" value="7"
+                    style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                  <input id="fred-sched-time" type="time" value="06:00"
+                    style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveFredSched()">Zeitplan speichern</button>
+              <span id="fred-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            </div>
+            <div style="padding:20px 24px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Status</div>
+              <div id="fred-next-run-info" style="font-size:12px;color:var(--muted)">&#8212;</div>
             </div>
           </div>
         </div>
@@ -1162,8 +1225,39 @@
           <span>Dann arbeitet Frank <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
           <span class="nils-props-arrow" id="frank-sched-arrow">&#9658;</span>
         </div>
-        <div class="nils-props-panel" id="frank-sched-panel"><strong style="color:var(--text)">Frank l&#228;uft auf Abruf.</strong>
-              Kein automatischer Zeitplan hinterlegt. Frank wird manuell gestartet &#8212; typisch nach einem Sol-Lauf, der neue Selektoren eingetragen hat, oder wenn Finn frische Scrape-Daten f&#252;r seinen n&#228;chsten Analysezyklus braucht. Nach dem Lauf exportiert Frank die Ergebnisse direkt f&#252;r Finn.
+        <div class="nils-props-panel" id="frank-sched-panel">
+          <div id="frank-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:20px 24px;border-right:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <input type="checkbox" id="frank-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+                <label for="frank-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
+                <select id="frank-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+                  <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
+                </select>
+              </div>
+              <div id="frank-interval-row" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                  <input id="frank-interval-days" type="number" min="1" max="365" value="7"
+                    style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                  <input id="frank-sched-time" type="time" value="06:00"
+                    style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveFrankSched()">Zeitplan speichern</button>
+              <span id="frank-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            </div>
+            <div style="padding:20px 24px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Status</div>
+              <div id="frank-next-run-info" style="font-size:12px;color:var(--muted)">&#8212;</div>
             </div>
           </div>
         </div>
@@ -1274,8 +1368,40 @@
           <span>Dann arbeitet Finn <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
           <span class="nils-props-arrow" id="finn-sched-arrow">&#9658;</span>
         </div>
-        <div class="nils-props-panel" id="finn-sched-panel"><strong style="color:var(--text)">Finn l&#228;uft nach Frank.</strong>
-              Nach jedem Frank-Lauf exportiert Frank die neuen Scrape-Eintr&#228;ge &#8212; Finn &#252;bernimmt die inhaltliche Qualifikation und Bewertung. Kein automatischer Zeitplan: Finn wird manuell oder &#252;ber den Prompt-Workflow ausgef&#252;hrt.
+        <div class="nils-props-panel" id="finn-sched-panel">
+          <div id="finn-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:20px 24px;border-right:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <input type="checkbox" id="finn-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+                <label for="finn-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
+                <select id="finn-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+                  <option value="after_frank">Nach Frank (empfohlen)</option>
+                  <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
+                </select>
+              </div>
+              <div id="finn-interval-row" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                  <input id="finn-interval-days" type="number" min="1" max="365" value="7"
+                    style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                  <input id="finn-sched-time" type="time" value="06:00"
+                    style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveFinnSched()">Zeitplan speichern</button>
+              <span id="finn-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            </div>
+            <div style="padding:20px 24px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Status</div>
+              <div id="finn-next-run-info" style="font-size:12px;color:var(--muted)">&#8212;</div>
             </div>
           </div>
         </div>
@@ -1684,8 +1810,7 @@
         <span>Dann arbeitet Ida <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
         <span class="nils-props-arrow" id="ida-sched-arrow">&#9658;</span>
       </div>
-      <div class="nils-props-panel" id="ida-sched-panel"><strong style="color:var(--text)">Ida l&#228;uft nach Theo.</strong>
-            
+      <div class="nils-props-panel" id="ida-sched-panel">
           <div id="ida-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
             <div style="padding:20px 24px;border-right:1px solid var(--border)">
@@ -1724,6 +1849,7 @@
     </div>
   </div>
 
+</div>
 </div>
 
 {# Maja Test Modal #}
