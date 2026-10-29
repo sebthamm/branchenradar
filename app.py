@@ -4171,6 +4171,38 @@ def agent_reports():
 
 # ── Agents ────────────────────────────────────────────────────────────────────
 
+
+@app.route("/admin/agents/config", methods=["GET", "POST"])
+@role_required("admin", "superadmin")
+def agents_config():
+    """Read or patch agent schedule config. Used by overview page and schedule UIs."""
+    cfg = load_agent_configs()
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        patch = data.get("agents", {})
+        agents_cfg = cfg.setdefault("agents", {})
+        for key, fields in patch.items():
+            ag = agents_cfg.setdefault(key, {})
+            for f, v in fields.items():
+                ag[f] = v
+        save_agent_configs(cfg)
+        # Re-apply schedules for changed keys
+        for key in patch:
+            if key == "fletcher_feed":
+                _apply_fletcher_schedule(cfg)
+            elif key == "frank_scrape":
+                _apply_frank_schedule(cfg)
+            elif key == "group":
+                _apply_theo_schedule(cfg)
+            elif key == "bewertung":
+                _apply_ida_schedule(cfg)
+            elif key == "nils" or key == "source_research":
+                _apply_nils_schedule(cfg)
+            elif key == "maya":
+                _apply_maja_schedule(cfg)
+        return jsonify({"ok": True})
+    return jsonify({"agents": cfg.get("agents", {})})
+
 @app.route("/admin/agents/overview", methods=["GET"])
 @role_required("admin", "superadmin")
 def agents_overview():
