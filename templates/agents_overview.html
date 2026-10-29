@@ -165,8 +165,10 @@
   var TRIGGER_LABELS = {
     after_fletcher: 'nach Fletcher',
     after_frank:    'nach Frank',
+    after_fred_and_finn: 'nach Fred &amp; Finn',
     after_finn:     'nach Finn',
     after_nils:     'nach Nils',
+    after_maja:     'nach Maja',
     after_theo:     'nach Theo'
   };
   function detailText(ag) {
@@ -176,8 +178,16 @@
     return 'Alle ' + (ag.interval_days || 7) + ' Tage · ' + (ag.schedule_time || '06:00') + ' Uhr';
   }
 
-  function buildCard(name, role, ag) {
+  function nextRunText(ag, predecessorNextRun) {
+    if (!ag.schedule_enabled) return '';
+    var mode = ag.trigger_mode || 'standalone';
+    if (mode !== 'standalone') return predecessorNextRun || '';
+    return ag.next_run || '';
+  }
+
+  function buildCard(name, role, ag, predecessorNextRun) {
     var cls = cardClass(ag);
+    var nr = nextRunText(ag, predecessorNextRun);
     return '<div class="ov-card ' + cls + '">' +
       '<div class="ov-card-dot"></div>' +
       '<div class="ov-card-body">' +
@@ -185,7 +195,7 @@
         '<div class="ov-card-role">' + role + '</div>' +
         '<span class="ov-card-badge ' + badgeClass(ag) + '">' + badgeLabel(ag) + '</span>' +
         '<div class="ov-card-detail">' + detailText(ag) + '</div>' +
-        (ag.next_run ? '<div class="ov-next-run">▶ ' + ag.next_run + '</div>' : '') +
+        (nr ? '<div class="ov-next-run">▶ ' + nr + '</div>' : '') +
       '</div></div>';
   }
 
@@ -202,7 +212,7 @@
       if (n.arrow !== undefined) {
         nodesHtml += buildArrow(n.arrow);
       } else {
-        nodesHtml += '<div class="ov-node">' + buildCard(n.name, n.role, n.ag) + '</div>';
+        nodesHtml += '<div class="ov-node">' + buildCard(n.name, n.role, n.ag, n.predecessorNextRun) + '</div>';
       }
     });
     return '<div class="ov-chain">' +
@@ -262,37 +272,86 @@
     var ida      = ag.bewertung     || {};
     var nils     = ag.source_research   || {};
     var maya     = ag.source_maintenance || {};
+    var sol      = ag.sol_selector  || {};
+    var mats     = ag.pdf            || {};
+    var lena     = ag.search         || {};
 
-    var fredTriggered  = !!(fred.schedule_enabled  && fred.trigger_mode  === 'after_fletcher');
-    var finnTriggered  = !!(finn.schedule_enabled  && finn.trigger_mode  === 'after_frank');
-    var theoAfterFinn  = !!(theo.schedule_enabled  && theo.trigger_mode  === 'after_finn');
-    var idaAfterTheo   = !!(ida.schedule_enabled   && ida.trigger_mode   === 'after_theo');
+    var fredTriggered   = !!(fred.schedule_enabled  && fred.trigger_mode  === 'after_fletcher');
+    var finnTriggered   = !!(finn.schedule_enabled  && finn.trigger_mode  === 'after_frank');
+    var theoAfterFinn   = !!(theo.schedule_enabled  && (theo.trigger_mode === 'after_finn' || theo.trigger_mode === 'after_fred_and_finn'));
+    var idaAfterTheo    = !!(ida.schedule_enabled   && ida.trigger_mode   === 'after_theo');
+    var solAfterNils    = !!(sol.schedule_enabled   && sol.trigger_mode   === 'after_nils');
+    var solAfterMaja    = !!(sol.schedule_enabled   && sol.trigger_mode   === 'after_maja');
+    var majaAfterNils   = !!(maya.schedule_enabled  && maya.trigger_mode  === 'after_nils');
 
     var chain1 = buildChain('Feed-Kette', 'Fletcher &rarr; Fred &rarr; [Theo] &rarr; [Ida]', [
       {name:'Fletcher', role:'Quellen abrufen (Feed)', ag:fletcher},
       {arrow: fredTriggered},
-      {name:'Fred', role:'KI-Analyse (Feed)', ag:fred},
+      {name:'Fred', role:'KI-Analyse (Feed)', ag:fred, predecessorNextRun: fletcher.next_run},
       {arrow: theoAfterFinn},
-      {name:'Theo', role:'Gruppierung', ag:theo},
+      {name:'Theo', role:'Gruppierung', ag:theo, predecessorNextRun: fred.next_run || fletcher.next_run},
       {arrow: idaAfterTheo},
-      {name:'Ida', role:'Bewertung', ag:ida}
+      {name:'Ida', role:'Bewertung', ag:ida, predecessorNextRun: theo.next_run || fred.next_run || fletcher.next_run}
     ]);
 
     var chain2 = buildChain('Scrape-Kette', 'Frank &rarr; Finn &rarr; Theo &rarr; Ida', [
       {name:'Frank', role:'Quellen abrufen (Scrape)', ag:frank},
       {arrow: finnTriggered},
-      {name:'Finn', role:'KI-Analyse (Scrape)', ag:finn},
+      {name:'Finn', role:'KI-Analyse (Scrape)', ag:finn, predecessorNextRun: frank.next_run},
       {arrow: theoAfterFinn},
-      {name:'Theo', role:'Gruppierung', ag:theo},
+      {name:'Theo', role:'Gruppierung', ag:theo, predecessorNextRun: finn.next_run || frank.next_run},
       {arrow: idaAfterTheo},
-      {name:'Ida', role:'Bewertung', ag:ida}
+      {name:'Ida', role:'Bewertung', ag:ida, predecessorNextRun: theo.next_run || finn.next_run || frank.next_run}
     ]);
 
-    var chain3 = buildChain('Eigenständige Agenten', 'Nils (PDF) und Maya (Search) laufen unabhängig', [
-      {name:'Nils', role:'Quellenrecherche', ag:nils},
-      {arrow: false},
-      {name:'Maya', role:'Web-Suche', ag:maya}
-    ]);
+    // Quellenpflege: Nils forks to Sol and Maya
+    var chain3 = (function() {
+      var nilsCard  = buildCard('Nils', 'Quellenrecherche', nils);
+      var solCard   = buildCard('Sol', 'Selektor-Ermittlung', sol, nils.next_run);
+      var majaCard  = buildCard('Maya', 'Quellenpflege', maya, nils.next_run);
+      var arrowSol  = buildArrow(solAfterNils);
+      var arrowMaja = buildArrow(majaAfterNils);
+      var forkHtml =
+        '<div style="display:flex;align-items:center;gap:0">' +
+          '<div class="ov-node">' + nilsCard + '</div>' +
+          '<div style="display:flex;flex-direction:column;gap:16px;margin:0 0">' +
+            '<div style="display:flex;align-items:center">' + arrowSol  + '<div class="ov-node">' + solCard  + '</div></div>' +
+            '<div style="display:flex;align-items:center">' + arrowMaja + '<div class="ov-node">' + majaCard + '</div></div>' +
+          '</div>' +
+        '</div>';
+      return '<div class="ov-chain">' +
+        '<div class="ov-chain-head"><span class="ov-chain-title">Quellenpflege</span>' +
+        '<span class="ov-chain-sub">Nils &rarr; Sol (Selektoren) &amp; Maya (Websuche)</span></div>' +
+        '<div class="ov-nodes" style="overflow-x:auto;padding:24px 20px">' + forkHtml + '</div>' +
+      '</div>';
+    })();
+
+
+    // Mats & Lena: PDF and Search agents
+    var matsTriggered = !!(mats.schedule_enabled && mats.trigger_mode !== 'standalone');
+    var lenaTriggered = !!(lena.schedule_enabled && lena.trigger_mode !== 'standalone');
+    var nilsMatsActive = matsTriggered;
+    var nilsLenaActive = lenaTriggered;
+
+    var chain4 = (function() {
+      // Fork from Nils to Mats and Lena (like chain3 fork)
+      var nilsCard = buildCard('Mats', 'PDF-Analyse', mats, matsTriggered ? nils.next_run : undefined);
+      var lenaCard = buildCard('Lena', 'Web-Suche', lena, lenaTriggered ? nils.next_run : undefined);
+      var arrowMats = buildArrow(nilsMatsActive);
+      var arrowLena = buildArrow(nilsLenaActive);
+      var nilsCardHtml = buildCard('Nils', 'Quell-Recherche', nils);
+      // Fork layout: Nils then two branches side-by-side
+      var nodesHtml = '<div class="ov-node">' + nilsCardHtml + '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:16px;padding:0 0 0 0">' +
+          '<div style="display:flex;align-items:center">' + arrowMats + '<div class="ov-node">' + nilsCard + '</div></div>' +
+          '<div style="display:flex;align-items:center">' + arrowLena + '<div class="ov-node">' + lenaCard + '</div></div>' +
+        '</div>';
+      return '<div class="ov-chain">' +
+        '<div class="ov-chain-head"><span class="ov-chain-title">PDF &amp; Suche</span>' +
+        '<span class="ov-chain-sub">Mats (PDF-Dokumente) und Lena (Web-Suche), nach Nils oder eigenst&#228;ndig</span></div>' +
+        '<div class="ov-nodes" style="align-items:flex-start;padding:24px 20px">' + nodesHtml + '</div>' +
+      '</div>';
+    })();
 
     var table = buildTable([
       {name:'Fletcher (Feed abrufen)', ag:fletcher},
@@ -300,12 +359,15 @@
       {name:'Frank (Scrape abrufen)',  ag:frank},
       {name:'Finn (Scrape KI-Analyse)',ag:finn},
       {name:'Nils (Quellenrecherche)', ag:nils},
-      {name:'Maya (Search)',           ag:maya},
+      {name:'Sol (Selektor-Ermittlung)', ag:sol},
+      {name:'Maya (Quellenpflege)',      ag:maya},
       {name:'Theo (Gruppierung)',      ag:theo},
-      {name:'Ida (Bewertung)',         ag:ida}
+      {name:'Ida (Bewertung)',         ag:ida},
+      {name:'Mats (PDF-Analyse)',         ag:mats},
+      {name:'Lena (Web-Suche)',           ag:lena}
     ]);
 
-    document.getElementById('overview-root').innerHTML = chain1 + chain2 + chain3 + table;
+    document.getElementById('overview-root').innerHTML = chain1 + chain2 + chain3 + chain4 + table;
   }
 
   function load() {

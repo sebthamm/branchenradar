@@ -845,12 +845,42 @@
         <span class="nils-props-arrow" id="sol-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="sol-sched-panel">
-        <div style="padding:20px 24px">
-          <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
-            <strong style="color:var(--text)">Sol l&#228;uft auf Abruf.</strong>
-            Kein automatischer Zeitplan hinterlegt. Sol wird manuell gestartet, sobald neue Quellen ohne CSS-Selektor in der sources.json auftauchen &#8212; typisch nach einem Nils-Lauf, der neue Scrape-Quellen eingetragen hat. Nach dem Sol-Lauf kann Frank die neuen Endpunkte sofort crawlen.
+          <div id="sol-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:20px 24px;border-right:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <input type="checkbox" id="sol-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+                <label for="sol-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
+                <select id="sol-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+                  <option value="after_nils">Nach Nils (empfohlen)</option>
+                  <option value="after_maja">Nach Maja</option>
+                  <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
+                </select>
+              </div>
+              <div id="sol-interval-row" style="display:none;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                  <input id="sol-interval-days" type="number" min="1" max="365" value="7"
+                    style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                  <input id="sol-sched-time" type="time" value="06:00"
+                    style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveSolSched()">Zeitplan speichern</button>
+              <span id="sol-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            </div>
+            <div style="padding:20px 24px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Status</div>
+              <div id="sol-next-run-info" style="font-size:12px;color:var(--muted)">&#8212;</div>
+            </div>
           </div>
-        </div>
       </div>
 
       <div class="nils-props-toggle" onclick="toggleSolPerf()">
@@ -985,6 +1015,11 @@
                   <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
                   <input id="fletcher-sched-time" type="time" value="06:00"
                     style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">N&#228;chste Ausf&#252;hrung</label>
+                  <input id="fletcher-start-date" type="date"
+                    style="padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
                 </div>
               </div>
               <button class="btn btn-primary btn-sm" onclick="saveFletcherSched()">Zeitplan speichern</button>
@@ -1251,6 +1286,11 @@
                   <input id="frank-sched-time" type="time" value="06:00"
                     style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
                 </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">N&#228;chste Ausf&#252;hrung</label>
+                  <input id="frank-start-date" type="date"
+                    style="padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
               </div>
               <button class="btn btn-primary btn-sm" onclick="saveFrankSched()">Zeitplan speichern</button>
               <span id="frank-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
@@ -1490,10 +1530,45 @@
           <span class="nils-props-arrow" id="mats-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="mats-sched-panel">
-          <div style="padding:20px 24px">
-            <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
-              <strong style="color:var(--text)">Mats l&#228;uft auf Abruf.</strong>
-              Er wird gestartet, wenn neue PDF-Quellen in der sources.json eingetragen wurden oder bekannte Quellen aktualisiert worden sind. Kein automatischer Zeitplan &#8212; PDF-Analyse ist ressourcenintensiver als Feed- oder Scrape-Verarbeitung.
+
+          <div id="mats-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:20px 24px;border-right:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <input type="checkbox" id="mats-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+                <label for="mats-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
+                <select id="mats-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+                  <option value="after_nils">Nach Nils (empfohlen)</option>
+                  <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
+                </select>
+              </div>
+              <div id="mats-interval-row" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                  <input id="mats-interval-days" type="number" min="1" max="365" value="7"
+                    style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                  <input id="mats-sched-time" type="time" value="06:00"
+                    style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">N&#228;chste Ausf&#252;hrung</label>
+                  <input id="mats-start-date" type="date"
+                    style="padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveMatsScehd()">Zeitplan speichern</button>
+              <span id="mats-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            </div>
+            <div style="padding:20px 24px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Status</div>
+              <div id="mats-next-run-info" style="font-size:12px;color:var(--muted)">&#8212;</div>
             </div>
           </div>
         </div>
@@ -1582,10 +1657,45 @@
           <span class="nils-props-arrow" id="lena-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="lena-sched-panel">
-          <div style="padding:20px 24px">
-            <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
-              <strong style="color:var(--text)">Lena l&#228;uft auf Abruf.</strong>
-              Kein automatischer Zeitplan. Lena wird gezielt eingesetzt, wenn neue Signale aus dem offenen Web gesucht werden oder das Quellinventar durch neue Quellen erweitert werden soll.
+
+          <div id="lena-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:20px 24px;border-right:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <input type="checkbox" id="lena-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+                <label for="lena-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
+                <select id="lena-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+                  <option value="after_nils">Nach Nils (empfohlen)</option>
+                  <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
+                </select>
+              </div>
+              <div id="lena-interval-row" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                  <input id="lena-interval-days" type="number" min="1" max="365" value="7"
+                    style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                  <input id="lena-sched-time" type="time" value="06:00"
+                    style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">N&#228;chste Ausf&#252;hrung</label>
+                  <input id="lena-start-date" type="date"
+                    style="padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveLenaScehd()">Zeitplan speichern</button>
+              <span id="lena-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            </div>
+            <div style="padding:20px 24px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Status</div>
+              <div id="lena-next-run-info" style="font-size:12px;color:var(--muted)">&#8212;</div>
             </div>
           </div>
         </div>
@@ -1707,7 +1817,8 @@
               <div style="margin-bottom:12px">
                 <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
                 <select id="theo-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
-                  <option value="after_finn">Nach Finn (empfohlen)</option>
+                  <option value="after_fred_and_finn">Nach Fred &amp; Finn (empfohlen)</option>
+                  <option value="after_finn">Nach Finn</option>
                   <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
                 </select>
               </div>
@@ -2906,7 +3017,7 @@ async function loadNilsPerfInline() {
 }
 async function updateNilsInsight(id, status) {
   await fetch('/admin/nils/insights/' + id, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status})});
-
+}
 
 async function loadNilsCostChips() {
   const el = document.getElementById('nils-cost-chips');
@@ -3043,11 +3154,11 @@ function toggleFinnSched()   { const p=document.getElementById('finn-sched-panel
 function toggleFinnManual()  { const p=document.getElementById('finn-manual-panel');  const a=document.getElementById('finn-manual-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
 function toggleMatsSkills()  { const p=document.getElementById('mats-skills-panel');  const a=document.getElementById('mats-skills-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
 function toggleMatsProps()   { const p=document.getElementById('mats-props-panel');   const a=document.getElementById('mats-props-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
-function toggleMatsSched()   { const p=document.getElementById('mats-sched-panel');   const a=document.getElementById('mats-sched-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleMatsSched()   { const p=document.getElementById('mats-sched-panel');   const a=document.getElementById('mats-sched-arrow');   const o=p.classList.toggle('open'); if(o) loadAgentSched('mats','pdf'); a.classList.toggle('open',o); }
 function toggleMatsManual()  { const p=document.getElementById('mats-manual-panel');  const a=document.getElementById('mats-manual-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
 function toggleLenaSkills()  { const p=document.getElementById('lena-skills-panel');  const a=document.getElementById('lena-skills-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
 function toggleLenaProps()   { const p=document.getElementById('lena-props-panel');   const a=document.getElementById('lena-props-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
-function toggleLenaSched()   { const p=document.getElementById('lena-sched-panel');   const a=document.getElementById('lena-sched-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleLenaSched()   { const p=document.getElementById('lena-sched-panel');   const a=document.getElementById('lena-sched-arrow');   const o=p.classList.toggle('open'); if(o) loadAgentSched('lena','search'); a.classList.toggle('open',o); }
 function toggleLenaManual()  { const p=document.getElementById('lena-manual-panel');  const a=document.getElementById('lena-manual-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
 function toggleTheoSkills()  { const p=document.getElementById('theo-skills-panel');  const a=document.getElementById('theo-skills-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
 function toggleTheoProps()   { const p=document.getElementById('theo-props-panel');   const a=document.getElementById('theo-props-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
@@ -3061,6 +3172,7 @@ function toggleSolSched() {
   const p = document.getElementById('sol-sched-panel');
   const a = document.getElementById('sol-sched-arrow');
   const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+  if (o) loadAgentSched('sol', 'sol_selector');
 }
 function toggleFletcherSched() {
   const p = document.getElementById('fletcher-sched-panel');
@@ -3329,6 +3441,7 @@ function loadAgentSched(key, cfgKey) {
       const tm = document.getElementById(key + '-trigger-mode');
       const days = document.getElementById(key + '-interval-days');
       const time = document.getElementById(key + '-sched-time');
+      const startDate = document.getElementById(key + '-start-date');
       const status = document.getElementById(key + '-sched-status');
       const info = document.getElementById(key + '-next-run-info');
       const row = document.getElementById(key + '-interval-row');
@@ -3336,18 +3449,27 @@ function loadAgentSched(key, cfgKey) {
       if (tm) tm.value = ag.trigger_mode || 'standalone';
       if (days) days.value = ag.interval_days || 7;
       if (time && ag.schedule_time) time.value = ag.schedule_time;
+      if (startDate && ag.schedule_start_date) startDate.value = ag.schedule_start_date;
       const isTriggered = ag.trigger_mode && ag.trigger_mode !== 'standalone';
       if (row) row.style.display = isTriggered ? 'none' : 'flex';
       if (status) {
         if (ag.schedule_enabled && isTriggered) {
-          status.innerHTML = '<span style="color:var(--primary);font-weight:600">&#9679; Aktiv</span> &middot; wird von Vorgänger ausgelöst';
+          status.innerHTML = '<span style="color:var(--primary);font-weight:600">&#9679; Aktiv</span> &middot; wird von Vorg&#228;nger ausgel&#246;st';
         } else if (ag.schedule_enabled) {
-          status.innerHTML = '<span style="color:var(--primary);font-weight:600">&#9679; Aktiv</span> &middot; alle ' + (ag.interval_days||7) + ' Tage';
+          const nextRun = ag.next_run || ag.schedule_start_date || null;
+          status.innerHTML = '<span style="color:var(--primary);font-weight:600">&#9679; Aktiv</span> &middot; alle ' + (ag.interval_days||7) + ' Tage' + (nextRun ? ' &middot; n&#228;chster Lauf: ' + nextRun : '');
         } else {
           status.innerHTML = '<span style="color:var(--muted)">&#9679; Inaktiv</span>';
         }
       }
-      if (info) info.textContent = ag.schedule_enabled ? ('Intervall: ' + (ag.interval_days||7) + ' Tage') : '—';
+      if (info) {
+        if (ag.schedule_enabled) {
+          const nr = ag.next_run;
+          info.textContent = nr ? nr : ('Alle ' + (ag.interval_days||7) + ' Tage');
+        } else {
+          info.textContent = '—';
+        }
+      }
     });
 }
 
@@ -3357,12 +3479,14 @@ function saveAgentSched(key, cfgKey, cb) {
   const days = document.getElementById(key + '-interval-days');
   const time = document.getElementById(key + '-sched-time');
   const msg = document.getElementById(key + '-sched-save-msg');
+  const startDate = document.getElementById(key + '-start-date');
   const payload = {};
   payload[cfgKey] = {
     schedule_enabled: en ? en.checked : false,
     trigger_mode: tm ? tm.value : 'standalone',
     interval_days: days ? parseInt(days.value) || 7 : 7,
     schedule_time: time ? time.value : '06:00',
+    schedule_start_date: startDate ? startDate.value : '',
   };
   fetch('/admin/agents/config', {
     method: 'POST',
@@ -3378,7 +3502,7 @@ function saveAgentSched(key, cfgKey, cb) {
 }
 
 // trigger_mode select: hide/show interval row
-['fletcher','frank','fred','finn','theo','ida'].forEach(key => {
+['fletcher','frank','fred','finn','theo','ida','sol','mats','lena'].forEach(key => {
   document.addEventListener('DOMContentLoaded', () => {
     const sel = document.getElementById(key + '-trigger-mode');
     const row = document.getElementById(key + '-interval-row');
@@ -3390,6 +3514,7 @@ function saveAgentSched(key, cfgKey, cb) {
   });
 });
 
+function saveSolSched()      { saveAgentSched('sol','sol_selector',         () => loadAgentSched('sol','sol_selector')); }
 function saveFletcherSched() { saveAgentSched('fletcher','fletcher_feed', () => loadAgentSched('fletcher','fletcher_feed')); }
 function saveFrankSched()    { saveAgentSched('frank','frank_scrape',     () => loadAgentSched('frank','frank_scrape')); }
 function saveFredSched()     { saveAgentSched('fred','feed',              () => loadAgentSched('fred','feed')); }
@@ -3405,7 +3530,43 @@ document.addEventListener('DOMContentLoaded', function() {
   loadAgentSched('finn','scrape');
   loadAgentSched('theo','group');
   loadAgentSched('ida','bewertung');
+  loadAgentSched('sol','sol_selector');
+    loadAgentSched('mats','pdf');
+    loadAgentSched('lena','search');
 });
 
 </script>
+
+{# ── Accordion Guard (failsafe, independent script block) ── #}
+<script>
+(function() {
+  // Phase 1 (capture): record panel state BEFORE onclick fires
+  document.addEventListener('click', function(e) {
+    var t = e.target.closest ? e.target.closest('.nils-props-toggle') : null;
+    if (!t) return;
+    var panel = t.nextElementSibling;
+    if (panel && panel.classList.contains('nils-props-panel')) {
+      t._guardWasOpen = panel.classList.contains('open');
+    }
+  }, true);
+
+  // Phase 2 (bubble): if onclick didn't toggle the panel, do it ourselves
+  document.addEventListener('click', function(e) {
+    var t = e.target.closest ? e.target.closest('.nils-props-toggle') : null;
+    if (!t || t._guardWasOpen === undefined) return;
+    var panel = t.nextElementSibling;
+    if (panel && panel.classList.contains('nils-props-panel')) {
+      var nowOpen = panel.classList.contains('open');
+      if (nowOpen === t._guardWasOpen) {
+        // onclick had no effect — toggle manually
+        var isOpen = panel.classList.toggle('open');
+        var arrow = t.querySelector('.nils-props-arrow');
+        if (arrow) arrow.classList.toggle('open', isOpen);
+      }
+    }
+    delete t._guardWasOpen;
+  }, false);
+})();
+</script>
+
 {% endblock %}

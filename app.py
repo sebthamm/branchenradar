@@ -710,7 +710,8 @@ def load_agent_configs():
         for field in ("date_from", "date_to", "last_date_from", "last_date_to",
                       "timeout", "min_links", "max_per_run",
                       "schedule_type", "schedule_day", "schedule_weekday",
-                      "schedule_time", "schedule_enabled", "maja_model"):
+                      "schedule_time", "schedule_enabled", "maja_model",
+                      "trigger_mode", "interval_days", "schedule_start_date"):
             if field in saved:
                 cfg["agents"][key][field] = saved[field]
     return cfg
@@ -2214,6 +2215,52 @@ from apscheduler.triggers.cron import CronTrigger
 _scheduler = BackgroundScheduler(timezone="Europe/Berlin")
 _scheduler.start()
 
+def _sol_scheduled_job():
+    """Called by APScheduler or triggered after Nils/Maja — runs selector_finder."""
+    import importlib.util, logging, sys
+    log = logging.getLogger("sol_runner")
+    finder_path = os.path.join(os.path.dirname(__file__), "selector_finder.py")
+    if not os.path.exists(finder_path):
+        log.error("selector_finder.py not found at %s", finder_path)
+        return
+    try:
+        spec = importlib.util.spec_from_file_location("selector_finder", finder_path)
+        mod  = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        cfg = load_agent_configs()
+        sol = cfg.get("agents", {}).get("sol_selector", {})
+        mod.run(
+            timeout=int(sol.get("timeout", 8)),
+            min_links=int(sol.get("min_links", 3)),
+            max_per_run=int(sol.get("max_per_run", 30)),
+        )
+        log.info("Sol scheduled run completed")
+    except Exception as e:
+        log.error("Sol scheduled run failed: %s", e)
+
+def _apply_sol_schedule(cfg):
+    """Register/replace APScheduler job for Sol based on schedule config."""
+    from apscheduler.triggers.interval import IntervalTrigger
+    sol = cfg.get("agents", {}).get("sol_selector", {})
+    job_id = "sol_scheduled"
+    try:
+        _scheduler.remove_job(job_id)
+    except Exception:
+        pass
+    if not sol.get("schedule_enabled"):
+        return
+    trigger_mode = sol.get("trigger_mode", "after_nils")
+    if trigger_mode != "standalone":
+        return  # triggered by Nils or Maja — no own schedule
+    interval_days = int(sol.get("interval_days") or 7)
+    time_str      = sol.get("schedule_time", "06:00")
+    start_d       = _make_interval_start(time_str, interval_days)
+    _scheduler.add_job(
+        _sol_scheduled_job,
+        IntervalTrigger(days=interval_days, start_date=start_d),
+        id=job_id, replace_existing=True,
+    )
+
 def _maja_scheduled_job():
     """Called by APScheduler on schedule."""
     import maja_runner
@@ -2225,6 +2272,16 @@ def _maja_scheduled_job():
     model    = maja_cfg.get("maja_model", "claude-haiku-4-5-20251001")
     try:
         maja_runner.run(maja_cfg, api_key, model=model)
+        # Trigger Sol if configured to run after Maja
+        try:
+            _cfg_sol = load_agent_configs()
+            _sol = _cfg_sol.get("agents", {}).get("sol_selector", {})
+            if _sol.get("schedule_enabled") and _sol.get("trigger_mode") == "after_maja":
+                import threading as _thr_sol
+                _thr_sol.Thread(target=_sol_scheduled_job, daemon=True).start()
+                import logging; logging.getLogger("scheduler").info("Sol triggered after Maja")
+        except Exception as _se:
+            import logging; logging.getLogger("scheduler").error("Failed to trigger Sol after Maja: %s", _se)
     except Exception as _e:
         import logging; logging.getLogger("scheduler").error("Startup schedule error: %s", _e)
 
@@ -2297,6 +2354,37 @@ def _nils_scheduled_job():
                 log.info("Maya triggered after Nils completion")
         except Exception as _me:
             log.error("Failed to trigger Maya after Nils: %s", _me)
+        # Trigger Sol if configured to run after Nils
+        try:
+            _cfg3 = load_agent_configs()
+            _sol = _cfg3.get("agents", {}).get("sol_selector", {})
+            if _sol.get("schedule_enabled") and _sol.get("trigger_mode") == "after_nils":
+                import threading as _thr2
+                _t2 = _thr2.Thread(target=_sol_scheduled_job, daemon=True)
+                _t2.start()
+                log.info("Sol triggered after Nils completion")
+        except Exception as _se:
+            log.error("Failed to trigger Sol after Nils: %s", _se)
+        # Trigger Mats if configured to run after Nils
+        try:
+            _cfg4 = load_agent_configs()
+            _mats = _cfg4.get("agents", {}).get("pdf", {})
+            if _mats.get("schedule_enabled") and _mats.get("trigger_mode") == "after_nils":
+                import threading as _thr3
+                _thr3.Thread(target=_mats_scheduled_job, daemon=True).start()
+                log.info("Mats triggered after Nils completion")
+        except Exception as _matsE:
+            log.error("Failed to trigger Mats after Nils: %s", _matsE)
+        # Trigger Lena if configured to run after Nils
+        try:
+            _cfg5 = load_agent_configs()
+            _lena = _cfg5.get("agents", {}).get("search", {})
+            if _lena.get("schedule_enabled") and _lena.get("trigger_mode") == "after_nils":
+                import threading as _thr4
+                _thr4.Thread(target=_lena_scheduled_job, daemon=True).start()
+                log.info("Lena triggered after Nils completion")
+        except Exception as _lenaE:
+            log.error("Failed to trigger Lena after Nils: %s", _lenaE)
     except Exception as e:
         log.error("Nils scheduled run failed: %s", e)
 
@@ -2332,6 +2420,23 @@ def _apply_nils_schedule(cfg):
         IntervalTrigger(days=interval_days, start_date=start_d),
         id=job_id, replace_existing=True)
 
+
+
+# Completion flags for "after_fred_and_finn" join logic
+# {key: datetime of last completion}  — kept in memory, reset on restart
+import datetime as _flag_dt
+_completion_flags: dict = {}
+_COMPLETION_WINDOW_HOURS = 4  # both must finish within this window
+
+def _mark_done(key):
+    _completion_flags[key] = _flag_dt.datetime.now()
+
+def _both_done(a, b):
+    ta = _completion_flags.get(a)
+    tb = _completion_flags.get(b)
+    if not ta or not tb:
+        return False
+    return abs((ta - tb).total_seconds()) < _COMPLETION_WINDOW_HOURS * 3600
 
 # ── Scheduling: Fletcher, Frank, Fred (feed-AI), Finn (scrape-AI), Theo, Ida ──
 
@@ -2394,11 +2499,21 @@ def _fred_scheduled_job():
         api_key = os.environ.get("ANTHROPIC_API_KEY", "")
         if not api_key:
             return
-        # Fred runs the AI analysis on the latest feed export
-        # fetcher_feed.run_ai_analysis() if it exists, otherwise log
         if hasattr(fetcher_feed, 'run_ai_analysis'):
             fetcher_feed.run_ai_analysis(cfg.get("agents", {}).get("feed", {}), api_key)
     _run_ai_agent(_run, "Fred")
+    import logging; log = logging.getLogger("Fred")
+    _mark_done('fred')
+    try:
+        cfg2 = load_agent_configs()
+        theo = cfg2.get("agents", {}).get("group", {})
+        if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_fred_and_finn":
+            if _both_done('fred', 'finn'):
+                _completion_flags.pop('fred', None); _completion_flags.pop('finn', None)
+                _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                log.info("Theo triggered — both Fred and Finn done")
+    except Exception as e:
+        log.error("Join-check after Fred failed: %s", e)
 
 # ── Finn (scrape AI) ──────────────────────────────────────────────────────────
 def _finn_scheduled_job():
@@ -2411,15 +2526,26 @@ def _finn_scheduled_job():
         if hasattr(fetcher_scrape, 'run_ai_analysis'):
             fetcher_scrape.run_ai_analysis(cfg.get("agents", {}).get("scrape", {}), api_key)
     _run_ai_agent(_run, "Finn")
-    # After Finn: trigger Theo if configured
+    # After Finn: trigger Theo (after_finn or after_fred_and_finn join)
+    import logging; log2 = logging.getLogger("Finn")
+    _mark_done('finn')
     try:
         cfg2 = load_agent_configs()
         theo = cfg2.get("agents", {}).get("group", {})
-        if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_finn":
-            t = _sched_threading.Thread(target=_theo_scheduled_job, daemon=True)
-            t.start()
-    except Exception:
-        pass
+        mode = theo.get("trigger_mode", "")
+        if theo.get("schedule_enabled"):
+            if mode == "after_finn":
+                _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                log2.info("Theo triggered after Finn")
+            elif mode == "after_fred_and_finn":
+                if _both_done('fred', 'finn'):
+                    _completion_flags.pop('fred', None); _completion_flags.pop('finn', None)
+                    _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                    log2.info("Theo triggered — both Fred and Finn done")
+                else:
+                    log2.info("Finn done, waiting for Fred before triggering Theo")
+    except Exception as e:
+        log2.error("Join-check after Finn failed: %s", e)
 
 # ── Fletcher ──────────────────────────────────────────────────────────────────
 def _fletcher_scheduled_job():
@@ -2452,11 +2578,22 @@ def _apply_fletcher_schedule(cfg):
         return
     from apscheduler.triggers.interval import IntervalTrigger as _IT
     days = int(fl.get("interval_days") or 7)
-    start = _make_interval_start(fl.get("schedule_time", "06:00"), days)
+    start_date_str = fl.get("schedule_start_date", "")
+    if start_date_str:
+        import datetime as _dt2
+        try:
+            time_str = fl.get("schedule_time", "06:00")
+            h, m = (time_str.split(":") + ["0"])[:2]
+            start = _dt2.datetime.strptime(start_date_str, "%Y-%m-%d").replace(
+                hour=int(h), minute=int(m), second=0, microsecond=0)
+        except Exception:
+            start = _make_interval_start(fl.get("schedule_time", "06:00"), days)
+    else:
+        start = _make_interval_start(fl.get("schedule_time", "06:00"), days)
     _scheduler.add_job(_fletcher_scheduled_job, _IT(days=days, start_date=start),
                        id=job_id, replace_existing=True)
     import logging; logging.getLogger("scheduler").info(
-        "Fletcher scheduled every %d days at %s", days, fl.get("schedule_time","06:00"))
+        "Fletcher scheduled every %d days at %s, first run: %s", days, fl.get("schedule_time","06:00"), start)
 
 # ── Frank ─────────────────────────────────────────────────────────────────────
 def _frank_scheduled_job():
@@ -2489,11 +2626,22 @@ def _apply_frank_schedule(cfg):
         return
     from apscheduler.triggers.interval import IntervalTrigger as _IT
     days = int(fr.get("interval_days") or 7)
-    start = _make_interval_start(fr.get("schedule_time", "06:00"), days)
+    start_date_str = fr.get("schedule_start_date", "")
+    if start_date_str:
+        import datetime as _dt3
+        try:
+            time_str = fr.get("schedule_time", "06:00")
+            h, m = (time_str.split(":") + ["0"])[:2]
+            start = _dt3.datetime.strptime(start_date_str, "%Y-%m-%d").replace(
+                hour=int(h), minute=int(m), second=0, microsecond=0)
+        except Exception:
+            start = _make_interval_start(fr.get("schedule_time", "06:00"), days)
+    else:
+        start = _make_interval_start(fr.get("schedule_time", "06:00"), days)
     _scheduler.add_job(_frank_scheduled_job, _IT(days=days, start_date=start),
                        id=job_id, replace_existing=True)
     import logging; logging.getLogger("scheduler").info(
-        "Frank scheduled every %d days at %s", days, fr.get("schedule_time","06:00"))
+        "Frank scheduled every %d days at %s, first run: %s", days, fr.get("schedule_time","06:00"), start)
 
 # ── Theo ──────────────────────────────────────────────────────────────────────
 def _theo_scheduled_job():
@@ -2578,6 +2726,9 @@ with app.app_context():
         _cfg0 = load_agent_configs()
         _apply_maja_schedule(_cfg0)
         _apply_nils_schedule(_cfg0)
+        _apply_sol_schedule(_cfg0)
+        _apply_pdf_schedule(_cfg0)
+        _apply_search_schedule(_cfg0)
         _apply_fletcher_schedule(_cfg0)
         _apply_frank_schedule(_cfg0)
         _apply_theo_schedule(_cfg0)
@@ -4200,11 +4351,20 @@ def agents_config():
                 _apply_nils_schedule(cfg)
             elif key == "maya":
                 _apply_maja_schedule(cfg)
+            elif key == "sol_selector":
+                _apply_sol_schedule(cfg)
+            elif key == "pdf":
+                _apply_pdf_schedule(cfg)
+            elif key == "search":
+                _apply_search_schedule(cfg)
         return jsonify({"ok": True})
     # Enrich with next_run from APScheduler
     JOB_MAP = {
         "source_research":   "nils_scheduled",
         "source_maintenance":"maja_scheduled",
+        "sol_selector":      "sol_scheduled",
+        "pdf":               "pdf_scheduled",
+        "search":            "search_scheduled",
         "fletcher_feed":     "fletcher_scheduled",
         "frank_scrape":      "frank_scheduled",
         "group":             "theo_scheduled",
