@@ -2438,6 +2438,14 @@ def _both_done(a, b):
         return False
     return abs((ta - tb).total_seconds()) < _COMPLETION_WINDOW_HOURS * 3600
 
+def _all_done(*keys):
+    """Check that all keys are flagged and within the window of the first one."""
+    times = [_completion_flags.get(k) for k in keys]
+    if not all(times):
+        return False
+    t0 = times[0]
+    return all(abs((t - t0).total_seconds()) < _COMPLETION_WINDOW_HOURS * 3600 for t in times[1:])
+
 # ── Scheduling: Fletcher, Frank, Fred (feed-AI), Finn (scrape-AI), Theo, Ida ──
 
 import threading as _sched_threading
@@ -2507,11 +2515,21 @@ def _fred_scheduled_job():
     try:
         cfg2 = load_agent_configs()
         theo = cfg2.get("agents", {}).get("group", {})
-        if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_fred_and_finn":
-            if _both_done('fred', 'finn'):
-                _completion_flags.pop('fred', None); _completion_flags.pop('finn', None)
-                _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
-                log.info("Theo triggered — both Fred and Finn done")
+        mode = theo.get("trigger_mode", "")
+        if theo.get("schedule_enabled"):
+            if mode == "after_fred_and_finn":
+                if _both_done('fred', 'finn'):
+                    _completion_flags.pop('fred', None); _completion_flags.pop('finn', None)
+                    _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                    log.info("Theo triggered — both Fred and Finn done")
+            elif mode == "after_fred_finn_mats_lena":
+                if _all_done('fred', 'finn', 'mats', 'lena'):
+                    for _k in ('fred', 'finn', 'mats', 'lena'):
+                        _completion_flags.pop(_k, None)
+                    _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                    log.info("Theo triggered — Fred+Finn+Mats+Lena all done")
+                else:
+                    log.info("Fred done, waiting for Finn+Mats+Lena before triggering Theo")
     except Exception as e:
         log.error("Join-check after Fred failed: %s", e)
 
@@ -2544,6 +2562,14 @@ def _finn_scheduled_job():
                     log2.info("Theo triggered — both Fred and Finn done")
                 else:
                     log2.info("Finn done, waiting for Fred before triggering Theo")
+            elif mode == "after_fred_finn_mats_lena":
+                if _all_done('fred', 'finn', 'mats', 'lena'):
+                    for _k in ('fred', 'finn', 'mats', 'lena'):
+                        _completion_flags.pop(_k, None)
+                    _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                    log2.info("Theo triggered — Fred+Finn+Mats+Lena all done")
+                else:
+                    log2.info("Finn done, waiting for Fred+Mats+Lena before triggering Theo")
     except Exception as e:
         log2.error("Join-check after Finn failed: %s", e)
 
@@ -2643,6 +2669,128 @@ def _apply_frank_schedule(cfg):
     import logging; logging.getLogger("scheduler").info(
         "Frank scheduled every %d days at %s, first run: %s", days, fr.get("schedule_time","06:00"), start)
 
+# ── Mats (PDF-AI) ────────────────────────────────────────────────────────────
+def _mats_scheduled_job():
+    def _run():
+        import pdf_runner, importlib, logging
+        log = logging.getLogger("Mats")
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            log.warning("ANTHROPIC_API_KEY not set — skipping Mats")
+            return
+        try:
+            importlib.reload(pdf_runner)
+            pdf_runner.run()
+            log.info("Mats scheduled run completed")
+        except ImportError:
+            log.warning("pdf_runner.py not found — skipping")
+        except Exception as e:
+            log.error("Mats scheduled run failed: %s", e)
+    _run_ai_agent(_run, "Mats")
+    import logging; log_m = logging.getLogger("Mats")
+    _mark_done('mats')
+    try:
+        cfg2 = load_agent_configs()
+        theo = cfg2.get("agents", {}).get("group", {})
+        if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_fred_finn_mats_lena":
+            if _all_done('fred', 'finn', 'mats', 'lena'):
+                for _k in ('fred', 'finn', 'mats', 'lena'):
+                    _completion_flags.pop(_k, None)
+                _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                log_m.info("Theo triggered — Fred+Finn+Mats+Lena all done")
+            else:
+                log_m.info("Mats done, waiting for remaining agents before triggering Theo")
+    except Exception as e:
+        log_m.error("Join-check after Mats failed: %s", e)
+
+def _apply_pdf_schedule(cfg):
+    pdf = cfg.get("agents", {}).get("pdf", {})
+    job_id = "pdf_scheduled"
+    _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
+    if not pdf.get("schedule_enabled"):
+        return
+    if pdf.get("trigger_mode") in ("after_nils",):
+        return  # triggered by predecessor, no own timer
+    from apscheduler.triggers.interval import IntervalTrigger as _IT
+    import datetime as _dt_pdf
+    days = int(pdf.get("interval_days") or 7)
+    start_date_str = pdf.get("schedule_start_date", "")
+    if start_date_str:
+        try:
+            time_str = pdf.get("schedule_time", "07:00")
+            h, m = (time_str.split(":") + ["0"])[:2]
+            start = _dt_pdf.datetime.strptime(start_date_str, "%Y-%m-%d").replace(
+                hour=int(h), minute=int(m), second=0, microsecond=0)
+        except Exception:
+            start = _make_interval_start(pdf.get("schedule_time", "07:00"), days)
+    else:
+        start = _make_interval_start(pdf.get("schedule_time", "07:00"), days)
+    _scheduler.add_job(_mats_scheduled_job, _IT(days=days, start_date=start),
+                       id=job_id, replace_existing=True)
+    import logging; logging.getLogger("scheduler").info(
+        "Mats (pdf) scheduled every %d days, first run: %s", days, start)
+
+# ── Lena (Search-AI) ─────────────────────────────────────────────────────────
+def _lena_scheduled_job():
+    def _run():
+        import search_runner, importlib, logging
+        log = logging.getLogger("Lena")
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            log.warning("ANTHROPIC_API_KEY not set — skipping Lena")
+            return
+        try:
+            importlib.reload(search_runner)
+            search_runner.run()
+            log.info("Lena scheduled run completed")
+        except ImportError:
+            log.warning("search_runner.py not found — skipping")
+        except Exception as e:
+            log.error("Lena scheduled run failed: %s", e)
+    _run_ai_agent(_run, "Lena")
+    import logging; log_l = logging.getLogger("Lena")
+    _mark_done('lena')
+    try:
+        cfg2 = load_agent_configs()
+        theo = cfg2.get("agents", {}).get("group", {})
+        if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_fred_finn_mats_lena":
+            if _all_done('fred', 'finn', 'mats', 'lena'):
+                for _k in ('fred', 'finn', 'mats', 'lena'):
+                    _completion_flags.pop(_k, None)
+                _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                log_l.info("Theo triggered — Fred+Finn+Mats+Lena all done")
+            else:
+                log_l.info("Lena done, waiting for remaining agents before triggering Theo")
+    except Exception as e:
+        log_l.error("Join-check after Lena failed: %s", e)
+
+def _apply_search_schedule(cfg):
+    search = cfg.get("agents", {}).get("search", {})
+    job_id = "search_scheduled"
+    _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
+    if not search.get("schedule_enabled"):
+        return
+    if search.get("trigger_mode") in ("after_nils",):
+        return  # triggered by predecessor, no own timer
+    from apscheduler.triggers.interval import IntervalTrigger as _IT
+    import datetime as _dt_srch
+    days = int(search.get("interval_days") or 7)
+    start_date_str = search.get("schedule_start_date", "")
+    if start_date_str:
+        try:
+            time_str = search.get("schedule_time", "07:30")
+            h, m = (time_str.split(":") + ["0"])[:2]
+            start = _dt_srch.datetime.strptime(start_date_str, "%Y-%m-%d").replace(
+                hour=int(h), minute=int(m), second=0, microsecond=0)
+        except Exception:
+            start = _make_interval_start(search.get("schedule_time", "07:30"), days)
+    else:
+        start = _make_interval_start(search.get("schedule_time", "07:30"), days)
+    _scheduler.add_job(_lena_scheduled_job, _IT(days=days, start_date=start),
+                       id=job_id, replace_existing=True)
+    import logging; logging.getLogger("scheduler").info(
+        "Lena (search) scheduled every %d days, first run: %s", days, start)
+
 # ── Theo ──────────────────────────────────────────────────────────────────────
 def _theo_scheduled_job():
     import logging
@@ -2680,7 +2828,8 @@ def _apply_theo_schedule(cfg):
     _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
     if not th.get("schedule_enabled"):
         return
-    if th.get("trigger_mode") in ("after_finn", "after_fletcher", "after_frank"):
+    if th.get("trigger_mode") in ("after_finn", "after_fletcher", "after_frank",
+                                   "after_fred_and_finn", "after_fred_finn_mats_lena"):
         return  # triggered by predecessor, no own timer
     from apscheduler.triggers.interval import IntervalTrigger as _IT
     days = int(th.get("interval_days") or 7)

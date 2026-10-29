@@ -166,6 +166,7 @@
     after_fletcher: 'nach Fletcher',
     after_frank:    'nach Frank',
     after_fred_and_finn: 'nach Fred &amp; Finn',
+    after_fred_finn_mats_lena: 'nach Fred+Finn+Mats+Lena',
     after_finn:     'nach Finn',
     after_nils:     'nach Nils',
     after_maja:     'nach Maja',
@@ -278,7 +279,7 @@
 
     var fredTriggered   = !!(fred.schedule_enabled  && fred.trigger_mode  === 'after_fletcher');
     var finnTriggered   = !!(finn.schedule_enabled  && finn.trigger_mode  === 'after_frank');
-    var theoAfterFinn   = !!(theo.schedule_enabled  && (theo.trigger_mode === 'after_finn' || theo.trigger_mode === 'after_fred_and_finn'));
+    var theoAfterFinn   = !!(theo.schedule_enabled  && (theo.trigger_mode === 'after_finn' || theo.trigger_mode === 'after_fred_and_finn' || theo.trigger_mode === 'after_fred_finn_mats_lena'));
     var idaAfterTheo    = !!(ida.schedule_enabled   && ida.trigger_mode   === 'after_theo');
     var solAfterNils    = !!(sol.schedule_enabled   && sol.trigger_mode   === 'after_nils');
     var solAfterMaja    = !!(sol.schedule_enabled   && sol.trigger_mode   === 'after_maja');
@@ -327,29 +328,37 @@
     })();
 
 
-    // Mats & Lena: PDF and Search agents
-    var matsTriggered = !!(mats.schedule_enabled && mats.trigger_mode !== 'standalone');
-    var lenaTriggered = !!(lena.schedule_enabled && lena.trigger_mode !== 'standalone');
-    var nilsMatsActive = matsTriggered;
-    var nilsLenaActive = lenaTriggered;
+    // Mats (PDF) + Lena (Suche): parallel KI-agents that feed into Theo
+    var matsToTheo = !!(mats.schedule_enabled && theo.trigger_mode === 'after_fred_finn_mats_lena');
+    var lenaToTheo = !!(lena.schedule_enabled && theo.trigger_mode === 'after_fred_finn_mats_lena');
 
     var chain4 = (function() {
-      // Fork from Nils to Mats and Lena (like chain3 fork)
-      var nilsCard = buildCard('Mats', 'PDF-Analyse', mats, matsTriggered ? nils.next_run : undefined);
-      var lenaCard = buildCard('Lena', 'Web-Suche', lena, lenaTriggered ? nils.next_run : undefined);
-      var arrowMats = buildArrow(nilsMatsActive);
-      var arrowLena = buildArrow(nilsLenaActive);
-      var nilsCardHtml = buildCard('Nils', 'Quell-Recherche', nils);
-      // Fork layout: Nils then two branches side-by-side
-      var nodesHtml = '<div class="ov-node">' + nilsCardHtml + '</div>' +
-        '<div style="display:flex;flex-direction:column;gap:16px;padding:0 0 0 0">' +
-          '<div style="display:flex;align-items:center">' + arrowMats + '<div class="ov-node">' + nilsCard + '</div></div>' +
-          '<div style="display:flex;align-items:center">' + arrowLena + '<div class="ov-node">' + lenaCard + '</div></div>' +
+      // Fork layout: Mats and Lena side-by-side, both pointing to Theo
+      var matsCard  = buildCard('Mats', 'KI-Analyse (PDF)', mats);
+      var lenaCard  = buildCard('Lena', 'KI-Analyse (Suche)', lena);
+      var theoCard  = buildCard('Theo', 'Gruppierung', theo);
+      var arrowMatsTheo = buildArrow(matsToTheo);
+      var arrowLenaTheo = buildArrow(lenaToTheo);
+      var arrowIdaTheo  = buildArrow(idaAfterTheo);
+      var idaCard   = buildCard('Ida', 'Bewertung', ida);
+      var forkHtml =
+        '<div style="display:flex;flex-direction:column;gap:16px">' +
+          '<div style="display:flex;align-items:center">' +
+            '<div class="ov-node">' + matsCard + '</div>' +
+            arrowMatsTheo +
+            '<div class="ov-node">' + theoCard + '</div>' +
+            arrowIdaTheo +
+            '<div class="ov-node">' + idaCard + '</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center">' +
+            '<div class="ov-node">' + lenaCard + '</div>' +
+            arrowLenaTheo +
+          '</div>' +
         '</div>';
       return '<div class="ov-chain">' +
-        '<div class="ov-chain-head"><span class="ov-chain-title">PDF &amp; Suche</span>' +
-        '<span class="ov-chain-sub">Mats (PDF-Dokumente) und Lena (Web-Suche), nach Nils oder eigenst&#228;ndig</span></div>' +
-        '<div class="ov-nodes" style="align-items:flex-start;padding:24px 20px">' + nodesHtml + '</div>' +
+        '<div class="ov-chain-head"><span class="ov-chain-title">PDF &amp; Such-Kette</span>' +
+        '<span class="ov-chain-sub">Mats (PDF-Dokumente) und Lena (Web-Suche) &rarr; Theo &rarr; Ida</span></div>' +
+        '<div class="ov-nodes" style="align-items:flex-start;padding:24px 20px">' + forkHtml + '</div>' +
       '</div>';
     })();
 

@@ -86,7 +86,7 @@
       "schedule_enabled": true,
       "trigger_mode": "standalone",
       "interval_days": 7,
-      "schedule_time": "06:00",
+      "schedule_time": "07:00",
       "schedule_start_date": "2026-11-03"
     },
     "search": {
@@ -97,7 +97,7 @@
       "schedule_enabled": true,
       "trigger_mode": "standalone",
       "interval_days": 7,
-      "schedule_time": "06:00",
+      "schedule_time": "07:30",
       "schedule_start_date": "2026-11-03"
     },
     "group": {
@@ -112,7 +112,7 @@
       "output_format": "## Ausgabeformat – Signale (MATCH)\n\nErstelle eine tabellarische Ausgabe im folgenden Format. Jede Zeile beschreibt eine Gruppe zusammengehöriger Signale.\n\n**Spalten der MATCH-Tabelle:**\n- Spalte 1 (sig1): ID des primären Signals aus Signale (RAW) — das Signal, das die Gruppe anführt\n- Spalte 2 (sig2): ID eines weiteren Signals, das mit sig1 zusammengeführt wird (leer = keine weiteren)\n- Spalte 3 (sig2_type): NEW wenn sig2 ein neu recherchiertes Signal ist | OLD wenn sig2 aus dem letzten Reporting stammt\n- Spalte 4 (sig3): ID eines dritten Signals (optional)\n- Spalte 5 (sig3_type): NEW | OLD\n- Spalte 6 (sig4): ID eines vierten Signals (optional)\n- Spalte 7 (sig4_type): NEW | OLD\n- Spalte 8 (sig5): ID eines fünften Signals (optional)\n- Spalte 9 (sig5_type): NEW | OLD\n\n**Signal-IDs** haben das Format JJMMDDXXXXX (z.B. 260806000042). Jedes Signal aus Signale (RAW) hat eine solche ID. Bestehende Signale aus dem letzten Reporting haben ebenfalls IDs in diesem Format.\n\n**Beispielzeile:**\nsig1=260806000017 | sig2=260806000031 | sig2_type=NEW | sig3=260801000008 | sig3_type=OLD\n\nSignale ohne Überschneidung mit anderen Signalen erscheinen als eigenständige Zeilen mit nur sig1 befüllt (alle anderen Spalten leer).\n\nNach der MATCH-Tabelle: Erstelle zusätzlich eine vollständige Signal-Liste für die redaktionelle Weiterbearbeitung:\n\n**Status:** NEU | UPDATE | (leer = unverändert)\n**Titel:** [Sprechender Action-Titel]\n**Zusammenfassung:** [Bestehende Zusammenfassung. Bei UPDATE: Neuer Absatz mit [TT.MM.JJJJ]: Neue Informationen]\n**Datum:** [Datum des Signals bzw. aktuellstes Datum bei Updates]\n**Entwicklungsstand:** [Beobachtung | Veröffentlicht | Beschlossen | In Kraft]\n**Quelle 1:** [Name] | **Quellenlink 1:** [URL]\n**Quelle 2:** [Name] | **Quellenlink 2:** [URL] (falls vorhanden)\n**Quelle 3:** [Name] | **Quellenlink 3:** [URL] (falls vorhanden)\n\n---",
       "schedule_time": "06:00",
       "schedule_enabled": true,
-      "trigger_mode": "after_fred_and_finn",
+      "trigger_mode": "after_fred_finn_mats_lena",
       "interval_days": 7
     },
     "bewertung": {
