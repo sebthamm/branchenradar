@@ -84,9 +84,10 @@
       "method": "Du durchsuchst die Quellen-URLs nach verlinkten Dokumenten, lädst diese herunter und extrahierst relevante Inhalte aus PDFs und anderen Dokumentformaten. Wenn die gegebene URL eine Übersichtsseite ist, navigiere zunächst zu den spezifischen Dokumentverzeichnissen oder Beschlusslisten — crawle nicht die Homepage selbst.",
       "hint": "Priorisiere aktuelle Leitlinien, Rundschreiben, Beschlüsse und offizielle Bekanntmachungen. Achte auf Versionsnummern und Datumsangaben, um neue von bekannten Dokumenten zu unterscheiden. Ignoriere unveränderte Dokumente. **Wichtig:** Deine Aufgabe ist sammeln, nicht bewerten. Nimm im Zweifel auf — Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent. Nur offensichtlich themenfremde Dokumente weglassen.",
       "schedule_enabled": true,
-      "trigger_mode": "after_nils",
+      "trigger_mode": "standalone",
       "interval_days": 7,
-      "schedule_time": "06:00"
+      "schedule_time": "06:00",
+      "schedule_start_date": "2026-11-03"
     },
     "search": {
       "label": "Search-Agent",
@@ -94,9 +95,10 @@
       "method": "Du verwendest gespeicherte Zugangsdaten oder öffentliche Suchfunktionen, um in geschützten Bereichen oder Datenbanken nach neuen relevanten Inhalten zu suchen. Wenn die gegebene URL eine Einstiegsseite ist, navigiere selbstständig zu den relevanten Inhaltsbereichen (Beschlüsse, Rundschreiben, Neuigkeiten).",
       "hint": "Falls kein direkter Zugang möglich ist, suche nach öffentlichen Zusammenfassungen, Pressemitteilungen oder alternativen Zugangswegen zur gleichen Information. **Wichtig:** Deine Aufgabe ist sammeln, nicht bewerten. Nimm im Zweifel auf — Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent. Nur offensichtlich themenfremde Inhalte weglassen.",
       "schedule_enabled": true,
-      "trigger_mode": "after_nils",
+      "trigger_mode": "standalone",
       "interval_days": 7,
-      "schedule_time": "06:00"
+      "schedule_time": "06:00",
+      "schedule_start_date": "2026-11-03"
     },
     "group": {
       "label": "Gruppierungs-Agent",
