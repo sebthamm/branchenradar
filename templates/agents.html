@@ -28,6 +28,25 @@
   .manual-group { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; }
   .manual-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); white-space: nowrap; }
   .manual-group-buttons { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  /* Nils: manuelle Ausführung */
+  .nils-manual-btn { font-size: 11px; font-weight: 500; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; white-space: nowrap; transition: border-color .15s, color .15s; }
+  .nils-manual-btn:hover { border-color: var(--navy); color: var(--text); }
+  .nils-manual-i { width: 15px; height: 15px; border-radius: 50%; border: 1px solid currentColor; font-size: 9px; font-weight: 700; font-style: italic; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .nils-manual-panel { display: none; border-top: 1px solid var(--border); background: var(--surface2); }
+  .nils-manual-panel.open { display: block; }
+  .nils-manual-inner { padding: 16px 24px; }
+  .nils-manual-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 8px; }
+  .nils-manual-text { font-size: 12px; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+  .nils-manual-text ol { padding-left: 18px; margin: 6px 0; }
+  .nils-manual-text li { margin-bottom: 4px; }
+  .nils-manual-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+  /* Nils: So arbeitet Nils */
+  .nils-props-toggle { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; user-select: none; transition: background .12s; }
+  .nils-props-toggle:hover { background: var(--surface2); color: var(--text); }
+  .nils-props-arrow { font-size: 10px; transition: transform .2s; }
+  .nils-props-arrow.open { transform: rotate(90deg); }
+  .nils-props-panel { display: none; }
+  .nils-props-panel.open { display: block; }
 
   /* Agent cards */
   .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
@@ -293,24 +312,184 @@
           <div>
             <div class="agent-card-firstname">{{ firstname(key) }}</div>
             <div class="agent-card-title">{{ ag.label }}</div>
-            <div class="agent-card-meta">Neue relevante Quellen für das Gesundheitswesen recherchieren und vorschlagen</div>
-          </div>
-        </div>
-        <div class="agent-card-actions">
-          <div class="manual-group">
-            <span class="manual-group-label">Manuell via externe KI</span>
-            <div class="manual-group-buttons">
-              <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm">↓ Quellen-Export</a>
-              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+            <div class="agent-card-meta">
+              Sucht selbstständig nach neuen Quellen für den Branchenradar: analysiert die bestehende Quellenliste, recherchiert gezielt nach fehlenden Behörden, Verbänden und Fachgesellschaften und liefert eine ergänzte Gesamtliste im strukturierten Format zurück.
             </div>
           </div>
         </div>
+        <div id="nils-cost-chips" style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;align-items:flex-end"></div>
+
       </div>
-      <div class="agent-sections">
-        {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
-        {{ section(key, 'method',  'Methode',           ag.method) }}
-        {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
-        {{ section(key, 'output_format', 'Ausgabeformat', ag.get('output_format', ''), 'border-right:none') }}
+
+
+
+      <div class="nils-props-toggle" onclick="toggleNilsSkills()">
+        <span>Nils&#8217; Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+        <span class="nils-props-arrow" id="nils-skills-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="nils-skills-panel">
+        <div style="padding:20px 24px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128270; Web-Recherche</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Sucht im Web gezielt nach Beh&#246;rden, Verb&#228;nden, Fachgesellschaften und Selbstverwaltungsorganen, die noch nicht in der Quellenliste sind.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#9989; Duplikat-Vermeidung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Pr&#252;ft jede gefundene Quelle gegen alle bestehenden K&#252;rzel und schlie&#223;t Duplikate automatisch aus &#8212; nur wirklich neue Eintr&#228;ge werden angelegt.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128196; Strukturierte Ausgabe</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Liefert neue Quellen direkt im TSV-Format mit allen Pflichtfeldern: URL, Region, Prim&#228;rkategorie, relevante Rollen, empfohlene Agenten und Priorit&#228;t.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127919; Fokussierte Suche</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Kann mit einem optionalen Suchfokus gesteuert werden &#8212; z.&#8239;B. &#8222;KV-Landesverb&#228;nde&#8220; oder &#8222;Bundesbeh&#246;rden&#8220;. Ohne Fokus l&#228;uft er &#252;ber alle Kategorien.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128184; Kostenkontrolle</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Pr&#252;ft vor jedem Lauf die konfigurierten Kostenlimits und bricht fr&#252;hzeitig ab, wenn das Budget &#252;berschritten w&#252;rde &#8212; ohne die Quellenliste zu ver&#228;ndern.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128203; Manuelle Vertretung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Kann bei Bedarf auch manuell &#252;ber eine externe KI (z.&#8239;B. Claude.ai) ausgef&#252;hrt werden &#8212; per Quellen-Export und generiertem Prompt.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128270; Recherche-Insights</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Nach jedem Lauf analysiert Nils die gefundenen Quellen in einem zweiten KI-Aufruf: Welche Kategorien sind unterrepr&#228;sentiert? Welche Rollen werden noch nicht gut abgedeckt? Gibt es Hinweise auf Recherchefelder, die bisher fehlen? Die Erkenntnisse erscheinen im Performance Review und helfen, die n&#228;chste Suche gezielter zu steuern.</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="nils-props-toggle" onclick="toggleNilsProps()">
+        <span>So arbeitet Nils <span style="font-weight:400;color:var(--faint)">(Prompt-Anweisungen)</span></span>
+        <span class="nils-props-arrow" id="nils-props-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="nils-props-panel">
+        <div class="agent-sections">
+          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+          {{ section(key, 'method',  'Methode',           ag.method) }}
+          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+          {{ section(key, 'output_format', 'Ausgabeformat', ag.get('output_format', ''), 'border-right:none') }}
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid var(--border);background:var(--surface2)">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:8px">Modell</label>
+          <select id="nils-model-select" onchange="saveNilsModel(this.value)"
+            style="padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;min-width:220px">
+            <option value="claude-opus-4-8">claude-opus-4-8 (Empfehlung)</option>
+            <option value="claude-sonnet-4-6">claude-sonnet-4-6 (schneller, günstiger)</option>
+            <option value="claude-haiku-4-5">claude-haiku-4-5 (am günstigsten)</option>
+          </select>
+          <span id="nils-model-save-msg" style="font-size:11px;color:var(--muted);margin-left:10px"></span>
+        </div>
+      </div>
+
+      <div class="nils-props-toggle" onclick="toggleNilsPerf()" style="border-top:1px solid var(--border)">
+        <span>Nils Performance Review</span>
+        <span class="nils-props-arrow" id="nils-perf-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="nils-perf-panel">
+        <div id="nils-perf-body" style="padding:20px 24px">
+          <div style="color:var(--faint);font-size:13px;font-style:italic">Wird geladen&#x2026;</div>
+        </div>
+      </div>
+
+      <div class="nils-props-toggle" onclick="toggleNilsSched()" style="border-top:1px solid var(--border)">
+        <span>Dann arbeitet Nils</span>
+        <span class="nils-props-arrow" id="nils-sched-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="nils-sched-panel">
+        <div id="nils-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+          <div style="padding:20px 24px;border-right:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+              <input type="checkbox" id="nils-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+              <label for="nils-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+              <div>
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                <input id="nils-interval-days" type="number" min="1" max="365" value="7"
+                  style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+              </div>
+              <div>
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                <input id="nils-sched-time" type="time" value="08:00"
+                  style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+              </div>
+              <div>
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">N&#228;chste Ausf&#252;hrung</label>
+                <input id="nils-next-run-date" type="date"
+                  style="width:140px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveNilsSched()">Zeitplan speichern</button>
+            <span id="nils-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+          </div>
+          <div style="padding:20px 24px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Manuell ausf&#252;hren</div>
+            <button class="btn btn-primary btn-sm" onclick="nilsRunNow(this)" style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+              <span>&#9654; Jetzt ausf&#252;hren</span>
+            </button>
+            <span id="nils-manual-run-msg" style="font-size:12px;color:var(--muted);display:block"></span>
+          </div>
+        </div>
+      </div>
+      <div class="nils-props-toggle" onclick="toggleNilsLimits()" style="border-top:1px solid var(--border)">
+        <span>Nils&#8217; Grenzen</span>
+        <span class="nils-props-arrow" id="nils-limits-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="nils-limits-panel">
+        <div style="padding:20px 24px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Kostenlimits pro Lauf</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Max. Kosten pro Lauf (USD, 0&#160;=&#160;kein Limit)</label>
+              <input id="nils-cost-abs" type="number" min="0" step="0.01" placeholder="z.B. 1.00"
+                style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Max. % &#252;ber Durchschnitt (0&#160;=&#160;kein Limit)</label>
+              <input id="nils-cost-rel" type="number" min="0" step="10" placeholder="z.B. 200"
+                style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
+            <button class="btn btn-primary btn-sm" onclick="saveNilsLimits()">Limits speichern</button>
+            <span id="nils-limits-save-msg" style="font-size:12px;color:var(--muted)"></span>
+          </div>
+        </div>
+      </div>
+      <div class="nils-props-toggle" onclick="toggleNilsManualAcc()" style="border-top:1px solid var(--border)">
+        <span>Nils manuelle Vertretung</span>
+        <span class="nils-props-arrow" id="nils-manual-acc-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="nils-manual-acc-panel">
+        <div class="nils-manual-inner" style="padding:20px 24px">
+          <div class="nils-manual-title">Manuelle Backup-Funktion</div>
+          <div class="nils-manual-text">
+            Falls Nils nicht automatisch ausgef&#252;hrt werden kann, l&#228;sst er sich manuell &#252;ber eine externe KI (z.&thinsp;B. Claude oder ChatGPT) betreiben:
+            <ol>
+              <li><strong>&#8595; Quellen-Export</strong> &ndash; l&#228;dt die aktuelle Quellenliste als TSV-Datei herunter. Diese Datei dient als Kontext f&#252;r die externe KI.</li>
+              <li><strong>Prompt generieren</strong> &ndash; erzeugt Nils&#8217; vollst&#228;ndigen Arbeitsauftrag inklusive aller Anweisungen. Den generierten Text in die KI einf&#252;gen und ausf&#252;hren lassen.</li>
+            </ol>
+            Das Ergebnis (erg&#228;nzte Quellenliste als TSV) kann danach &#252;ber den Quellen-Import wieder eingespielt werden.
+          </div>
+          <div class="nils-manual-buttons">
+            <a href="{{ url_for('sources_export') }}" class="btn btn-secondary btn-sm">&#8595; Quellen-Export</a>
+            <button class="btn btn-secondary btn-sm" onclick="openPrompt('source_research', 'source')">Prompt generieren</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -323,98 +502,247 @@
           <div>
             <div class="agent-card-firstname">{{ firstname(key) }}</div>
             <div class="agent-card-title">{{ ag.label }}</div>
-            <div class="agent-card-meta">Bestehende Quellen vervollständigen, konkretisieren und aktualisieren</div>
+            <div class="agent-card-meta">Bestehende Quellen vervollst&#228;ndigen, konkretisieren und aktualisieren</div>
           </div>
         </div>
-        <div class="agent-card-actions">
-          {% if session.get('role') == 'superadmin' %}
-          <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)">
-            Quellen
-            <input type="number" id="maja-from" min="1" placeholder="von"
-              style="width:56px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-            –
-            <input type="number" id="maja-to" min="1" placeholder="bis"
-              style="width:56px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-          </span>
-          <button class="btn btn-primary btn-sm" id="maja-run-btn" onclick="runMaja()">&#9654; Starten</button>
-          <button class="btn btn-secondary btn-sm" id="maja-test-btn" onclick="runMajaTest()">Test (3 Quellen)</button>
-          {% endif %}
-          <div class="manual-group">
-            <span class="manual-group-label">Manuell via externe KI</span>
-            <div class="manual-group-buttons">
-              <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
+        <div id="maya-cost-chips" style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;align-items:flex-end"></div>
+      </div>
+
+      {# ── So arbeitet Maya ── #}
+      <div class="nils-props-toggle" onclick="toggleMayaSkills()">
+        <span>Majas Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+        <span class="nils-props-arrow" id="maya-skills-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="maya-skills-panel">
+        <div style="padding:20px 24px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128279; Endpoint-Erg&#228;nzung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Sucht f&#252;r jede Quelle die konkreten Einstiegspunkte: RSS-Feeds, Scraping-URLs, PDF-Verzeichnisse und Such-Schnittstellen &#8212; mit dem jeweils passenden Agenten-Typ.</div>
             </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128221; Metadaten-Vervollst&#228;ndigung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Erg&#228;nzt fehlende oder unvollst&#228;ndige Felder: Region, Zugangstyp, erwarteter Aktualisierungsrhythmus und agentenspezifische Hinweise f&#252;r den sp&#228;teren Scraping-Betrieb.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128481; Batch-Verarbeitung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Verarbeitet alle Quellen in Gruppen von 15 &#8212; damit auch gro&#223;e Listen vollst&#228;ndig durchlaufen werden, ohne Token-Limits zu &#252;berschreiten.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128202; Qualit&#228;ts-Insights</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Nach jedem Lauf analysiert Maya ihre eigenen Ergebnisse in einem zweiten KI-Aufruf: Wie viele Quellen haben immer noch keine Endpoints? Welche Felder fehlen h&#228;ufig? Gibt es Muster bei bestimmten Agenten-Typen? Daraus entstehen bis zu 5 konkrete Verbesserungsvorschl&#228;ge &#8212; keine Einzelkritik, sondern systemische Erkenntnisse &#252;ber die Datenbasis.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128269; URL-Validierung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Pr&#252;ft bestehende Endpoints auf Erreichbarkeit und markiert nicht mehr g&#252;ltige URLs automatisch als inaktiv &#8212; damit der Radar nicht auf tote Links verweist.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127919; Teilbereich-Steuerung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Kann manuell auf einen Quellenbereich eingegrenzt werden (z.&#8239;B. Quellen 1&#8211;50), um gezielt einzelne Abschnitte zu bearbeiten oder Kosten zu kontrollieren.</div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      {# Schedule + Model config (superadmin) #}
+      <div class="nils-props-toggle" onclick="toggleMayaProps()">
+        <span>So arbeitet Maya <span style="font-weight:400;color:var(--faint)">(Prompt-Anweisungen)</span></span>
+        <span class="nils-props-arrow" id="maya-props-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="maya-props-panel">
+        <div class="agent-sections">
+          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+          {{ section(key, 'method',  'Methode',           ag.method) }}
+          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+          {{ section(key, 'output_format', 'Ausgabeformat', ag.get('output_format', ''), 'border-right:none') }}
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid var(--border);background:var(--surface2)">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:8px">Modell</label>
+          <select id="maya-model-select" onchange="saveMayaModel(this.value)"
+            style="padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;min-width:260px">
+            <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (Empfehlung, g&#252;nstig)</option>
+            <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
+            <option value="claude-opus-4-8">claude-opus-4-8</option>
+          </select>
+          <span id="maya-model-save-msg" style="font-size:11px;color:var(--muted);margin-left:10px"></span>
+        </div>
+      </div>
+
+      {# ── Maya Performance Review ── #}
+      <div class="nils-props-toggle" onclick="toggleMayaReport()" style="border-top:1px solid var(--border)">
+        <span>Maya Performance Review</span>
+        <span class="nils-props-arrow" id="maya-report-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="maya-report-panel">
+        <div style="padding:20px 24px">
+
+          <!-- Status-Zeile -->
+          <div id="maja-status-text" style="font-size:12px;color:var(--muted);margin-bottom:18px">Wird geladen&#x2026;</div>
+
+          <!-- Qualitäts-KPIs -->
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Quellen-Qualit&#228;t</div>
+          <div id="maya-pr-quality" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:20px">
+            <div style="color:var(--faint);font-size:12px">Wird geladen&#x2026;</div>
+          </div>
+
+          <!-- Lauf-Performance -->
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Lauf-Performance (letzte 10)</div>
+          <div style="overflow-x:auto;margin-bottom:20px">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead>
+                <tr style="background:var(--surface2);text-align:left">
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border)">Datum</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border)">Modell</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:center">Bereich</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Quellen</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">EP erg&#228;nzt</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Dauer</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Token</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Kosten</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:center">Err.</th>
+                </tr>
+              </thead>
+              <tbody id="maya-pr-history">
+                <tr><td colspan="9" style="padding:16px;text-align:center;color:var(--faint)">Wird geladen&#x2026;</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Lerneffekte -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Lerneffekte &amp; Verbesserungsvorschl&#228;ge</div>
+            <span id="maya-pr-insights-count" style="font-size:11px;color:var(--muted)"></span>
+          </div>
+          <div id="maya-pr-insights" style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <div style="padding:16px;text-align:center;color:var(--faint);font-size:12px">Wird geladen&#x2026;</div>
+          </div>
+
+        </div>
+      </div>
+
+      {# ── Dann arbeitet Maya (superadmin) ── #}
       {% if session.get('role') == 'superadmin' %}
-      <div class="agent-sections">
-        <div class="agent-section" style="grid-column:1/-1;border-right:none">
-          <div class="section-label">Automatisierung</div>
-          <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap">
-            <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
-              <input type="checkbox" id="maja-sched-enabled" {{ 'checked' if ag.get('schedule_enabled') else '' }}
-                style="accent-color:var(--navy)" onchange="majaScheduleToggle()">
-              Automatisch ausführen
-            </label>
-            <div id="maja-sched-fields" style="display:{{ 'flex' if ag.get('schedule_enabled') else 'none' }};gap:16px;flex-wrap:wrap;align-items:center">
-              <select id="maja-sched-type" onchange="majaScheduleToggle()"
-                style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-                <option value="monthly"  {{ 'selected' if ag.get('schedule_type','monthly')=='monthly' }}>Monatlich</option>
-                <option value="weekly"   {{ 'selected' if ag.get('schedule_type')=='weekly' }}>Wöchentlich</option>
-              </select>
-              <span id="maja-monthly-fields" style="display:{{ 'none' if ag.get('schedule_type')=='weekly' else 'flex' }};gap:8px;align-items:center">
-                <label style="font-size:12px;color:var(--muted)">am
-                  <input type="number" id="maja-sched-day" value="{{ ag.get('schedule_day','1') }}" min="1" max="28"
-                    style="width:48px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-                  . des Monats
-                </label>
-              </span>
-              <span id="maja-weekly-fields" style="display:{{ 'flex' if ag.get('schedule_type')=='weekly' else 'none' }};gap:8px;align-items:center">
-                <label style="font-size:12px;color:var(--muted)">jeden
-                  <select id="maja-sched-weekday"
-                    style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-                    {% for val, lbl in [('mon','Montag'),('tue','Dienstag'),('wed','Mittwoch'),('thu','Donnerstag'),('fri','Freitag'),('sat','Samstag'),('sun','Sonntag')] %}
-                    <option value="{{ val }}" {{ 'selected' if ag.get('schedule_weekday','mon')==val }}>{{ lbl }}</option>
-                    {% endfor %}
-                  </select>
-                </label>
-              </span>
-              <label style="font-size:12px;color:var(--muted)">um
-                <input type="time" id="maja-sched-time" value="{{ ag.get('schedule_time','08:00') }}"
-                  style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+      <div class="nils-props-toggle" onclick="toggleMayaSched()" style="border-top:1px solid var(--border)">
+        <span>Dann arbeitet Maya</span>
+        <span class="nils-props-arrow" id="maya-sched-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="maya-sched-panel">
+        <div id="maya-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--border)">
+          <div style="padding:20px 24px;border-right:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+              <input type="checkbox" id="maya-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+              <label for="maya-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+            </div>
+            <div style="margin-bottom:14px">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Rhythmus</div>
+              <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer;margin-bottom:8px">
+                <input type="radio" name="maya-trigger-mode" id="maya-trigger-interval" value="interval" checked
+                  style="margin-top:2px;accent-color:var(--primary)" onchange="toggleMayaTriggerMode()">
+                <span>
+                  <strong>Alle x Tage</strong>
+                  <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px">Fester Intervall, unabh&#228;ngig von Nils</span>
+                </span>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer">
+                <input type="radio" name="maya-trigger-mode" id="maya-trigger-after-nils" value="after_nils"
+                  style="margin-top:2px;accent-color:var(--primary)" onchange="toggleMayaTriggerMode()">
+                <span>
+                  <strong>Im Anschluss an Nils</strong>
+                  <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px">Maya startet automatisch nach Nils&#8217; regulärem Zeitplan-Lauf &mdash; nicht bei manueller Ausführung.</span>
+                </span>
               </label>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
-                Modell:
-                <select id="maja-model"
-                  style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-                  <option value="claude-haiku-4-5-20251001" {{ 'selected' if ag.get('maja_model','claude-haiku-4-5-20251001')=='claude-haiku-4-5-20251001' }}>Haiku 4.5 (günstig)</option>
-                  <option value="claude-sonnet-4-6" {{ 'selected' if ag.get('maja_model')=='claude-sonnet-4-6' }}>Sonnet 4.6</option>
-                  <option value="claude-opus-4-8" {{ 'selected' if ag.get('maja_model')=='claude-opus-4-8' }}>Opus 4.8</option>
-                </select>
-              </label>
-              <button class="btn btn-secondary btn-sm" onclick="saveMajaSchedule()">Speichern</button>
-              <span id="maja-sched-ok" style="font-size:11px;color:var(--s-active);display:none">✓ gespeichert</span>
-              <span id="maja-next-run" style="font-size:11px;color:var(--faint)"></span>
+            <div id="maya-interval-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Alle x Tage</label>
+                <input id="maya-interval-days" type="number" min="1" max="365" value="30"
+                  style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Uhrzeit</label>
+                <input id="maya-sched-time" type="time" value="08:00"
+                  style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+              </div>
             </div>
+            <div id="maya-next-run-field" style="margin-bottom:16px">
+              <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">N&#228;chste Ausf&#252;hrung</label>
+              <input id="maya-next-run-date" type="date"
+                style="width:240px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveMayaSched()">Zeitplan speichern</button>
+            <span id="maya-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+          </div>
+          <div style="padding:20px 24px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Manuell ausf&#252;hren</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+              <span style="font-size:12px;color:var(--muted)">Quellen</span>
+              <input type="number" id="maja-from" min="1" placeholder="von"
+                style="width:64px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+              <span style="font-size:12px;color:var(--muted)">&#8211;</span>
+              <input type="number" id="maja-to" min="1" placeholder="bis"
+                style="width:64px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+            </div>
+            <span style="font-size:11px;color:var(--faint);display:block;margin-bottom:12px">Leer = alle Quellen</span>
+            <button class="btn btn-primary btn-sm" onclick="mayaRunNow(this)" style="display:flex;align-items:center;gap:6px" id="maja-run-btn">
+              <span>&#9654; Jetzt ausf&#252;hren</span>
+            </button>
+            <span id="maya-manual-run-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nils-props-toggle" onclick="toggleMayaLimits()" style="border-top:1px solid var(--border)">
+        <span>Mayas Grenzen</span>
+        <span class="nils-props-arrow" id="maya-limits-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="maya-limits-panel">
+        <div style="padding:20px 24px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Kostenlimits pro Lauf</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Max. Kosten pro Lauf (USD, 0&#160;=&#160;kein Limit)</label>
+              <input id="maya-cost-abs" type="number" min="0" step="0.01" placeholder="z.B. 1.00"
+                style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Max. % &#252;ber Durchschnitt (0&#160;=&#160;kein Limit)</label>
+              <input id="maya-cost-rel" type="number" min="0" max="500" step="10" placeholder="z.B. 200"
+                style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
+            <button class="btn btn-primary btn-sm" onclick="saveMayaLimits()">Limits speichern</button>
+            <span id="maya-limits-save-msg" style="font-size:12px;color:var(--muted)"></span>
+          </div>
+        </div>
+      </div>
+
+      {# ── Maya manuelle Vertretung ── #}
+      <div class="nils-props-toggle" onclick="toggleMayaManual()" style="border-top:1px solid var(--border)">
+        <span>Maya manuelle Vertretung</span>
+        <span class="nils-props-arrow" id="maya-manual-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="maya-manual-panel">
+        <div style="padding:20px 24px">
+          <div class="nils-manual-title">Manuelle Backup-Funktion</div>
+          <div class="nils-manual-text" style="margin-bottom:16px">
+            Falls Maya nicht automatisch ausgef&#252;hrt werden kann, l&#228;sst sie sich manuell &#252;ber eine externe KI (z.&thinsp;B. Claude oder ChatGPT) betreiben:
+            Prompt generieren, in die KI einf&#252;gen und ausf&#252;hren lassen.
+          </div>
+          <div class="nils-manual-buttons">
+            <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}', 'source')">Prompt generieren</button>
           </div>
         </div>
       </div>
       {% endif %}
-
-      <div class="agent-sections">
-        {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
-        {{ section(key, 'method',  'Methode',           ag.method) }}
-        {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
-        {{ section(key, 'output_format', 'Ausgabeformat', ag.get('output_format', ''), 'border-right:none') }}
-      </div>
-      <div class="fletcher-status-bar">
-        <span class="fletcher-status-text" id="maja-status-text">Noch nicht gestartet</span>
-      </div>
     </div>
 
     {# ── Sol – Selektor-Finder ── #}
@@ -436,10 +764,55 @@
         </div>
       </div>
       {# Configurable runtime parameters (superadmin only) #}
+      <div class="nils-props-toggle" onclick="toggleSolSkills()">
+        <span>Sols Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+        <span class="nils-props-arrow" id="sol-skills-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="sol-skills-panel">
+        <div style="padding:20px 24px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128269; HTML-Seitenanalyse</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Ruft jede Quell-URL ab, parst das HTML und analysiert die Link-Struktur &#8212; ohne manuelle Eingriffe oder KI-Entscheidungen.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127919; CSS-Selektor-Erkennung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Findet automatisch den CSS-Selektor, der auf der Seite die meisten konsistenten Artikel-Links trifft &#8212; und pr&#252;ft ihn gegen eine Mindestanzahl an &#220;bereinstimmungen.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128683; Navigationselemente ausschlie&#223;en</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Filtert automatisch Header-, Footer- und Navigationslinks heraus, damit der erkannte Selektor wirklich auf Inhaltslinks zeigt &#8212; nicht auf Men&#252;punkte.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128196; Direktes Einschreiben</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Tr&#228;gt den gefundenen Selektor sofort in die sources.json ein &#8212; Frank kann die Quelle beim n&#228;chsten Lauf direkt verwenden, ohne manuellen Zwischenschritt.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#9654; Batch-Begrenzung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Verarbeitet pro Lauf eine konfigurierbare Anzahl an Endpunkten (max_per_run). Verbleibende werden beim n&#228;chsten Lauf aufgegriffen &#8212; der Fortschritt geht nicht verloren.</div>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128203; Fehlerstatus-Protokoll</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Dokumentiert f&#252;r jeden gepr&#252;ften Endpunkt ob ein Selektor gefunden wurde, ob die Seite nicht erreichbar war oder ob die Link-Mindestanzahl nicht erf&#252;llt wurde.</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       {% if session.get('role') == 'superadmin' %}
-      <div class="agent-sections">
-        <div class="agent-section" style="grid-column: 1 / -1; border-right: none">
-          <div class="section-label">Konfiguration</div>
+      <div class="nils-props-toggle" onclick="toggleSolConfig()">
+        <span>So arbeitet Sol <span style="font-weight:400;color:var(--faint)">(Einstellungen)</span></span>
+        <span class="nils-props-arrow" id="sol-config-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="sol-config-panel">
+        <div style="padding:20px 24px">
           <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:8px">
             <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
               Timeout (s):
@@ -457,16 +830,40 @@
                 style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
             </label>
             <button class="btn btn-secondary btn-sm" onclick="saveSolConfig()">Speichern</button>
-            <span id="sol-config-ok" style="font-size:11px;color:var(--s-active);display:none">✓ gespeichert</span>
+            <span id="sol-config-ok" style="font-size:11px;color:var(--s-active);display:none">&#10003; gespeichert</span>
           </div>
           <div style="font-size:11px;color:var(--faint)">
-            <strong>Timeout:</strong> HTTP-Timeout pro Seite &nbsp;·&nbsp;
-            <strong>Min. Links:</strong> Mindestanzahl übereinstimmender Links damit ein Selektor akzeptiert wird &nbsp;·&nbsp;
-            <strong>Max. pro Lauf:</strong> Endpunkte pro Durchlauf (restliche beim nächsten Lauf)
+            <strong>Timeout:</strong> HTTP-Timeout pro Seite &nbsp;&middot;&nbsp;
+            <strong>Min. Links:</strong> Mindestanzahl &#252;bereinstimmender Links &nbsp;&middot;&nbsp;
+            <strong>Max. pro Lauf:</strong> Endpunkte pro Durchlauf
           </div>
         </div>
       </div>
+
+      <div class="nils-props-toggle" onclick="toggleSolSched()">
+        <span>Dann arbeitet Sol <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+        <span class="nils-props-arrow" id="sol-sched-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="sol-sched-panel">
+        <div style="padding:20px 24px">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
+            <strong style="color:var(--text)">Sol l&#228;uft auf Abruf.</strong>
+            Kein automatischer Zeitplan hinterlegt. Sol wird manuell gestartet, sobald neue Quellen ohne CSS-Selektor in der sources.json auftauchen &#8212; typisch nach einem Nils-Lauf, der neue Scrape-Quellen eingetragen hat. Nach dem Sol-Lauf kann Frank die neuen Endpunkte sofort crawlen.
+          </div>
+        </div>
+      </div>
+
+      <div class="nils-props-toggle" onclick="toggleSolPerf()">
+        <span>Performance Review</span>
+        <span class="nils-props-arrow" id="sol-perf-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="sol-perf-panel">
+        <div style="padding:20px 24px" id="sol-perf-body">
+          <div style="color:var(--faint);font-size:13px">Wird geladen&#8230;</div>
+        </div>
+      </div>
       {% endif %}
+
       <div class="fletcher-status-bar">
         <span class="fletcher-status-text" id="sol-status-text">Noch nicht gestartet</span>
       </div>
@@ -503,8 +900,85 @@
           </div>
           <div class="agent-card-actions">
             <button class="btn btn-primary btn-sm" id="fletcher-run-btn" onclick="runFletcher()">&#9654; Starten</button>
-            <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export für Lars</a>
-            <div class="manual-group">
+            <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Lars</a>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleFletcherSkills()">
+          <span>Fletchers Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+          <span class="nils-props-arrow" id="fletcher-skills-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="fletcher-skills-panel">
+          <div style="padding:20px 24px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128225; Feed-Abruf</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Ruft RSS- und Atom-Feeds aller Feed-Quellen ab &#8212; deterministisch, ohne KI-Interpretation, vollst&#228;ndig und reproduzierbar.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#9989; Deduplizierung</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Erkennt bereits gesehene Eintr&#228;ge anhand gespeicherter IDs und liefert ausschlie&#223;lich echte Neuigkeiten &#8212; kein Rauschen durch Wiederholungen.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128269; Neue-Eintr&#228;ge-Erkennung</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Vergleicht jeden abgerufenen Feed-Eintrag mit dem gespeicherten Zustand und klassifiziert ihn pr&#228;zise als neu oder bereits bekannt.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128202; Quellen-Bericht</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Erstellt nach jedem Lauf eine auditierbare &#220;bersicht: wie viele Quellen gepr&#252;ft, wie viele neue Eintr&#228;ge je Quelle, welche Quellen fehlerhaft waren.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128196; Strukturierter Export</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Stellt alle neuen Eintr&#228;ge als strukturierten Export f&#252;r Lars bereit &#8212; mit URL, Titel, Datum und Quell-Kuerzel.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128737; Fehlerprotokoll</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Dokumentiert nicht erreichbare oder fehlerhafte Feed-Quellen separat, damit mangelhafte Quellen gezielt nachbearbeitet werden k&#246;nnen.</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="nils-props-toggle" onclick="toggleFletcherDesc()">
+          <span>So arbeitet Fletcher <span style="font-weight:400;color:var(--faint)">(Konfiguration)</span></span>
+          <span class="nils-props-arrow" id="fletcher-desc-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="fletcher-desc-panel">
+          <div class="agent-sections" style="border:none">
+            {{ section('fletcher_feed', 'beschreibung', 'Beschreibung', fag.get('beschreibung',''), 'border-right:none') }}
+            {{ section('fletcher_feed', 'konfiguration', 'Konfiguration', fag.get('konfiguration',''), 'border-right:none') }}
+          </div>
+        </div>
+
+        <div class="nils-props-toggle" onclick="toggleFletcherSched()">
+          <span>Dann arbeitet Fletcher <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span class="nils-props-arrow" id="fletcher-sched-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="fletcher-sched-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
+              <strong style="color:var(--text)">Fletcher l&#228;uft auf Abruf.</strong>
+              Kein automatischer Zeitplan hinterlegt. Fletcher wird manuell gestartet &#8212; typisch wenn neue Feed-Quellen hinzugekommen sind oder Lars frische Eintr&#228;ge f&#252;r seinen n&#228;chsten Analysezyklus ben&#246;tigt. Nach dem Lauf exportiert Fletcher die Ergebnisse direkt f&#252;r Lars.
+            </div>
+          </div>
+        </div>
+
+        <div class="nils-props-toggle" onclick="toggleFletcherManual()">
+          <span>Manuelle Vertretung <span style="font-weight:400;color:var(--faint)">(externe KI)</span></span>
+          <span class="nils-props-arrow" id="fletcher-manual-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="fletcher-manual-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">
+              Falls Fletcher nicht verf&#252;gbar ist oder eine schnelle manuelle Priorisierung ben&#246;tigt wird, kann der Feed-Suchauftrag als Prompt an eine externe KI &#252;bergeben werden.
+            </div>
+            <div class="manual-group" style="display:inline-flex;align-items:center;gap:10px">
               <span class="manual-group-label">Manuell via externe KI</span>
               <div class="manual-group-buttons">
                 <button class="btn btn-secondary btn-sm" onclick="openPrompt('feed','search')">Prompt Lars</button>
@@ -512,15 +986,22 @@
             </div>
           </div>
         </div>
-        <div class="agent-sections">
-          {{ section('fletcher_feed', 'beschreibung', 'Beschreibung', fag.get('beschreibung',''), 'border-right:none') }}
-          {{ section('fletcher_feed', 'konfiguration', 'Konfiguration', fag.get('konfiguration',''), 'border-right:none') }}
+
+        <div class="nils-props-toggle" onclick="toggleFletcherPerf()">
+          <span>Performance Review</span>
+          <span class="nils-props-arrow" id="fletcher-perf-arrow">&#9658;</span>
         </div>
+        <div class="nils-props-panel" id="fletcher-perf-panel">
+          <div style="padding:20px 24px" id="fletcher-perf-body">
+            <div style="color:var(--faint);font-size:13px">Wird geladen&#8230;</div>
+          </div>
+        </div>
+
         <div class="fletcher-status-bar">
           <span class="fletcher-status-text" id="fletcher-status-text">Noch nicht gestartet</span>
         </div>
       </div>
-      {# Lars-Card #}
+      {# Fred-Card #}
       <div class="agent-card" id="card-{{ key }}" style="border-radius:0 0 10px 10px;border-top:none">
         <div class="agent-card-head">
           <div class="agent-card-identity">
@@ -531,22 +1012,76 @@
               <div class="agent-card-meta"><span class="source-count-badge">{{ src_count }} Quell{{ 'e' if src_count == 1 else 'en' }}</span></div>
             </div>
           </div>
-          <div class="agent-card-actions">
-            <div class="manual-group">
-              <span class="manual-group-label">Manuell via externe KI</span>
-              <div class="manual-group-buttons">
-                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+          <div class="agent-card-actions"></div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleFredSkills()">
+          <span>Freds Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+          <span class="nils-props-arrow" id="fred-skills-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="fred-skills-panel">
+          <div style="padding:20px 24px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128269; Inhalts-Analyse</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Bewertet jeden neuen Feed-Eintrag inhaltlich auf Relevanz f&#252;r das Gesundheitswesen &#8212; unabh&#228;ngig von Quelle oder Format.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127919; Relevanzfilter</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Unterscheidet echte Signale von Pressemitteilungen ohne Neuigkeitswert, Wiederholungen und branchenfremdem Rauschen.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127991; Kategorisierung</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Ordnet erkannte Inhalte thematisch ein: Versorgung, Abrechnung, Recht, Praxis &#8212; strukturiert f&#252;r die Weiterverarbeitung.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128196; Strukturierter Output</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Liefert bewertete Eintr&#228;ge im festgelegten Export-Format f&#252;r die redaktionelle Weiterverarbeitung durch Theo und Ida.</div>
               </div>
             </div>
           </div>
         </div>
-        <div class="agent-sections">
-          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
-          {{ section(key, 'method',  'Methode',           ag.method) }}
-          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
-          <div class="agent-section" style="border-right:none">
-            <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span></div>
-            <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten konfiguriert.</div>
+        <div class="nils-props-toggle" onclick="toggleFredProps()">
+          <span>So arbeitet Fred <span style="font-weight:400;color:var(--faint)">(Prompt-Anweisungen)</span></span>
+          <span class="nils-props-arrow" id="fred-props-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="fred-props-panel">
+          <div class="agent-sections" style="border:none">
+            {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+            {{ section(key, 'method',  'Methode',           ag.method) }}
+            {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+            <div class="agent-section" style="border-right:none">
+              <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt f&#252;r alle Such-Agenten</span></div>
+              <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten (Finn) konfiguriert.</div>
+            </div>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleFredSched()">
+          <span>Dann arbeitet Fred <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span class="nils-props-arrow" id="fred-sched-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="fred-sched-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
+              <strong style="color:var(--text)">Fred l&#228;uft nach Fletcher.</strong>
+              Nach jedem Fletcher-Lauf exportiert Fletcher die neuen Feed-Eintr&#228;ge &#8212; Fred &#252;bernimmt die inhaltliche Bewertung und Kategorisierung. Kein automatischer Zeitplan: Fred wird manuell oder &#252;ber den Prompt-Workflow ausgef&#252;hrt.
+            </div>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleFredManual()">
+          <span>Manuelle Vertretung <span style="font-weight:400;color:var(--faint)">(externe KI)</span></span>
+          <span class="nils-props-arrow" id="fred-manual-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="fred-manual-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">
+              Den generierten Prompt an eine externe KI &#252;bergeben, wenn Fred nicht verf&#252;gbar ist oder ein manueller Analysedurchlauf ben&#246;tigt wird.
+            </div>
+            <div class="manual-group" style="display:inline-flex;align-items:center;gap:10px">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <div class="manual-group-buttons">
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('feed','search')">Prompt generieren</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -573,8 +1108,85 @@
           </div>
           <div class="agent-card-actions">
             <button class="btn btn-primary btn-sm" id="frank-run-btn" onclick="runFrank()">&#9654; Starten</button>
-            <a href="{{ url_for('fetcher_scrape_export') }}" class="btn btn-secondary btn-sm">&#8595; Export für Finn</a>
-            <div class="manual-group">
+            <a href="{{ url_for('fetcher_scrape_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Finn</a>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleFrankSkills()">
+          <span>Franks Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+          <span class="nils-props-arrow" id="frank-skills-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="frank-skills-panel">
+          <div style="padding:20px 24px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128247; HTML-Scraping</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Ruft konfigurierte HTML-Endpunkte ab und extrahiert neue Links mit den von Sol und Maya eingetragenen CSS-Selektoren &#8212; deterministisch und ohne KI-Eingriff.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#9989; Deduplizierung</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Vergleicht neue Links gegen den gespeicherten Zustand je Endpunkt &#8212; nur wirklich neue URLs werden weitergeleitet, Wiederholungen werden still &#252;bersprungen.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128203; State-Verwaltung</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">F&#252;hrt den Scrape-Zustand je Endpoint persistent fort: was beim letzten Lauf gesehen wurde, bleibt bekannt &#8212; auch &#252;ber Neustarts hinweg.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128196; Strukturierter Export</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Stellt alle neuen Eintr&#228;ge als strukturierten Export f&#252;r Finn bereit &#8212; mit URL, Quellenk&#252;rzel und Zeitstempel.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128202; Endpunkt-Bericht</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Dokumentiert nach jedem Lauf f&#252;r jeden Endpunkt: Status, Anzahl neuer Eintr&#228;ge und eventuelle Fehler &#8212; auditierbar pro Quelle.</div>
+              </div>
+
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128737; Fehlerprotokoll</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Kennzeichnet Endpunkte die nicht erreichbar waren oder keinen g&#252;ltigen Selektor haben, damit Sol bei Bedarf erneut angesetzt werden kann.</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="nils-props-toggle" onclick="toggleFrankDesc()">
+          <span>So arbeitet Frank <span style="font-weight:400;color:var(--faint)">(Konfiguration)</span></span>
+          <span class="nils-props-arrow" id="frank-desc-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="frank-desc-panel">
+          <div class="agent-sections" style="border:none">
+            {{ section('frank_scrape', 'beschreibung', 'Beschreibung', frag.get('beschreibung',''), 'border-right:none') }}
+            {{ section('frank_scrape', 'konfiguration', 'Konfiguration', frag.get('konfiguration',''), 'border-right:none') }}
+          </div>
+        </div>
+
+        <div class="nils-props-toggle" onclick="toggleFrankSched()">
+          <span>Dann arbeitet Frank <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span class="nils-props-arrow" id="frank-sched-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="frank-sched-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
+              <strong style="color:var(--text)">Frank l&#228;uft auf Abruf.</strong>
+              Kein automatischer Zeitplan hinterlegt. Frank wird manuell gestartet &#8212; typisch nach einem Sol-Lauf, der neue Selektoren eingetragen hat, oder wenn Finn frische Scrape-Daten f&#252;r seinen n&#228;chsten Analysezyklus braucht. Nach dem Lauf exportiert Frank die Ergebnisse direkt f&#252;r Finn.
+            </div>
+          </div>
+        </div>
+
+        <div class="nils-props-toggle" onclick="toggleFrankManual()">
+          <span>Manuelle Vertretung <span style="font-weight:400;color:var(--faint)">(externe KI)</span></span>
+          <span class="nils-props-arrow" id="frank-manual-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="frank-manual-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">
+              Falls Frank nicht verf&#252;gbar ist oder eine schnelle manuelle Priorisierung ben&#246;tigt wird, kann der Scrape-Auftrag als Prompt an eine externe KI &#252;bergeben werden.
+            </div>
+            <div class="manual-group" style="display:inline-flex;align-items:center;gap:10px">
               <span class="manual-group-label">Manuell via externe KI</span>
               <div class="manual-group-buttons">
                 <button class="btn btn-secondary btn-sm" onclick="openPrompt('scrape','search')">Prompt Finn</button>
@@ -582,10 +1194,17 @@
             </div>
           </div>
         </div>
-        <div class="agent-sections">
-          {{ section('frank_scrape', 'beschreibung', 'Beschreibung', frag.get('beschreibung',''), 'border-right:none') }}
-          {{ section('frank_scrape', 'konfiguration', 'Konfiguration', frag.get('konfiguration',''), 'border-right:none') }}
+
+        <div class="nils-props-toggle" onclick="toggleFrankPerf()">
+          <span>Performance Review</span>
+          <span class="nils-props-arrow" id="frank-perf-arrow">&#9658;</span>
         </div>
+        <div class="nils-props-panel" id="frank-perf-panel">
+          <div style="padding:20px 24px" id="frank-perf-body">
+            <div style="color:var(--faint);font-size:13px">Wird geladen&#8230;</div>
+          </div>
+        </div>
+
         <div class="fletcher-status-bar">
           <span class="fletcher-status-text" id="frank-status-text">Noch nicht gestartet</span>
         </div>
@@ -601,33 +1220,92 @@
               <div class="agent-card-meta"><span class="source-count-badge">{{ src_count }} Quell{{ 'e' if src_count == 1 else 'en' }}</span></div>
             </div>
           </div>
-          <div class="agent-card-actions">
-            <button class="btn btn-primary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+          <div class="agent-card-actions"></div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleFinnSkills()">
+          <span>Finns Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+          <span class="nils-props-arrow" id="finn-skills-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="finn-skills-panel">
+          <div style="padding:20px 24px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128269; Inhalts-Analyse</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Bewertet gescrapte Links und Seiteninhalte auf Relevanz f&#252;r das Gesundheitswesen &#8212; unabh&#228;ngig von Quellentyp und HTML-Struktur.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127919; Link-Qualifikation</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Entscheidet ob eine URL zu relevantem Inhalt f&#252;hrt oder zu Navigation, Werbung oder nicht-signalw&#252;rdigen Seiten.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127758; Kontexterkennung</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Passt Relevanzbeurteilung an den Quellentyp an: KV, Berufsverband, Beh&#246;rde, Fachmedium &#8212; jeder hat seinen eigenen Relevanzrahmen.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128196; Strukturierter Export</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Liefert qualifizierte Eintr&#228;ge im gemeinsamen Ausgabeformat f&#252;r die redaktionelle Weiterverarbeitung durch Theo und Ida.</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="agent-sections">
-          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
-          {{ section(key, 'method',  'Methode',           ag.method) }}
-          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
-          <div class="agent-section has-collapse" style="border-right:none">
-            <div class="section-label">
-              Ausgabeformat
-              {% if session.get('role') == 'superadmin' %}
-              <span class="edit-btns" style="font-weight:400;font-size:10px;color:var(--faint)">
-                gilt für alle Such-Agenten
-                <button class="edit-btn" onclick="startEdit('__shared__','output_format',this)">Bearbeiten</button>
-                <button class="save-btn" onclick="saveField('__shared__','output_format',this)">Speichern</button>
-                <span class="save-ok">&#10003;</span>
-              </span>
-              {% else %}
-              <span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span>
-              {% endif %}
+        <div class="nils-props-toggle" onclick="toggleFinnProps()">
+          <span>So arbeitet Finn <span style="font-weight:400;color:var(--faint)">(Prompt-Anweisungen)</span></span>
+          <span class="nils-props-arrow" id="finn-props-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="finn-props-panel">
+          <div class="agent-sections" style="border:none">
+            {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+            {{ section(key, 'method',  'Methode',           ag.method) }}
+            {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+            <div class="agent-section has-collapse" style="border-right:none">
+              <div class="section-label">
+                Ausgabeformat
+                {% if session.get('role') == 'superadmin' %}
+                <span class="edit-btns" style="font-weight:400;font-size:10px;color:var(--faint)">
+                  gilt f&#252;r alle Such-Agenten
+                  <button class="edit-btn" onclick="startEdit('__shared__','output_format',this)">Bearbeiten</button>
+                  <button class="save-btn" onclick="saveField('__shared__','output_format',this)">Speichern</button>
+                  <span class="save-ok">&#10003;</span>
+                </span>
+                {% else %}
+                <span style="font-weight:400;font-size:10px;color:var(--faint)">gilt f&#252;r alle Such-Agenten</span>
+                {% endif %}
+              </div>
+              <div class="section-text{% if not shared_fmt %} placeholder{% endif %} section-collapsible collapsed"
+                   id="text-__shared__-output_format"
+                   onclick="toggleSection(this)">{{ shared_fmt if shared_fmt else '&#8212; noch nicht konfiguriert' }}</div>
+              <div class="section-toggle-hint" onclick="toggleSection(document.getElementById('text-__shared__-output_format'))">&#9660; mehr anzeigen</div>
+              <textarea class="section-textarea" id="ta-__shared__-output_format">{{ shared_fmt }}</textarea>
             </div>
-            <div class="section-text{% if not shared_fmt %} placeholder{% endif %} section-collapsible collapsed"
-                 id="text-__shared__-output_format"
-                 onclick="toggleSection(this)">{{ shared_fmt if shared_fmt else '—  noch nicht konfiguriert' }}</div>
-            <div class="section-toggle-hint" onclick="toggleSection(document.getElementById('text-__shared__-output_format'))">▼ mehr anzeigen</div>
-            <textarea class="section-textarea" id="ta-__shared__-output_format">{{ shared_fmt }}</textarea>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleFinnSched()">
+          <span>Dann arbeitet Finn <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span class="nils-props-arrow" id="finn-sched-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="finn-sched-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
+              <strong style="color:var(--text)">Finn l&#228;uft nach Frank.</strong>
+              Nach jedem Frank-Lauf exportiert Frank die neuen Scrape-Eintr&#228;ge &#8212; Finn &#252;bernimmt die inhaltliche Qualifikation und Bewertung. Kein automatischer Zeitplan: Finn wird manuell oder &#252;ber den Prompt-Workflow ausgef&#252;hrt.
+            </div>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleFinnManual()">
+          <span>Manuelle Vertretung <span style="font-weight:400;color:var(--faint)">(externe KI)</span></span>
+          <span class="nils-props-arrow" id="finn-manual-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="finn-manual-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">
+              Den generierten Prompt an eine externe KI &#252;bergeben, wenn Finn nicht verf&#252;gbar ist oder ein manueller Analysedurchlauf ben&#246;tigt wird.
+            </div>
+            <div class="manual-group" style="display:inline-flex;align-items:center;gap:10px">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <div class="manual-group-buttons">
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('scrape','search')">Prompt generieren</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -650,22 +1328,76 @@
               <div class="agent-card-meta"><span class="source-count-badge">{{ src_count }} Quell{{ 'e' if src_count == 1 else 'en' }}</span></div>
             </div>
           </div>
-          <div class="agent-card-actions">
-            <div class="manual-group">
-              <span class="manual-group-label">Manuell via externe KI</span>
-              <div class="manual-group-buttons">
-                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+          <div class="agent-card-actions"></div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleMatsSkills()">
+          <span>Mats&#8217; Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+          <span class="nils-props-arrow" id="mats-skills-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="mats-skills-panel">
+          <div style="padding:20px 24px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128196; PDF-Volltextanalyse</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Liest komplexe Dokumente vollst&#228;ndig &#8212; mehrspaltige Layouts, Tabellen, eingebettete Listen. Kein vorgelagerter Fetcher n&#246;tig.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127963; Beh&#246;rden-Kompetenz</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Versteht Verwaltungssprache, Beschlussformate und Richtlinienstruktur aus dem Gesundheitswesen &#8212; von KVen, Kammern und Ministerien.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127919; Relevanzbeurteilung</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Erkennt welche Teile eines Dokuments signalw&#252;rdig sind und extrahiert gezielt die relevanten Kernaussagen.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128203; Strukturierter Export</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Liefert extrahierte Kernaussagen als Signal im gemeinsamen Format f&#252;r die redaktionelle Weiterverarbeitung.</div>
               </div>
             </div>
           </div>
         </div>
-        <div class="agent-sections">
-          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
-          {{ section(key, 'method',  'Methode',           ag.method) }}
-          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
-          <div class="agent-section" style="border-right:none">
-            <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span></div>
-            <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten konfiguriert.</div>
+        <div class="nils-props-toggle" onclick="toggleMatsProps()">
+          <span>So arbeitet Mats <span style="font-weight:400;color:var(--faint)">(Prompt-Anweisungen)</span></span>
+          <span class="nils-props-arrow" id="mats-props-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="mats-props-panel">
+          <div class="agent-sections" style="border:none">
+            {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+            {{ section(key, 'method',  'Methode',           ag.method) }}
+            {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+            <div class="agent-section" style="border-right:none">
+              <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt f&#252;r alle Such-Agenten</span></div>
+              <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten (Finn) konfiguriert.</div>
+            </div>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleMatsSched()">
+          <span>Dann arbeitet Mats <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span class="nils-props-arrow" id="mats-sched-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="mats-sched-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
+              <strong style="color:var(--text)">Mats l&#228;uft auf Abruf.</strong>
+              Er wird gestartet, wenn neue PDF-Quellen in der sources.json eingetragen wurden oder bekannte Quellen aktualisiert worden sind. Kein automatischer Zeitplan &#8212; PDF-Analyse ist ressourcenintensiver als Feed- oder Scrape-Verarbeitung.
+            </div>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleMatsManual()">
+          <span>Manuelle Vertretung <span style="font-weight:400;color:var(--faint)">(externe KI)</span></span>
+          <span class="nils-props-arrow" id="mats-manual-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="mats-manual-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">
+              Den generierten Prompt an eine externe KI &#252;bergeben, wenn Mats nicht verf&#252;gbar ist oder ein manueller Analysedurchlauf ben&#246;tigt wird.
+            </div>
+            <div class="manual-group" style="display:inline-flex;align-items:center;gap:10px">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <div class="manual-group-buttons">
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('pdf','search')">Prompt generieren</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -688,22 +1420,76 @@
               <div class="agent-card-meta"><span class="source-count-badge">{{ src_count }} Quell{{ 'e' if src_count == 1 else 'en' }}</span></div>
             </div>
           </div>
-          <div class="agent-card-actions">
-            <div class="manual-group">
-              <span class="manual-group-label">Manuell via externe KI</span>
-              <div class="manual-group-buttons">
-                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','search')">Prompt generieren</button>
+          <div class="agent-card-actions"></div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleLenaSkills()">
+          <span>Lenas Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+          <span class="nils-props-arrow" id="lena-skills-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="lena-skills-panel">
+          <div style="padding:20px 24px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128270; Aktive Websuche</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Recherchiert proaktiv in Suchmaschinen, Nachrichtenaggregatoren und Fachportalen &#8212; jenseits der definierten Quellen.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128279; Neue Quellen entdecken</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Findet relevante Signale und Quellen, die im bekannten Quellinventar noch nicht erfasst sind &#8212; und schl&#228;gt sie zur Aufnahme vor.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127919; Relevanzbeurteilung</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Bewertet gefundene Inhalte nach Originalit&#228;t, Qualit&#228;t und Systemrelevanz &#8212; ohne die Verzerrung durch fest hinterlegte Quellen.</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128203; Strukturierter Export</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Liefert gefundene Signale und Quellenvorschl&#228;ge im gemeinsamen Format f&#252;r die redaktionelle Entscheidung.</div>
               </div>
             </div>
           </div>
         </div>
-        <div class="agent-sections">
-          {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
-          {{ section(key, 'method',  'Methode',           ag.method) }}
-          {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
-          <div class="agent-section" style="border-right:none">
-            <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt für alle Such-Agenten</span></div>
-            <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten konfiguriert.</div>
+        <div class="nils-props-toggle" onclick="toggleLenaProps()">
+          <span>So arbeitet Lena <span style="font-weight:400;color:var(--faint)">(Prompt-Anweisungen)</span></span>
+          <span class="nils-props-arrow" id="lena-props-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="lena-props-panel">
+          <div class="agent-sections" style="border:none">
+            {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
+            {{ section(key, 'method',  'Methode',           ag.method) }}
+            {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
+            <div class="agent-section" style="border-right:none">
+              <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt f&#252;r alle Such-Agenten</span></div>
+              <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten (Finn) konfiguriert.</div>
+            </div>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleLenaSched()">
+          <span>Dann arbeitet Lena <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span class="nils-props-arrow" id="lena-sched-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="lena-sched-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
+              <strong style="color:var(--text)">Lena l&#228;uft auf Abruf.</strong>
+              Kein automatischer Zeitplan. Lena wird gezielt eingesetzt, wenn neue Signale aus dem offenen Web gesucht werden oder das Quellinventar durch neue Quellen erweitert werden soll.
+            </div>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleLenaManual()">
+          <span>Manuelle Vertretung <span style="font-weight:400;color:var(--faint)">(externe KI)</span></span>
+          <span class="nils-props-arrow" id="lena-manual-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="lena-manual-panel">
+          <div style="padding:20px 24px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">
+              Den generierten Prompt an eine externe KI &#252;bergeben, wenn Lena nicht verf&#252;gbar ist oder eine manuelle Recherche ben&#246;tigt wird.
+            </div>
+            <div class="manual-group" style="display:inline-flex;align-items:center;gap:10px">
+              <span class="manual-group-label">Manuell via externe KI</span>
+              <div class="manual-group-buttons">
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('search','search')">Prompt generieren</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -717,74 +1503,244 @@
   <div class="agent-group">
     <div class="agent-group-title">Redaktionelle Agenten</div>
 
-    {% for key in ['group', 'bewertung'] %}
-    {% set ag = agent_configs.agents[key] %}
-    <div class="agent-card" id="card-{{ key }}">
+    {# ── Theo ── #}
+    {% set theo_ag = agent_configs.agents.get('group', {}) %}
+    <div class="agent-card" id="card-group">
       <div class="agent-card-head">
         <div class="agent-card-identity">
-          {{ avatar(key) }}
+          {{ avatar('group') }}
           <div>
-            <div class="agent-card-firstname">{{ firstname(key) }}</div>
-            <div class="agent-card-title">{{ ag.label }}</div>
+            <div class="agent-card-firstname">Theo</div>
+            <div class="agent-card-title">{{ theo_ag.label }}</div>
           </div>
         </div>
         <div class="agent-card-actions">
-          {% if key == 'group' %}
-            <button id="theo-run-btn" class="btn btn-primary btn-sm" onclick="runTheo()">&#9654; Theo starten</button>
-            <div class="manual-group">
-              <span class="manual-group-label">Manuell via externe KI</span>
-              <div class="manual-group-buttons">
-                <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
-                <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
-                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
-              </div>
+          <button id="theo-run-btn" class="btn btn-primary btn-sm" onclick="runTheo()">&#9654; Theo starten</button>
+        </div>
+      </div>
+      <div class="nils-props-toggle" onclick="toggleTheoSkills()">
+        <span>Theos Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+        <span class="nils-props-arrow" id="theo-skills-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="theo-skills-panel">
+        <div style="padding:20px 24px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128279; Semantische Gruppierung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Fasst inhaltlich verwandte Signale aus verschiedenen Quellen und Quelltypen zu thematischen Gruppen zusammen.</div>
             </div>
-          {% elif key == 'bewertung' %}
-            <button id="ida-run-btn" class="btn btn-primary btn-sm" onclick="runIda()">&#9654; Ida starten</button>
-            <div class="manual-group">
-              <span class="manual-group-label">Manuell via externe KI</span>
-              <div class="manual-group-buttons">
-                <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">↓ RAW</a>
-                <a href="{{ url_for('signal_export_match') }}" class="btn btn-secondary btn-sm">↓ MATCH</a>
-                <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">↓ FINAL</a>
-                <button class="btn btn-secondary btn-sm" onclick="openPrompt('{{ key }}','editorial')">Prompt generieren</button>
-              </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128260; Duplikat-Erkennung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Erkennt Doppelberichterstattung und konsolidiert gleiche Ereignisse aus mehreren Quellen zu einem Signal.</div>
             </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#9878; Relevanzgewichtung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Bewertet Gruppen nach H&#228;ufigkeit, Quellenvielfalt und Signalst&#228;rke &#8212; h&#228;ufig berichtete Themen steigen in der Priorit&#228;t.</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128196; Strukturierter Output</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Liefert Signalgruppen mit Metadaten als strukturierten Input f&#252;r Ida&#8217;s Bewertungsdurchlauf.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nils-props-toggle" onclick="toggleTheoProps()">
+        <span>So arbeitet Theo <span style="font-weight:400;color:var(--faint)">(Prompt-Anweisungen)</span></span>
+        <span class="nils-props-arrow" id="theo-props-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="theo-props-panel">
+        <div style="padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2)">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:10px">Zeitraum-Filter f&#252;r Prompt</div>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+              Von:
+              <input type="date" id="group-date-from" value="{{ theo_ag.get('date_from','') }}"
+                style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+            </label>
+            <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+              Bis:
+              <input type="date" id="group-date-to" value="{{ theo_ag.get('date_to','') }}"
+                style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
+            </label>
+            <button class="btn btn-secondary btn-sm" onclick="saveDates()">Speichern</button>
+            <span id="dates-ok" style="font-size:11px;color:var(--s-active);display:none">&#10003; gespeichert</span>
+          </div>
+          {% if theo_ag.get('last_date_from') or theo_ag.get('last_date_to') %}
+          <div style="margin-top:8px;font-size:11px;color:var(--faint)">
+            Zuletzt verwendet: {{ theo_ag.get('last_date_from','&#8212;') }} bis {{ theo_ag.get('last_date_to','&#8212;') }}
+          </div>
           {% endif %}
         </div>
-      </div>
-      {% if key == 'group' %}
-      <div style="padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2);">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:10px">Zeitraum-Filter für Prompt</div>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
-            Von:
-            <input type="date" id="group-date-from" value="{{ ag.get('date_from','') }}"
-              style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-          </label>
-          <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
-            Bis:
-            <input type="date" id="group-date-to" value="{{ ag.get('date_to','') }}"
-              style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--bg);color:var(--text);outline:none">
-          </label>
-          <button class="btn btn-secondary btn-sm" onclick="saveDates()">Speichern</button>
-          <span id="dates-ok" style="font-size:11px;color:var(--s-active);display:none">✓ gespeichert</span>
+        <div class="agent-sections" style="border:none">
+          {{ section('group', 'persona', 'Persona & Aufgabe', theo_ag.persona) }}
+          {{ section('group', 'method',  'Methode',           theo_ag.method) }}
+          {{ section('group', 'hint',    'Globale Hinweise',  theo_ag.hint, 'border-right:none') }}
+          {{ section('group', 'output_format', 'Ausgabeformat', theo_ag.get('output_format', ''), 'border-right:none') }}
         </div>
-        {% if ag.get('last_date_from') or ag.get('last_date_to') %}
-        <div style="margin-top:8px;font-size:11px;color:var(--faint)">
-          Zuletzt verwendet: {{ ag.get('last_date_from','—') }} bis {{ ag.get('last_date_to','—') }}
-        </div>
-        {% endif %}
       </div>
-      {% endif %}
-      <div class="agent-sections">
-        {{ section(key, 'persona', 'Persona & Aufgabe', ag.persona) }}
-        {{ section(key, 'method',  'Methode',           ag.method) }}
-        {{ section(key, 'hint',    'Globale Hinweise',  ag.hint, 'border-right:none') }}
-        {{ section(key, 'output_format', 'Ausgabeformat', ag.get('output_format', ''), 'border-right:none') }}
+      <div class="nils-props-toggle" onclick="toggleTheoSched()">
+        <span>Dann arbeitet Theo <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+        <span class="nils-props-arrow" id="theo-sched-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="theo-sched-panel">
+        <div style="padding:20px 24px">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
+            
+          <div id="theo-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:20px 24px;border-right:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <input type="checkbox" id="theo-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+                <label for="theo-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
+                <select id="theo-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+                  <option value="after_finn">Nach Finn (empfohlen)</option>
+                  <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
+                </select>
+              </div>
+              <div id="theo-interval-row" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                  <input id="theo-interval-days" type="number" min="1" max="365" value="7"
+                    style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                  <input id="theo-sched-time" type="time" value="06:00"
+                    style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveTheoSched()">Zeitplan speichern</button>
+              <span id="theo-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            </div>
+            <div style="padding:20px 24px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Status</div>
+              <div id="theo-next-run-info" style="font-size:12px;color:var(--muted)">&#8212;</div>
+            </div>
+          </div>
+      </div>
+      <div class="nils-props-toggle" onclick="toggleTheoManual()">
+        <span>Manuelle Vertretung <span style="font-weight:400;color:var(--faint)">(externe KI)</span></span>
+        <span class="nils-props-arrow" id="theo-manual-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="theo-manual-panel">
+        <div style="padding:20px 24px">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">
+            Den generierten Prompt an eine externe KI &#252;bergeben, wenn Theo nicht verf&#252;gbar ist oder eine manuelle Gruppierung ben&#246;tigt wird.
+          </div>
+          <div class="manual-group" style="display:inline-flex;align-items:center;gap:10px">
+            <span class="manual-group-label">Manuell via externe KI</span>
+            <div class="manual-group-buttons">
+              <a href="{{ url_for('signal_export_raw') }}" class="btn btn-secondary btn-sm">&#8595; RAW</a>
+              <a href="{{ url_for('signal_export_final') }}" class="btn btn-secondary btn-sm">&#8595; FINAL</a>
+              <button class="btn btn-secondary btn-sm" onclick="openPrompt('group','editorial')">Prompt generieren</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    {% endfor %}
+
+    {# ── Ida ── #}
+    {% set ida_ag = agent_configs.agents.get('bewertung', {}) %}
+    <div class="agent-card" id="card-bewertung">
+      <div class="agent-card-head">
+        <div class="agent-card-identity">
+          {{ avatar('bewertung') }}
+          <div>
+            <div class="agent-card-firstname">Ida</div>
+            <div class="agent-card-title">{{ ida_ag.label }}</div>
+          </div>
+        </div>
+        <div class="agent-card-actions">
+          <button id="ida-run-btn" class="btn btn-primary btn-sm" onclick="runIda()">&#9654; Ida starten</button>
+        </div>
+      </div>
+      <div class="nils-props-toggle" onclick="toggleIdaSkills()">
+        <span>Idas Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
+        <span class="nils-props-arrow" id="ida-skills-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="ida-skills-panel">
+        <div style="padding:20px 24px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128202; Inhaltsbewertung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Bewertet Signalgruppen nach Relevanz, Dringlichkeit und Aktualit&#228;t f&#252;r die Zielgruppe der Praxisinhaber im Gesundheitswesen.</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127942; Priorisierung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Sortiert Signale nach Handlungsrelevanz und Zeitdruck &#8212; liefert eine klare Reihenfolge f&#252;r die redaktionelle Entscheidungsvorlage.</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#127991; Kategorisierung</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Ordnet Signale dem Branchenradar-Schema zu: Versorgung, Abrechnung, Recht, Praxismanagement und weitere Kategorien.</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128172; Begr&#252;ndungen</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">Liefert f&#252;r jede Bewertung eine konkrete Einsch&#228;tzung &#8212; damit die Redaktion informiert entscheiden kann, nicht nur nach Score.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nils-props-toggle" onclick="toggleIdaProps()">
+        <span>So arbeitet Ida <span style="font-weight:400;color:var(--faint)">(Prompt-Anweisungen)</span></span>
+        <span class="nils-props-arrow" id="ida-props-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="ida-props-panel">
+        <div class="agent-sections" style="border:none">
+          {{ section('bewertung', 'persona', 'Persona & Aufgabe', ida_ag.persona) }}
+          {{ section('bewertung', 'method',  'Methode',           ida_ag.method) }}
+          {{ section('bewertung', 'hint',    'Globale Hinweise',  ida_ag.hint, 'border-right:none') }}
+          {{ section('bewertung', 'output_format', 'Ausgabeformat', ida_ag.get('output_format', ''), 'border-right:none') }}
+        </div>
+      </div>
+      <div class="nils-props-toggle" onclick="toggleIdaSched()">
+        <span>Dann arbeitet Ida <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+        <span class="nils-props-arrow" id="ida-sched-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="ida-sched-panel">
+        <div style="padding:20px 24px">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;max-width:640px">
+            <strong style="color:var(--text)">Ida l&#228;uft nach Theo.</strong>
+            
+          <div id="ida-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:20px 24px;border-right:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Automatisch</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <input type="checkbox" id="ida-sched-enabled" style="accent-color:var(--primary);width:15px;height:15px">
+                <label for="ida-sched-enabled" style="font-size:13px;color:var(--text);cursor:pointer">Automatisch ausf&#252;hren</label>
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:4px">Ausl&#246;ser</label>
+                <select id="ida-trigger-mode" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none">
+                  <option value="after_theo">Nach Theo (empfohlen)</option>
+                  <option value="standalone">Eigenst&#228;ndig (nach Zeitplan)</option>
+                </select>
+              </div>
+              <div id="ida-interval-row" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;align-items:flex-end">
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Alle x Tage</label>
+                  <input id="ida-interval-days" type="number" min="1" max="365" value="7"
+                    style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px">Uhrzeit</label>
+                  <input id="ida-sched-time" type="time" value="06:00"
+                    style="width:100px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveIdaSched()">Zeitplan speichern</button>
+              <span id="ida-sched-save-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            </div>
+            <div style="padding:20px 24px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Status</div>
+              <div id="ida-next-run-info" style="font-size:12px;color:var(--muted)">&#8212;</div>
+            </div>
+          </div>
+    </div>
   </div>
 
 </div>
@@ -1036,7 +1992,250 @@ async function runMajaTest() {
   if (btn) { btn.disabled = false; btn.textContent = 'Test (3 Quellen)'; }
 }
 
+function toggleMayaProps() {
+  document.getElementById('maya-props-panel').classList.toggle('open');
+  document.getElementById('maya-props-arrow').classList.toggle('open');
+}
+function toggleMayaReport() {
+  const panel = document.getElementById('maya-report-panel');
+  panel.classList.toggle('open');
+  document.getElementById('maya-report-arrow').classList.toggle('open');
+  if (panel.classList.contains('open') && !panel.dataset.loaded) {
+    panel.dataset.loaded = '1';
+    loadMayaPerfReview();
+  }
+}
+async function loadMayaPerfReview() {
+  try {
+    const data = await fetch('/admin/maja/report').then(r => r.json());
+
+    // Status
+    const last = (data.history || [])[0];
+    const statusEl = document.getElementById('maja-status-text');
+    if (last) {
+      statusEl.textContent = 'Letzter Lauf: ' + (last.run_at || '—') + ' — ' + (last.endpoints_added ?? 0) + ' Endpunkte ergänzt';
+    } else {
+      statusEl.textContent = 'Noch kein Lauf aufgezeichnet';
+    }
+
+    // Qualität
+    const q = data.quality || {};
+    const bt = q.by_type || {};
+    const pct = q.pct ?? 0;
+    const dot = v => v >= 80 ? '#22c55e' : v >= 40 ? '#f59e0b' : '#ef4444';
+    document.getElementById('maya-pr-quality').innerHTML = [
+      ['Quellen mit Endpunkt', `${q.with_ep ?? 0} / ${q.total ?? 0}`, `(${pct} %)`],
+      ['Ohne Endpunkt', q.no_ep ?? 0, ''],
+      ['Feed', bt.feed ?? 0, ''],
+      ['Scrape', bt.scrape ?? 0, ''],
+      ['PDF', bt.pdf ?? 0, ''],
+      ['Search', bt.search ?? 0, ''],
+      ['Sol-validiert', q.validated ?? 0, ''],
+    ].map(([label, val, sub]) => `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${label}</div>
+        <div style="font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">${val}<span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:4px">${sub}</span></div>
+      </div>`).join('');
+
+    // Lauf-Performance
+    const history = data.history || [];
+    const tbody = document.getElementById('maya-pr-history');
+    if (!history.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;text-align:center;color:var(--faint)">Noch keine Läufe</td></tr>';
+    } else {
+      const ms = m => (m || '').replace('claude-','').replace(/-\d{8}$/,'');
+      const dur = s => s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
+      tbody.innerHTML = history.map((r, i) => {
+        const bg = i % 2 === 1 ? 'background:var(--surface2)' : '';
+        const err = (r.errors && r.errors.length)
+          ? `<span style="color:#ef4444;font-weight:600">${r.errors.length}</span>`
+          : `<span style="color:var(--faint)">—</span>`;
+        return `<tr style="${bg}">
+          <td style="padding:6px 12px">${r.run_at||'—'}</td>
+          <td style="padding:6px 12px;color:var(--muted)">${ms(r.model)}</td>
+          <td style="padding:6px 12px;text-align:center;font-weight:600;color:var(--primary)">${r.range||'—'}</td>
+          <td style="padding:6px 12px;text-align:right">${r.sources_total??'—'}</td>
+          <td style="padding:6px 12px;text-align:right;font-weight:600">${r.endpoints_added??'—'}</td>
+          <td style="padding:6px 12px;text-align:right;color:var(--muted)">${r.duration_s!=null?dur(r.duration_s):'—'}</td>
+          <td style="padding:6px 12px;text-align:right;color:var(--muted)">${((r.input_tokens||0)+(r.output_tokens||0)).toLocaleString('de')}</td>
+          <td style="padding:6px 12px;text-align:right">$${(r.cost_usd||0).toFixed(4)}</td>
+          <td style="padding:6px 12px;text-align:center">${err}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Insights
+    const ins = await fetch('/admin/maja/insights').then(r => r.json());
+    const insEl = document.getElementById('maya-pr-insights');
+    const cntEl = document.getElementById('maya-pr-insights-count');
+    if (!ins.length) {
+      insEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--faint);font-size:12px">Noch keine Lerneffekte aufgezeichnet.</div>';
+      cntEl.textContent = '';
+    } else {
+      const neu = ins.filter(i => i.status === 'neu').length;
+      cntEl.textContent = `${neu} offen · ${ins.length} gesamt`;
+      const catC = c => c==='Datenpflege'?'#7C3AED':c==='Prompt'?'#C88035':c==='Prozess'?'#2E6E8E':'var(--muted)';
+      const stC  = s => s==='neu'?'#2563EB':s==='geprüft'?'var(--s-active)':'var(--faint)';
+      const stL  = s => s==='neu'?'Neu':s==='geprüft'?'Geprüft':s==='abgelehnt'?'Abgelehnt':s;
+      insEl.innerHTML = ins.map(it => `
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+              <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${catC(it.category)};background:${catC(it.category)}18;padding:2px 7px;border-radius:99px">${it.category||''}</span>
+              <span style="font-size:11px;font-weight:700;color:${stC(it.status)}">${stL(it.status)}</span>
+              <span style="font-size:11px;color:var(--faint)">${it.run_at||''}</span>
+            </div>
+            <div style="font-weight:600;font-size:13px;margin-bottom:3px">${it.title||''}</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.5">${it.description||''}</div>
+          </div>
+        </div>`).join('');
+    }
+  } catch(e) {
+    document.getElementById('maya-pr-quality').innerHTML = '<div style="color:var(--faint);font-size:12px">Fehler beim Laden</div>';
+  }
+}
+function toggleMayaSched() {
+  const panel = document.getElementById('maya-sched-panel');
+  panel.classList.toggle('open');
+  document.getElementById('maya-sched-arrow').classList.toggle('open');
+  if (panel.classList.contains('open')) { toggleMayaTriggerMode(); loadMayaSched(); }
+}
+function toggleMayaManual() {
+  document.getElementById('maya-manual-panel').classList.toggle('open');
+  document.getElementById('maya-manual-arrow').classList.toggle('open');
+}
+function mayaSchedTypeToggle() {
+  const t = document.getElementById('maya-sched-type')?.value;
+  const monthly = document.getElementById('maya-monthly-col');
+  const weekly  = document.getElementById('maya-weekly-col');
+  if (monthly) monthly.style.display = t === 'weekly' ? 'none' : '';
+  if (weekly)  weekly.style.display  = t === 'weekly' ? '' : 'none';
+}
+async function loadMayaSched() {
+  try {
+    const d = await fetch('/admin/maja/schedule').then(r => r.json());
+    if (document.getElementById('maya-sched-enabled')) document.getElementById('maya-sched-enabled').checked = !!d.schedule_enabled;
+    const mode = d.trigger_mode || 'interval';
+    const modeEl = document.querySelector('input[name="maya-trigger-mode"][value="' + mode + '"]');
+    if (modeEl) { modeEl.checked = true; toggleMayaTriggerMode(); }
+    if (document.getElementById('maya-interval-days')) document.getElementById('maya-interval-days').value = d.interval_days || 30;
+    if (document.getElementById('maya-sched-time')) document.getElementById('maya-sched-time').value = d.schedule_time || '08:00';
+    if (document.getElementById('maya-next-run-date')) document.getElementById('maya-next-run-date').value = d.next_run_date || '';
+    // cost limits loaded separately in Mayas Grenzen
+    if (document.getElementById('maya-model-select')) document.getElementById('maya-model-select').value = d.maja_model || 'claude-haiku-4-5-20251001';
+    const statusEl = document.getElementById('maya-sched-status');
+    if (statusEl) {
+      const mode = d.trigger_mode || 'interval';
+      if (mode === 'after_nils' && d.schedule_enabled) {
+        statusEl.innerHTML = '<span style="color:var(--primary);font-weight:600">● Aktiv</span> · läuft nach Nils’ automatischem Zeitplan';
+      } else if (mode === 'after_nils' && !d.schedule_enabled) {
+        statusEl.innerHTML = '<span style="color:var(--faint)">○ Inaktiv</span> · Im-Anschluss-an-Nils eingestellt, aber deaktiviert';
+      } else if (d.schedule_enabled && d.next_run) {
+        statusEl.innerHTML = '<span style="color:var(--primary);font-weight:600">● Aktiv</span> · alle ' + (d.interval_days||30) + ' Tage &mdash; nächster Lauf: <strong>' + d.next_run + '</strong>';
+      } else if (d.schedule_enabled) {
+        statusEl.innerHTML = '<span style="color:var(--primary);font-weight:600">● Aktiv</span>';
+      } else {
+        statusEl.innerHTML = '<span style="color:var(--faint)">○ Inaktiv</span> · kein automatischer Lauf geplant';
+      }
+    }
+  } catch(e) { console.error('loadMayaSched', e); }
+}
+function toggleMayaTriggerMode() {
+  const isAfterNils = document.getElementById('maya-trigger-after-nils')?.checked;
+  const show = !isAfterNils;
+  const iFields = document.getElementById('maya-interval-fields');
+  const nField  = document.getElementById('maya-next-run-field');
+  if (iFields) iFields.style.display = show ? 'grid' : 'none';
+  if (nField)  nField.style.display  = show ? 'block' : 'none';
+}
+async function saveMayaSched() {
+  const triggerMode = document.querySelector('input[name="maya-trigger-mode"]:checked')?.value || 'interval';
+  const payload = {
+    schedule_enabled: document.getElementById('maya-sched-enabled')?.checked || false,
+    trigger_mode:     triggerMode,
+    interval_days:    parseInt(document.getElementById('maya-interval-days')?.value) || 30,
+    schedule_time:    document.getElementById('maya-sched-time')?.value    || '08:00',
+    next_run_date:    document.getElementById('maya-next-run-date')?.value || '',
+  };
+  const msg = document.getElementById('maya-sched-save-msg');
+  try {
+    const resp = await fetch('/admin/maja/schedule', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
+    const d = await resp.json();
+    if (d.ok) {
+      msg.textContent = '✓ Gespeichert' + (d.next_run ? ' — nächster Lauf: ' + d.next_run : '');
+      msg.style.color = 'var(--primary)';
+      setTimeout(() => { msg.textContent = ''; }, 4000);
+      loadMayaSched();
+    }
+  } catch(e) { msg.textContent = 'Fehler'; msg.style.color = 'red'; }
+}
+async function saveMayaModel(model) {
+  const cfg = await fetch('/admin/maja/schedule').then(r => r.json());
+  const payload = Object.assign({}, cfg, { maja_model: model });
+  const resp = await fetch('/admin/maja/schedule', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const msg = document.getElementById('maya-model-save-msg');
+  if (resp.ok) {
+    msg.textContent = '✓ Gespeichert';
+    msg.style.color = 'var(--primary)';
+    setTimeout(() => { msg.textContent = ''; }, 2000);
+  }
+}
+async function mayaRunNow(btn) {
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Läuft…';
+  const msg = document.getElementById('maya-sched-save-msg');
+  msg.textContent = 'Maya läuft — kann einige Minuten dauern…';
+  msg.style.color = 'var(--muted)';
+  try {
+    const resp = await fetch('/admin/maja/run-now', {method:'POST'});
+    const d = await resp.json();
+    if (d.ok) {
+      msg.textContent = '✓ Lauf gestartet';
+      msg.style.color = 'var(--primary)';
+      _majaPoller = setInterval(_pollMajaStatus, 10000);
+    } else {
+      msg.textContent = 'Fehler: ' + (d.error || 'unbekannt');
+      msg.style.color = 'red';
+    }
+  } catch(e) {
+    msg.textContent = 'Verbindungsfehler';
+    msg.style.color = 'red';
+  }
+  btn.querySelector('span').textContent = '▶ Jetzt ausführen';
+  btn.disabled = false;
+}
+function toggleMayaLimits() {
+  document.getElementById('maya-limits-panel').classList.toggle('open');
+  document.getElementById('maya-limits-arrow').classList.toggle('open');
+  if (document.getElementById('maya-limits-panel').classList.contains('open')) loadMayaLimits();
+}
+async function loadMayaLimits() {
+  const d = await fetch('/admin/maja/schedule').then(r => r.json());
+  if (document.getElementById('maya-cost-abs')) document.getElementById('maya-cost-abs').value = d.cost_limit_usd || '';
+  if (document.getElementById('maya-cost-rel')) document.getElementById('maya-cost-rel').value = d.cost_limit_rel || '';
+}
+async function saveMayaLimits() {
+  const cfg = await fetch('/admin/maja/schedule').then(r => r.json());
+  cfg.cost_limit_usd = parseFloat(document.getElementById('maya-cost-abs')?.value) || 0;
+  cfg.cost_limit_rel = parseFloat(document.getElementById('maya-cost-rel')?.value) || 0;
+  const resp = await fetch('/admin/maja/schedule', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(cfg)
+  });
+  const msg = document.getElementById('maya-limits-save-msg');
+  if (resp.ok) { msg.textContent = '✓ Gespeichert'; msg.style.color = 'var(--primary)'; setTimeout(() => { msg.textContent = ''; }, 2500); }
+}
 function majaScheduleToggle() {
+  // Ensure interval fields reflect current radio state on first open
+  toggleMayaTriggerMode();
   const enabled = document.getElementById('maja-sched-enabled')?.checked;
   const fields  = document.getElementById('maja-sched-fields');
   if (fields) fields.style.display = enabled ? 'flex' : 'none';
@@ -1047,30 +2246,7 @@ function majaScheduleToggle() {
   if (weekly)  weekly.style.display  = type === 'weekly' ? 'flex' : 'none';
 }
 
-async function saveMajaSchedule() {
-  const payload = {
-    schedule_enabled: document.getElementById('maja-sched-enabled')?.checked ? '1' : '',
-    schedule_type:    document.getElementById('maja-sched-type')?.value    || 'monthly',
-    schedule_day:     document.getElementById('maja-sched-day')?.value     || '1',
-    schedule_weekday: document.getElementById('maja-sched-weekday')?.value || 'mon',
-    schedule_time:    document.getElementById('maja-sched-time')?.value    || '08:00',
-    maja_model:       document.getElementById('maja-model')?.value         || 'claude-haiku-4-5-20251001',
-  };
-  try {
-    const resp = await fetch('{{ url_for("maja_schedule") }}', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await resp.json();
-    const ok = document.getElementById('maja-sched-ok');
-    if (ok) { ok.style.display = 'inline'; setTimeout(() => ok.style.display = 'none', 2500); }
-    if (data.next_run) {
-      const nr = document.getElementById('maja-next-run');
-      if (nr) nr.textContent = 'Nächster Lauf: ' + data.next_run;
-    }
-  } catch (e) {}
-}
+// saveMajaSchedule replaced by saveMayaSched
 
 (async () => {
   try {
@@ -1372,6 +2548,39 @@ function _pollTheo() {
   });
 }
 
+async function runVera(force) {
+  const btn = document.getElementById('vera-run-btn');
+  const msg = document.getElementById('vera-status-msg');
+  if (btn) { btn.disabled = true; btn.textContent = 'Vera lauft...'; }
+  if (msg) msg.textContent = 'Vera generiert Varianten...';
+  const token = document.querySelector('input[name=csrf_token]') ? document.querySelector('input[name=csrf_token]').value : '';
+  try {
+    const r = await fetch('/admin/vera/run', {
+      method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': token},
+      body: JSON.stringify({force: !!force})
+    });
+    const d = await r.json();
+    if (!d.ok) { alert('Fehler: ' + d.error); if (btn) { btn.disabled = false; btn.textContent = 'Vera starten'; } return; }
+    pollVera();
+  } catch(e) { alert('Netzwerkfehler'); if (btn) { btn.disabled = false; btn.textContent = 'Vera starten'; } }
+}
+function pollVera() {
+  setTimeout(async function() {
+    try {
+      const r = await fetch('/admin/vera/status');
+      const d = await r.json();
+      const btn = document.getElementById('vera-run-btn');
+      const msg = document.getElementById('vera-status-msg');
+      if (d.running) { if (msg) msg.textContent = 'Vera lauft...'; pollVera(); return; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Vera starten'; }
+      if (msg && d.exists) {
+        if (d.error) { msg.textContent = 'Fehler: ' + d.error; }
+        else { msg.textContent = 'Fertig: ' + d.updated + ' Signale, ' + d.skipped + ' uebersprungen, ~$' + d.cost_usd + ' USD'; }
+      }
+    } catch(e) {}
+  }, 2000);
+}
+
 async function runIda() {
   const btn = document.getElementById('ida-run-btn');
   btn.disabled = true; btn.textContent = 'Läuft…';
@@ -1392,5 +2601,708 @@ function _pollIda() {
     else if (d.exists) { alert('Ida fertig — ' + (d.finals_written||0) + ' FINAL-Signale geschrieben.'); }
   });
 }
+function toggleNilsSched() {
+  const panel = document.getElementById('nils-sched-panel');
+  const arrow  = document.getElementById('nils-sched-arrow');
+  const isOpen = panel.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+  if (isOpen) { loadNilsSched(); }
+}
+async function loadNilsSched() {
+  try {
+    const resp = await fetch('/admin/nils/schedule');
+    const d = await resp.json();
+    document.getElementById('nils-sched-enabled').checked = !!d.schedule_enabled;
+    document.getElementById('nils-interval-days').value  = d.interval_days || 7;
+    document.getElementById('nils-sched-time').value     = d.schedule_time || '08:00';
+    if (document.getElementById('nils-cost-abs')) document.getElementById('nils-cost-abs').value = d.cost_limit_usd || '';
+    if (document.getElementById('nils-cost-rel')) document.getElementById('nils-cost-rel').value = d.cost_limit_rel || '';
+    if (document.getElementById('nils-next-run-date')) document.getElementById('nils-next-run-date').value = d.next_run_date || '';
+    if (document.getElementById('nils-model-select')) document.getElementById('nils-model-select').value = d.nils_model || 'claude-opus-4-8';
+    const status = document.getElementById('nils-sched-status');
+    const intv = d.interval_days || 7;
+    const rhythmus = ' &nbsp;·&nbsp; alle ' + intv + ' Tage';
+    if (d.schedule_enabled && d.next_run) {
+      status.innerHTML = '<span style="color:var(--primary);font-weight:600">● Aktiv</span>' + rhythmus + ' &mdash; nächster Lauf: <strong>' + d.next_run + '</strong>';
+    } else if (d.schedule_enabled) {
+      status.innerHTML = '<span style="color:var(--primary);font-weight:600">● Aktiv</span>' + rhythmus;
+    } else {
+      status.innerHTML = '<span style="color:var(--faint)">○ Inaktiv</span> &mdash; kein automatischer Lauf geplant';
+    }
+  } catch(e) { console.error(e); }
+}
+async function saveNilsSched() {
+  const payload = {
+    schedule_enabled: document.getElementById('nils-sched-enabled').checked,
+    interval_days:    parseInt(document.getElementById('nils-interval-days').value) || 7,
+    schedule_time:    document.getElementById('nils-sched-time').value || '08:00',
+    next_run_date:    document.getElementById('nils-next-run-date').value || '',
+
+  };
+  const resp = await fetch('/admin/nils/schedule', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  const d2 = await resp.json().catch(() => ({}));
+  const msg = document.getElementById('nils-sched-save-msg');
+  if (resp.ok) {
+    msg.style.display = 'block';
+    msg.textContent = '✓ Gespeichert' + (d2.next_run ? ' — nächster Lauf: ' + d2.next_run : '');
+    msg.style.color = 'var(--primary)';
+    setTimeout(() => { msg.textContent = ''; }, 5000);
+    loadNilsSched();
+  } else {
+    msg.textContent = 'Fehler beim Speichern';
+    msg.style.color = 'red';
+  }
+}
+let _nilsRunPoll = null;
+async function nilsRunNow(btn) {
+  btn.disabled = true;
+  btn.querySelector('span').textContent = '⏳ Läuft…';
+  const msg = document.getElementById('nils-manual-run-msg');
+  msg.style.color = 'var(--muted)';
+  msg.textContent = '';
+
+  // Animated dots while waiting
+  let dots = 0;
+  const dotAnim = setInterval(() => {
+    dots = (dots + 1) % 4;
+    const st = document.getElementById('nils-run-stage') || msg;
+    const base = st.dataset.base || 'Nils läuft';
+    st.textContent = base + '.'.repeat(dots);
+  }, 500);
+
+  try {
+    const resp = await fetch('/admin/nils/run-now', {method:'POST', headers:{'Content-Type':'application/json'}});
+    if (!resp.ok) {
+      clearInterval(dotAnim);
+      msg.textContent = '⚠ Fehler beim Starten'; msg.style.color = 'red';
+      btn.querySelector('span').textContent = '▶ Jetzt ausführen'; btn.disabled = false;
+      return;
+    }
+    // Start polling
+    msg.innerHTML = '<span id="nils-run-stage" data-base="Nils läuft">Nils läuft.</span>';
+    if (_nilsRunPoll) clearInterval(_nilsRunPoll);
+    _nilsRunPoll = setInterval(async () => {
+      try {
+        const s = await fetch('/admin/nils/run-status').then(r => r.json());
+        const el = document.getElementById('nils-run-stage');
+        if (s.status === 'running') {
+          if (el) { el.dataset.base = s.message || 'Nils läuft'; }
+        } else if (s.status === 'done') {
+          clearInterval(_nilsRunPoll); clearInterval(dotAnim);
+          msg.innerHTML = '';
+          msg.textContent = '✓ ' + s.message;
+          msg.style.color = 'var(--primary)';
+          btn.querySelector('span').textContent = '▶ Jetzt ausführen'; btn.disabled = false;
+        } else if (s.status === 'error') {
+          clearInterval(_nilsRunPoll); clearInterval(dotAnim);
+          msg.innerHTML = '';
+          msg.textContent = '⚠ ' + s.message; msg.style.color = 'red';
+          btn.querySelector('span').textContent = '▶ Jetzt ausführen'; btn.disabled = false;
+        }
+      } catch(e) {}
+    }, 2000);
+  } catch(e) {
+    clearInterval(dotAnim);
+    msg.textContent = '⚠ Netzwerkfehler'; msg.style.color = 'red';
+    btn.querySelector('span').textContent = '▶ Jetzt ausführen'; btn.disabled = false;
+  }
+}
+function toggleNilsPerf() {
+  const panel = document.getElementById('nils-perf-panel');
+  const arrow  = document.getElementById('nils-perf-arrow');
+  const isOpen = panel.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+  if (isOpen && !panel.dataset.loaded) {
+    panel.dataset.loaded = '1';
+    loadNilsPerfInline();
+  }
+}
+async function loadNilsPerfInline() {
+  const body = document.getElementById('nils-perf-body');
+  try {
+    const data = await fetch('/admin/nils/report').then(r => r.json());
+    const hist = data.history || [];
+    const total = data.total_sources || 0;
+    if (!hist.length) {
+      body.innerHTML = '<div style="color:var(--faint);font-size:13px;font-style:italic">Noch keine Laufdaten erfasst.</div>';
+      return;
+    }
+    const last = hist[0];
+    const ms = m => (m||'').replace('claude-','').replace(/-\d{8}$/,'');
+    const dur = s => s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
+    const totalNew = hist.reduce((a,r) => a + (r.new_sources||0), 0);
+    const totalCost = hist.reduce((a,r) => a + (r.cost_usd||0), 0);
+    body.innerHTML =
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px">' +
+      [
+        ['Quellen gesamt', total, '#000'],
+        ['Neue Quellen (gesamt)', '+' + totalNew, 'var(--primary)'],
+        ['Letzter Lauf', last.run_at || '—', 'var(--text)'],
+        ['Kosten gesamt', '$' + totalCost.toFixed(4), 'var(--text)'],
+      ].map(([label, val, col]) =>
+        '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px">' +
+        '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">' + label + '</div>' +
+        '<div style="font-size:17px;font-weight:700;color:' + col + ';font-variant-numeric:tabular-nums">' + val + '</div>' +
+        '</div>'
+      ).join('') +
+      '</div>' +
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Alle Läufe</div>' +
+      '<div style="overflow-x:auto">' +
+      '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
+      '<thead><tr style="background:var(--surface2);text-align:left">' +
+      ['Datum','Modell','Quellen vorher','Neue','Dauer','Input-Token','Output-Token','Kosten'].map((h,i) =>
+        '<th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border)' + (i>=2?';text-align:right':'') + '">' + h + '</th>'
+      ).join('') +
+      '</tr></thead>' +
+      '<tbody>' +
+      hist.map((r, i) => {
+        const bg = i % 2 === 1 ? 'background:var(--surface2)' : '';
+        const newCol = (r.new_sources||0) > 0 ? 'color:var(--primary);font-weight:700' : 'color:var(--faint)';
+        return '<tr style="' + bg + '">' +
+          '<td style="padding:6px 12px">' + (r.run_at||'—') + '</td>' +
+          '<td style="padding:6px 12px;color:var(--muted)">' + ms(r.model) + '</td>' +
+          '<td style="padding:6px 12px;text-align:right">' + (r.sources_before!=null?r.sources_before:'—') + '</td>' +
+          '<td style="padding:6px 12px;text-align:right;' + newCol + '">+' + (r.new_sources||0) + '</td>' +
+          '<td style="padding:6px 12px;text-align:right;color:var(--muted)">' + (r.duration_s!=null?dur(r.duration_s):'—') + '</td>' +
+          '<td style="padding:6px 12px;text-align:right;color:var(--muted)">' + (r.input_tokens||0).toLocaleString('de') + '</td>' +
+          '<td style="padding:6px 12px;text-align:right;color:var(--muted)">' + (r.output_tokens||0).toLocaleString('de') + '</td>' +
+          '<td style="padding:6px 12px;text-align:right">$' + (r.cost_usd||0).toFixed(4) + '</td>' +
+          '</tr>';
+      }).join('') +
+      '</tbody></table></div>';
+  } catch(e) {
+    document.getElementById('nils-perf-body').innerHTML = '<div style="color:var(--faint);font-size:13px">Fehler beim Laden.</div>';
+  }
+  // load insights
+  try {
+    const ins = await fetch('/admin/nils/insights').then(r => r.json());
+    const container = document.getElementById('nils-perf-body');
+    if (ins && ins.length) {
+      const statusColor = {'neu':'var(--primary)','in Bearbeitung':'#e8a000','erledigt':'var(--faint)'};
+      const insHtml = '<div style="margin-top:24px">' +
+        '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Recherche-Insights</div>' +
+        ins.map(i => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start">' +
+          '<div style="flex:1">' +
+          '<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px">' + (i.category||'') + ' &middot; ' + (i.run_at||'') + '</div>' +
+          '<div style="font-size:13px;font-weight:700;margin-bottom:4px">' + (i.title||'') + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);line-height:1.5">' + (i.description||'') + '</div>' +
+          '</div>' +
+          '<select onchange="updateNilsInsight(\'' + i.id + '\',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);flex-shrink:0">' +
+          ['neu','in Bearbeitung','erledigt'].map(s => '<option value="' + s + '"' + (i.status===s?' selected':'') + '>' + s + '</option>').join('') +
+          '</select>' +
+          '</div>'
+        ).join('') +
+        '</div>';
+      container.insertAdjacentHTML('beforeend', insHtml);
+    }
+  } catch(e) {}
+}
+async function updateNilsInsight(id, status) {
+  await fetch('/admin/nils/insights/' + id, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status})});
+
+
+async function loadNilsCostChips() {
+  const el = document.getElementById('nils-cost-chips');
+  if (!el) return;
+  try {
+    const d = await fetch('/admin/nils/report').then(r => r.json());
+    const lastM = d.last_month_cost ?? 0;
+    const fore  = d.forecast_cost  ?? 0;
+    const intv  = d.schedule_interval_days ?? 7;
+    const ena   = d.schedule_enabled ?? false;
+
+    const chip = (label, val, tooltip) =>
+      '<div style="text-align:right;padding:0 2px">' +
+      '<div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);white-space:nowrap;display:flex;align-items:center;gap:3px;justify-content:flex-end">' +
+        label +
+        (tooltip ? '<span title="' + tooltip + '" style="display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;border-radius:50%;border:1px solid var(--border);color:var(--faint);font-size:8px;font-weight:700;cursor:default;flex-shrink:0;line-height:1">i</span>' : '') +
+      '</div>' +
+      '<div style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted);margin-top:2px">' + val + '</div>' +
+      '</div>';
+
+    const fmtEuro = usd => {
+      const eur = usd * 0.92;
+      return eur < 0.01 ? '< 0,01 €' : eur.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+    };
+
+    const foreLabel = ena
+      ? 'Prognose nä. Monat'
+      : 'Prognose nä. Monat';
+    const foreTooltip = ena
+      ? 'Durchschnittliche Kosten pro Lauf × Rhythmus (' + intv + ' Tage). Nur automatische Läufe.'
+      : 'Automatisierung deaktiviert — keine Prognose möglich.';
+    const foreVal = ena ? fmtEuro(fore) : '—';
+
+    el.innerHTML =
+      chip('Kosten letzter Monat',
+           fmtEuro(lastM),
+           'Summe aller Läufe (inkl. manueller Ausführungen) der letzten 30 Tage.') +
+      chip(foreLabel, foreVal, foreTooltip);
+  } catch(e) {
+    // silent
+  }
+}
+
+async function loadMayaCostChips() {
+  const el = document.getElementById('maya-cost-chips');
+  if (!el) return;
+  try {
+    const d = await fetch('/admin/maja/report').then(r => r.json());
+    const lastM = d.last_month_cost ?? 0;
+    const fore  = d.forecast_cost  ?? 0;
+    const intv  = d.schedule_interval_days ?? 30;
+    const ena   = d.schedule_enabled ?? false;
+    const mode  = d.trigger_mode ?? 'interval';
+
+    const chip = (label, val, tooltip) =>
+      '<div style="text-align:right;padding:0 2px">' +
+      '<div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);white-space:nowrap;display:flex;align-items:center;gap:3px;justify-content:flex-end">' +
+        label +
+        (tooltip ? '<span title="' + tooltip + '" style="display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;border-radius:50%;border:1px solid var(--border);color:var(--faint);font-size:8px;font-weight:700;cursor:default;flex-shrink:0;line-height:1">i</span>' : '') +
+      '</div>' +
+      '<div style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted);margin-top:2px">' + val + '</div>' +
+      '</div>';
+
+    const fmtEuro = usd => {
+      const eur = usd * 0.92;
+      return eur < 0.01 ? '< 0,01 €' : eur.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+    };
+
+    const modeLabel = mode === 'after_nils' ? 'Rhythmus von Nils (' + intv + ' Tage)' : intv + ' Tage';
+    const foreTooltip = ena
+      ? 'Durchschnittliche Kosten pro Lauf × Rhythmus (' + modeLabel + '). Nur automatische Läufe.'
+      : 'Automatisierung deaktiviert — keine Prognose möglich.';
+    const foreVal = ena ? fmtEuro(fore) : '—';
+
+    el.innerHTML =
+      chip('Kosten letzter Monat',
+           fmtEuro(lastM),
+           'Summe aller Läufe (inkl. manueller Ausführungen) der letzten 30 Tage.') +
+      chip('Prognose nä. Monat', foreVal, foreTooltip);
+  } catch(e) {}
+}
+
+
+function toggleNilsLimits() {
+  document.getElementById('nils-limits-panel').classList.toggle('open');
+  document.getElementById('nils-limits-arrow').classList.toggle('open');
+  if (document.getElementById('nils-limits-panel').classList.contains('open')) loadNilsLimits();
+}
+async function loadNilsLimits() {
+  const d = await fetch('/admin/nils/schedule').then(r => r.json());
+  if (document.getElementById('nils-cost-abs')) document.getElementById('nils-cost-abs').value = d.cost_limit_usd || '';
+  if (document.getElementById('nils-cost-rel')) document.getElementById('nils-cost-rel').value = d.cost_limit_rel || '';
+}
+async function saveNilsLimits() {
+  const cfg = await fetch('/admin/nils/schedule').then(r => r.json());
+  cfg.cost_limit_usd = parseFloat(document.getElementById('nils-cost-abs')?.value) || 0;
+  cfg.cost_limit_rel = parseFloat(document.getElementById('nils-cost-rel')?.value) || 0;
+  const resp = await fetch('/admin/nils/schedule', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(cfg)
+  });
+  const msg = document.getElementById('nils-limits-save-msg');
+  if (resp.ok) { msg.textContent = '✓ Gespeichert'; msg.style.color = 'var(--primary)'; setTimeout(() => { msg.textContent = ''; }, 2500); }
+}
+function toggleNilsManual() {
+  document.getElementById('nils-manual-panel').classList.toggle('open');
+}
+
+function toggleNilsSkills() {
+  const panel = document.getElementById('nils-skills-panel');
+  const arrow  = document.getElementById('nils-skills-arrow');
+  const isOpen = panel.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+}
+function toggleMayaSkills() {
+  const panel = document.getElementById('maya-skills-panel');
+  const arrow  = document.getElementById('maya-skills-arrow');
+  const isOpen = panel.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+}
+function toggleNilsProps() {
+  document.getElementById('nils-props-panel').classList.toggle('open');
+  document.getElementById('nils-props-arrow').classList.toggle('open');
+}
+
+
+function toggleFredSkills()  { const p=document.getElementById('fred-skills-panel');  const a=document.getElementById('fred-skills-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleFredProps()   { const p=document.getElementById('fred-props-panel');   const a=document.getElementById('fred-props-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleFredSched()   { const p=document.getElementById('fred-sched-panel');   const a=document.getElementById('fred-sched-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleFredManual()  { const p=document.getElementById('fred-manual-panel');  const a=document.getElementById('fred-manual-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleFinnSkills()  { const p=document.getElementById('finn-skills-panel');  const a=document.getElementById('finn-skills-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleFinnProps()   { const p=document.getElementById('finn-props-panel');   const a=document.getElementById('finn-props-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleFinnSched()   { const p=document.getElementById('finn-sched-panel');   const a=document.getElementById('finn-sched-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleFinnManual()  { const p=document.getElementById('finn-manual-panel');  const a=document.getElementById('finn-manual-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleMatsSkills()  { const p=document.getElementById('mats-skills-panel');  const a=document.getElementById('mats-skills-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleMatsProps()   { const p=document.getElementById('mats-props-panel');   const a=document.getElementById('mats-props-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleMatsSched()   { const p=document.getElementById('mats-sched-panel');   const a=document.getElementById('mats-sched-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleMatsManual()  { const p=document.getElementById('mats-manual-panel');  const a=document.getElementById('mats-manual-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleLenaSkills()  { const p=document.getElementById('lena-skills-panel');  const a=document.getElementById('lena-skills-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleLenaProps()   { const p=document.getElementById('lena-props-panel');   const a=document.getElementById('lena-props-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleLenaSched()   { const p=document.getElementById('lena-sched-panel');   const a=document.getElementById('lena-sched-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleLenaManual()  { const p=document.getElementById('lena-manual-panel');  const a=document.getElementById('lena-manual-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleTheoSkills()  { const p=document.getElementById('theo-skills-panel');  const a=document.getElementById('theo-skills-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleTheoProps()   { const p=document.getElementById('theo-props-panel');   const a=document.getElementById('theo-props-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleTheoSched()   { const p=document.getElementById('theo-sched-panel');   const a=document.getElementById('theo-sched-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleTheoManual()  { const p=document.getElementById('theo-manual-panel');  const a=document.getElementById('theo-manual-arrow');  const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleIdaSkills()   { const p=document.getElementById('ida-skills-panel');   const a=document.getElementById('ida-skills-arrow');   const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleIdaProps()    { const p=document.getElementById('ida-props-panel');    const a=document.getElementById('ida-props-arrow');    const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+function toggleIdaSched()    { const p=document.getElementById('ida-sched-panel');    const a=document.getElementById('ida-sched-arrow');    const o=p.classList.toggle('open'); a.classList.toggle('open',o); }
+
+function toggleSolSched() {
+  const p = document.getElementById('sol-sched-panel');
+  const a = document.getElementById('sol-sched-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleFletcherSched() {
+  const p = document.getElementById('fletcher-sched-panel');
+  const a = document.getElementById('fletcher-sched-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleFletcherManual() {
+  const p = document.getElementById('fletcher-manual-panel');
+  const a = document.getElementById('fletcher-manual-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleFrankSched() {
+  const p = document.getElementById('frank-sched-panel');
+  const a = document.getElementById('frank-sched-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleFrankManual() {
+  const p = document.getElementById('frank-manual-panel');
+  const a = document.getElementById('frank-manual-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+
+function toggleSolSkills() {
+  const p = document.getElementById('sol-skills-panel');
+  const a = document.getElementById('sol-skills-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleSolConfig() {
+  const p = document.getElementById('sol-config-panel');
+  const a = document.getElementById('sol-config-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleSolPerf() {
+  const p = document.getElementById('sol-perf-panel');
+  const a = document.getElementById('sol-perf-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+  if (o) loadSolPerf();
+}
+async function loadSolPerf() {
+  const body = document.getElementById('sol-perf-body');
+  try {
+    const [d, hist] = await Promise.all([
+      fetch('/admin/selector/status').then(r => r.json()),
+      fetch('/admin/sol/history').then(r => r.json()).catch(() => [])
+    ]);
+    if (!d || !d.run_at) { body.innerHTML = '<div style="color:var(--faint);font-size:13px">Noch kein Lauf aufgezeichnet.</div>'; return; }
+    const results = d.results || [];
+    const ok = results.filter(r => r.status === 'ok').length;
+    const fail = results.filter(r => r.status !== 'ok').length;
+    const tiles = [
+      {label:'Letzter Lauf', val: (d.run_at||'').slice(0,16).replace('T',' ')},
+      {label:'Endpunkte geprüft', val: results.length},
+      {label:'Selektoren gefunden', val: ok},
+      {label:'Fehlgeschlagen', val: fail},
+    ];
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px">';
+    tiles.forEach(t => {
+      html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">' +
+        '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">' + t.label + '</div>' +
+        '<div style="font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">' + t.val + '</div></div>';
+    });
+    html += '</div>';
+    if (hist.length > 1) {
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Alle Läufe</div>';
+      html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+      html += '<thead><tr style="border-bottom:1px solid var(--border)">' +
+        '<th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600">Datum</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Geprüft</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Gefunden</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Fehler</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Offen</th></tr></thead><tbody>';
+      hist.forEach(h => {
+        html += '<tr style="border-bottom:1px solid var(--border)">' +
+          '<td style="padding:6px 8px">' + (h.run_at||'').slice(0,16) + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums">' + (h.endpoints_checked??'—') + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums;color:var(--primary)">' + (h.updated??'—') + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums;color:var(--faint)">' + (h.failed??'—') + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums">' + (h.remaining??'—') + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+    html += renderInsightsSection('sol');
+    body.innerHTML = html;
+  } catch(e) {
+    body.innerHTML = '<div style="color:var(--faint);font-size:13px">Fehler beim Laden.</div>';
+  }
+}
+
+function toggleFletcherSkills() {
+  const p = document.getElementById('fletcher-skills-panel');
+  const a = document.getElementById('fletcher-skills-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleFletcherDesc() {
+  const p = document.getElementById('fletcher-desc-panel');
+  const a = document.getElementById('fletcher-desc-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleFletcherPerf() {
+  const p = document.getElementById('fletcher-perf-panel');
+  const a = document.getElementById('fletcher-perf-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+  if (o) loadFletcherPerf();
+}
+async function loadFletcherPerf() {
+  const body = document.getElementById('fletcher-perf-body');
+  try {
+    const [d, hist] = await Promise.all([
+      fetch('/admin/fetcher/feed/status').then(r => r.json()),
+      fetch('/admin/fletcher/history').then(r => r.json()).catch(() => [])
+    ]);
+    if (!d || !d.run_at) { body.innerHTML = '<div style="color:var(--faint);font-size:13px">Noch kein Lauf aufgezeichnet.</div>'; return; }
+    const tiles = [
+      {label:'Letzter Lauf', val: (d.run_at||'').slice(0,16).replace('T',' ')},
+      {label:'Quellen geprüft', val: d.sources_checked ?? '—'},
+      {label:'Neue Einträge', val: d.new_entries_total ?? '—'},
+      {label:'Quellen OK', val: d.sources_ok ?? '—'},
+      {label:'Quellen Fehler', val: d.sources_error ?? '—'},
+    ];
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px">';
+    tiles.forEach(t => {
+      html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">' +
+        '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">' + t.label + '</div>' +
+        '<div style="font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">' + t.val + '</div></div>';
+    });
+    html += '</div>';
+    if (hist.length > 0) {
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Alle Läufe</div>';
+      html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+      html += '<thead><tr style="border-bottom:1px solid var(--border)">' +
+        '<th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600">Datum</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Quellen</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Neu</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">OK</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Fehler</th></tr></thead><tbody>';
+      hist.forEach(h => {
+        html += '<tr style="border-bottom:1px solid var(--border)">' +
+          '<td style="padding:6px 8px">' + (h.run_at||'').slice(0,16) + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums">' + (h.sources_checked??'—') + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums;color:var(--primary)">' + (h.new_entries_total??'—') + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums">' + (h.sources_ok??'—') + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums;color:var(--faint)">' + (h.sources_error??'—') + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+    html += renderInsightsSection('fletcher');
+    body.innerHTML = html;
+  } catch(e) {
+    body.innerHTML = '<div style="color:var(--faint);font-size:13px">Fehler beim Laden.</div>';
+  }
+}
+
+function toggleFrankSkills() {
+  const p = document.getElementById('frank-skills-panel');
+  const a = document.getElementById('frank-skills-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleFrankDesc() {
+  const p = document.getElementById('frank-desc-panel');
+  const a = document.getElementById('frank-desc-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+}
+function toggleFrankPerf() {
+  const p = document.getElementById('frank-perf-panel');
+  const a = document.getElementById('frank-perf-arrow');
+  const o = p.classList.toggle('open'); a.classList.toggle('open', o);
+  if (o) loadFrankPerf();
+}
+async function loadFrankPerf() {
+  const body = document.getElementById('frank-perf-body');
+  try {
+    const [d, hist] = await Promise.all([
+      fetch('/admin/fetcher/scrape/status').then(r => r.json()),
+      fetch('/admin/frank/history').then(r => r.json()).catch(() => [])
+    ]);
+    if (!d || !d.run_at) { body.innerHTML = '<div style="color:var(--faint);font-size:13px">Noch kein Lauf aufgezeichnet.</div>'; return; }
+    const tiles = [
+      {label:'Letzter Lauf', val: (d.run_at||'').slice(0,16).replace('T',' ')},
+      {label:'Endpunkte geprüft', val: d.sources_checked ?? '—'},
+      {label:'Neue Einträge', val: d.new_entries_total ?? '—'},
+      {label:'Endpunkte OK', val: d.sources_ok ?? '—'},
+      {label:'Endpunkte Fehler', val: d.sources_error ?? '—'},
+    ];
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px">';
+    tiles.forEach(t => {
+      html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">' +
+        '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">' + t.label + '</div>' +
+        '<div style="font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">' + t.val + '</div></div>';
+    });
+    html += '</div>';
+    if (hist.length > 0) {
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Alle Läufe</div>';
+      html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+      html += '<thead><tr style="border-bottom:1px solid var(--border)">' +
+        '<th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600">Datum</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Endpunkte</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Neu</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">OK</th>' +
+        '<th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Fehler</th></tr></thead><tbody>';
+      hist.forEach(h => {
+        html += '<tr style="border-bottom:1px solid var(--border)">' +
+          '<td style="padding:6px 8px">' + (h.run_at||'').slice(0,16) + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums">' + (h.sources_checked??'—') + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums;color:var(--primary)">' + (h.new_entries_total??'—') + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums">' + (h.sources_ok??'—') + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums;color:var(--faint)">' + (h.sources_error??'—') + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+    html += renderInsightsSection('frank');
+    body.innerHTML = html;
+  } catch(e) {
+    body.innerHTML = '<div style="color:var(--faint);font-size:13px">Fehler beim Laden.</div>';
+  }
+}
+
+
+function renderInsightsSection(agent) {
+  const labels = {'sol': 'Sol', 'fletcher': 'Fletcher', 'frank': 'Frank'};
+  return '<div style="margin-top:20px" id="' + agent + '-insights-wrap">' +
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
+    '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Insights</div>' +
+    '<button onclick="generateInsights(\'' + agent + '\')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--text);cursor:pointer" id="' + agent + '-insights-btn">&#128202; Jetzt analysieren</button>' +
+    '</div>' +
+    '<div id="' + agent + '-insights-result" style="font-size:12px;color:var(--faint)">Noch keine Analyse &#8212; klicke &#8222;Jetzt analysieren&#8220;.</div>' +
+    '</div>';
+}
+
+async function generateInsights(agent) {
+  const btn = document.getElementById(agent + '-insights-btn');
+  const result = document.getElementById(agent + '-insights-result');
+  btn.disabled = true;
+  btn.textContent = 'Analysiere…';
+  result.innerHTML = '<div style="color:var(--faint)">Claude analysiert die Laufdaten…</div>';
+  try {
+    const d = await fetch('/admin/' + agent + '/insights', {method: 'POST'}).then(r => r.json());
+    if (!d.ok || !d.insights || !d.insights.length) {
+      result.innerHTML = '<div style="color:var(--faint)">Keine auffälligen Muster gefunden.</div>';
+    } else {
+      result.innerHTML = d.insights.map(i =>
+        '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px">' +
+        '<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px">' + (i.category||'') + '</div>' +
+        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">' + (i.title||'') + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);line-height:1.5">' + (i.description||'') + '</div>' +
+        '</div>'
+      ).join('');
+    }
+  } catch(e) {
+    result.innerHTML = '<div style="color:red">Fehler: ' + e.message + '</div>';
+  }
+  btn.disabled = false;
+  btn.textContent = '&#128202; Erneut analysieren';
+}
+
+loadNilsCostChips();
+loadMayaCostChips();
+
+// ── Schedule UI for Fletcher, Frank, Fred, Finn, Theo, Ida ──────────────────
+
+function loadAgentSched(key, cfgKey) {
+  fetch('/admin/agents/config')
+    .then(r => r.json())
+    .then(d => {
+      const ag = (d.agents || {})[cfgKey] || {};
+      const en = document.getElementById(key + '-sched-enabled');
+      const tm = document.getElementById(key + '-trigger-mode');
+      const days = document.getElementById(key + '-interval-days');
+      const time = document.getElementById(key + '-sched-time');
+      const status = document.getElementById(key + '-sched-status');
+      const info = document.getElementById(key + '-next-run-info');
+      const row = document.getElementById(key + '-interval-row');
+      if (en) en.checked = !!ag.schedule_enabled;
+      if (tm) tm.value = ag.trigger_mode || 'standalone';
+      if (days) days.value = ag.interval_days || 7;
+      if (time && ag.schedule_time) time.value = ag.schedule_time;
+      const isTriggered = ag.trigger_mode && ag.trigger_mode !== 'standalone';
+      if (row) row.style.display = isTriggered ? 'none' : 'flex';
+      if (status) {
+        if (ag.schedule_enabled && isTriggered) {
+          status.innerHTML = '<span style="color:var(--primary);font-weight:600">&#9679; Aktiv</span> &middot; wird von Vorgänger ausgelöst';
+        } else if (ag.schedule_enabled) {
+          status.innerHTML = '<span style="color:var(--primary);font-weight:600">&#9679; Aktiv</span> &middot; alle ' + (ag.interval_days||7) + ' Tage';
+        } else {
+          status.innerHTML = '<span style="color:var(--muted)">&#9679; Inaktiv</span>';
+        }
+      }
+      if (info) info.textContent = ag.schedule_enabled ? ('Intervall: ' + (ag.interval_days||7) + ' Tage') : '—';
+    });
+}
+
+function saveAgentSched(key, cfgKey, cb) {
+  const en = document.getElementById(key + '-sched-enabled');
+  const tm = document.getElementById(key + '-trigger-mode');
+  const days = document.getElementById(key + '-interval-days');
+  const time = document.getElementById(key + '-sched-time');
+  const msg = document.getElementById(key + '-sched-save-msg');
+  const payload = {};
+  payload[cfgKey] = {
+    schedule_enabled: en ? en.checked : false,
+    trigger_mode: tm ? tm.value : 'standalone',
+    interval_days: days ? parseInt(days.value) || 7 : 7,
+    schedule_time: time ? time.value : '06:00',
+  };
+  fetch('/admin/agents/config', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({agents: payload})
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (msg) { msg.textContent = d.ok ? '✓ Gespeichert' : ('Fehler: ' + d.error); }
+    if (d.ok && cb) cb();
+    setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
+  });
+}
+
+// trigger_mode select: hide/show interval row
+['fletcher','frank','fred','finn','theo','ida'].forEach(key => {
+  document.addEventListener('DOMContentLoaded', () => {
+    const sel = document.getElementById(key + '-trigger-mode');
+    const row = document.getElementById(key + '-interval-row');
+    if (sel && row) {
+      sel.addEventListener('change', () => {
+        row.style.display = sel.value === 'standalone' ? 'flex' : 'none';
+      });
+    }
+  });
+});
+
+function saveFletcherSched() { saveAgentSched('fletcher','fletcher_feed', () => loadAgentSched('fletcher','fletcher_feed')); }
+function saveFrankSched()    { saveAgentSched('frank','frank_scrape',     () => loadAgentSched('frank','frank_scrape')); }
+function saveFredSched()     { saveAgentSched('fred','feed',              () => loadAgentSched('fred','feed')); }
+function saveFinnSched()     { saveAgentSched('finn','scrape',            () => loadAgentSched('finn','scrape')); }
+function saveTheoSched()     { saveAgentSched('theo','group',             () => loadAgentSched('theo','group')); }
+function saveIdaSched()      { saveAgentSched('ida','bewertung',          () => loadAgentSched('ida','bewertung')); }
+
+// Auto-load on panel open
+const _origToggleFletcherSched = toggleFletcherSched;
+toggleFletcherSched = function() { _origToggleFletcherSched(); loadAgentSched('fletcher','fletcher_feed'); };
+const _origToggleFrankSched = toggleFrankSched;
+toggleFrankSched = function() { _origToggleFrankSched(); loadAgentSched('frank','frank_scrape'); };
+const _origToggleFredSched = toggleFredSched;
+toggleFredSched = function() { _origToggleFredSched(); loadAgentSched('fred','feed'); };
+const _origToggleFinnSched = toggleFinnSched;
+toggleFinnSched = function() { _origToggleFinnSched(); loadAgentSched('finn','scrape'); };
+const _origToggleTheoSched = toggleTheoSched;
+toggleTheoSched = function() { _origToggleTheoSched(); loadAgentSched('theo','group'); };
+const _origToggleIdaSched = toggleIdaSched;
+toggleIdaSched = function() { _origToggleIdaSched(); loadAgentSched('ida','bewertung'); };
+
 </script>
 {% endblock %}

@@ -38,6 +38,8 @@ DATA_DIR      = os.path.join(os.path.dirname(__file__), "data")
 SIGNALS_FILE  = os.path.join(DATA_DIR, "signals.json")
 USERS_FILE    = os.path.join(DATA_DIR, "users.json")
 ENTITIES_FILE = os.path.join(DATA_DIR, "entities.json")
+PRIO_OVERRIDES_FILE = os.path.join(DATA_DIR, "signal_prio_overrides.json")
+ENTITY_HIDDEN_FILE  = os.path.join(DATA_DIR, "entity_hidden_signals.json")
 SECTIONS_FILE = os.path.join(DATA_DIR, "sections.seed.json")  # sections are static
 TODOS_FILE    = os.path.join(DATA_DIR, "todos.json")
 SETTINGS_FILE = os.path.join(DATA_DIR, "settings.json")
@@ -45,8 +47,11 @@ SOURCES_FILE             = os.path.join(DATA_DIR, "sources.json")
 AGENT_CONFIGS_FILE       = os.path.join(DATA_DIR, "agent_configs.json")
 SIGNAL_MATCHES_FILE      = os.path.join(DATA_DIR, "signal_matches.json")
 SIGNAL_FINAL_FILE        = os.path.join(DATA_DIR, "signal_final.json")
+HIDDEN_SIGNALS_FILE      = os.path.join(DATA_DIR, "hidden_signals.json")
+
 SIGNAL_FINAL_ARCHIVE_DIR = os.path.join(DATA_DIR, "signal_final_archive")
 AGENT_REPORTS_FILE       = os.path.join(DATA_DIR, "agent_reports.json")
+NOTIFICATIONS_FILE       = os.path.join(DATA_DIR, "notifications.json")
 
 DEFAULT_TODO_CATEGORIES = [
     "Abrechnung & Vergütung",
@@ -132,6 +137,64 @@ ROLE_LABELS = {
     "user":       "Nutzer",
 }
 
+PRAXIS_FACHRICHTUNGEN = {
+    "zahnarzt":  "Zahnarzt / Zahnaerztin",
+    "allgemein": "Allgemeinmedizin / Hausarzt",
+    "facharzt":  "Facharzt (andere Fachrichtung)",
+    "mvz":       "MVZ / Medizinisches Versorgungszentrum",
+}
+PRAXIS_ZULASSUNG = {
+    "gkv":    "Vertragsarzt/-zahnarzt (GKV)",
+    "privat": "Privatarzt/-zahnarzt",
+    "beides": "GKV und Privat",
+}
+PRAXIS_STRUKTUR = {
+    "einzel":       "Einzelpraxis",
+    "gemeinschaft": "Gemeinschaftspraxis / BAG",
+    "mvz":          "MVZ",
+}
+PRAXIS_BUNDESLAENDER = [
+    "Baden-Wuerttemberg","Bayern","Berlin","Brandenburg","Bremen","Hamburg",
+    "Hessen","Mecklenburg-Vorpommern","Niedersachsen","Nordrhein-Westfalen",
+    "Rheinland-Pfalz","Saarland","Sachsen","Sachsen-Anhalt",
+    "Schleswig-Holstein","Thueringen",
+]
+_QUELLEN_FILTER = {
+    "zahnarzt":  {"KZBV", "BMG", "GBA"},
+    "allgemein": {"KBV", "GKV-SV", "BMG", "GBA"},
+    "facharzt":  {"KBV", "GKV-SV", "BMG", "GBA"},
+    "mvz":       {"KBV", "GKV-SV", "KZBV", "BMG", "GBA"},
+}
+
+
+
+_DOMAIN_KUERZEL = {
+    "bundesgesundheitsministerium.de": "BMG",
+    "g-ba.de":                         "GBA",
+    "gkv-spitzenverband.de":           "GKV-SV",
+    "kbv.de":                          "KBV",
+    "kzbv.de":                         "KZBV",
+}
+
+def _signal_kuerzel(sig):
+    k = sig.get("kuerzel")
+    if k: return k.upper()
+    for src2 in sig.get("sources") or []:
+        url = src2.get("url", "")
+        for domain, kuerzel in _DOMAIN_KUERZEL.items():
+            if domain in url:
+                return kuerzel
+    return None
+
+def _signal_relevant_fachrichtung(sig, fach):
+    rf = (sig.get("relevant_for") or {}).get("fachrichtung")
+    if rf:
+        if "alle" in rf: return True
+        return fach in rf
+    kuerzel = _signal_kuerzel(sig)
+    if not kuerzel: return True
+    allowed = _QUELLEN_FILTER.get(fach, set())
+    return kuerzel in allowed
 
 # ── Data helpers ──────────────────────────────────────────────────────────────
 
@@ -164,6 +227,28 @@ def load_users():     return _load(USERS_FILE)
 def save_users(d):    _save(USERS_FILE, d)
 def load_entities():  return _load(ENTITIES_FILE)
 def save_entities(d): _save(ENTITIES_FILE, d)
+def load_prio_overrides():
+    if not os.path.exists(PRIO_OVERRIDES_FILE):
+        return []
+    try:
+        with open(PRIO_OVERRIDES_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return []
+def save_prio_overrides(data):
+    with open(PRIO_OVERRIDES_FILE, 'w') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+def load_entity_hidden():
+    if not os.path.exists(ENTITY_HIDDEN_FILE):
+        return {}
+    try:
+        with open(ENTITY_HIDDEN_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+def save_entity_hidden(data):
+    with open(ENTITY_HIDDEN_FILE, 'w') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 def load_sections():  return _load(SECTIONS_FILE)
 def load_todos():     return _load(TODOS_FILE)
 def save_todos(d):    _save(TODOS_FILE, d)
@@ -550,6 +635,8 @@ DEFAULT_AGENT_CONFIGS = {
                 "**ID:** [Übernehmen aus RAW/FINAL – bei vollständig neuen Signalen ohne MATCH: neue ID aus RAW]\n"
                 "**Reporting-Status:** NEU | UPDATE | (leer)\n"
                 "**Priorität:** MUSS | SOLLTE | KANN\n"
+                "**Relevant für Fachrichtung:** zahnarzt | allgemein | facharzt | mvz | alle\n"
+                "  (Kommagetrennt wenn mehrere. \"alle\" wenn fachrichtungsübergreifend.)\n"
                 "**Titel:** [Sprechender Action-Titel]\n"
                 "**Zusammenfassung:** [Vollständige Zusammenfassung. Bei UPDATE: bestehende Zusammenfassung + [TT.MM.JJJJ]: neue Informationen]\n"
                 "**Kategorie:** [Krankenkassen & GKV | Digitalisierung & TI | Gesetze & Regulatorien | Personal & Tarife | Praxismanagement]\n"
@@ -564,9 +651,47 @@ DEFAULT_AGENT_CONFIGS = {
                 "**Quelle 3:** [Name] | **Quellenlink 3:** [URL] (falls vorhanden)\n\n"
                 "---"
             )
+        },
+        "kuration": {
+            "label": "Kurations-Agent (Kurt)",
+            "beschreibung": (
+                "Kurt ist noch nicht aktiv. Geplant: alle Signale einmalig mit "
+                "einem relevant_for-Tag versehen (Fachrichtung, Zulassungsstatus, "
+                "Praxisstruktur, Bundesland, Schwerpunkte). Einmalig pro Signal."
+            ),
+            "konfiguration": (
+                "Status: STUB - noch nicht implementiert. "
+                "Einrichten wenn: (1) 2+ Profildimensionen aktiv genutzt, "
+                "(2) echte Nutzer mit verschiedenen Profilen vorhanden, "
+                "(3) Idas Fachrichtungs-Tag nicht ausreicht. "
+                "Architektur: Separater Agent nach Ida, schreibt relevant_for "
+                "in signal_final.json. Haiku-Call pro Signal."
+            ),
         }
     }
 }
+
+def load_notifications():
+    if not os.path.exists(NOTIFICATIONS_FILE):
+        return []
+    return _load(NOTIFICATIONS_FILE) or []
+
+def save_notifications(data): _save(NOTIFICATIONS_FILE, data)
+
+def create_notification(title, message, level="warning", ntype="system"):
+    """Create a new unread notification for superadmins."""
+    notifs = load_notifications()
+    notifs.insert(0, {
+        "id":         str(__import__("uuid").uuid4()),
+        "created_at": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "type":       ntype,
+        "level":      level,   # info | warning | error
+        "title":      title,
+        "message":    message,
+        "read":       False,
+    })
+    save_notifications(notifs[:200])
+
 
 def load_agent_configs():
     import copy
@@ -643,6 +768,14 @@ def load_signal_final():
 
 def save_signal_final(signals, timestamp):
     _save(SIGNAL_FINAL_FILE, {"timestamp": timestamp, "signals": signals})
+
+def load_hidden_signals():
+    if not os.path.exists(HIDDEN_SIGNALS_FILE): return set()
+    return set(_load(HIDDEN_SIGNALS_FILE))
+
+def save_hidden_signals(ids):
+    _save(HIDDEN_SIGNALS_FILE, sorted(ids))
+
 
 def archive_signal_final():
     if not os.path.exists(SIGNAL_FINAL_FILE):
@@ -806,10 +939,21 @@ def inject_globals():
             # user: unread assigned todos
             badge = sum(1 for t in todos if t.get("assigned_to") == uid and not t.get("assignee_read_at"))
 
+    all_entities         = []
+    all_impersonate_users = []
+    sa_unread            = 0
+    if role == "superadmin":
+        all_entities          = load_entities()
+        all_impersonate_users = [u for u in load_users() if u.get("role") != "superadmin"]
+        sa_unread             = sum(1 for n in load_notifications() if not n.get("read"))
+
     return {
-        "todo_categories": entity_todo_categories(eid),
-        "pending_todos":   badge,
-        "entity_users":    entity_users,
+        "todo_categories":         entity_todo_categories(eid),
+        "pending_todos":           badge,
+        "entity_users":            entity_users,
+        "all_entities":            all_entities,
+        "all_impersonate_users":   all_impersonate_users,
+        "sa_unread_notifications": sa_unread,
     }
 
 
@@ -835,10 +979,55 @@ def login():
             session["name"]      = user.get("name", username)
             session["entity_id"] = user.get("entity_id")
             next_url = _safe_next(request.args.get("next"))
+            if not next_url:
+                eid = user.get("entity_id")
+                if eid:
+                    _ent = get_entity(eid)
+                    if _ent and not _ent.get("praxis_profil"):
+                        next_url = url_for("onboarding")
+            if user["role"] == "superadmin":
+                return redirect(next_url or url_for("sa_home"))
             return redirect(next_url or url_for("dashboard"))
         _record_attempt(ip)
         flash("Benutzername oder Passwort falsch.", "error")
     return render_template("login.html")
+
+@app.route("/onboarding", methods=["GET", "POST"])
+@login_required
+def onboarding():
+    eid = session.get("entity_id")
+    if not eid:
+        return redirect(url_for("dashboard"))
+    entities = load_entities()
+    entity = next((e for e in entities if e["id"] == eid), None)
+    if not entity:
+        return redirect(url_for("dashboard"))
+    if request.method == "POST":
+        fachrichtung = request.form.get("fachrichtung", "").strip()
+        zulassung    = request.form.get("zulassung", "").strip()
+        struktur     = request.form.get("struktur", "").strip()
+        bundesland   = request.form.get("bundesland", "").strip()
+        schwerpunkte = request.form.getlist("schwerpunkte")
+        if fachrichtung and zulassung and struktur:
+            entity["praxis_profil"] = {
+                "fachrichtung": fachrichtung,
+                "zulassung":    zulassung,
+                "struktur":     struktur,
+                "bundesland":   bundesland or None,
+                "schwerpunkte": schwerpunkte,
+            }
+            save_entities(entities)
+            flash("Praxisprofil gespeichert. Willkommen im Branchenradar!", "success")
+            return redirect(url_for("dashboard"))
+        flash("Bitte alle Pflichtfelder ausfullen.", "error")
+    return render_template("onboarding.html",
+        entity=entity,
+        fachrichtungen=PRAXIS_FACHRICHTUNGEN,
+        zulassungen=PRAXIS_ZULASSUNG,
+        strukturen=PRAXIS_STRUKTUR,
+        bundeslaender=PRAXIS_BUNDESLAENDER,
+    )
+
 
 @app.route("/logout")
 def logout():
@@ -848,9 +1037,71 @@ def logout():
 
 # ── Public dashboard ──────────────────────────────────────────────────────────
 
+@app.route("/signal/<sig_id>/set-prio", methods=["POST"])
+@role_required("admin", "superadmin")
+def signal_set_prio(sig_id):
+    eid  = session.get("entity_id")
+    prio = request.form.get("prio", "").strip()
+    if prio not in ("muss", "sollte", "kann", ""):
+        abort(400)
+    overrides = load_prio_overrides()
+    # Remove existing override for this entity+signal
+    overrides = [o for o in overrides if not (o.get("entity_id") == eid and o.get("signal_id") == sig_id)]
+    if prio:  # empty = reset to default
+        overrides.append({
+            "entity_id":  eid,
+            "signal_id":  sig_id,
+            "prio":       prio,
+            "set_by":     session.get("user_id"),
+            "set_at":     __import__('datetime').datetime.now().isoformat(),
+        })
+    save_prio_overrides(overrides)
+    return redirect(request.form.get("next") or url_for("dashboard"))
+
+@app.route("/signal/<sig_id>/entity-toggle-hidden", methods=["POST"])
+@role_required("admin", "superadmin")
+def signal_entity_toggle_hidden(sig_id):
+    eid = session.get("entity_id")
+    if not eid:
+        abort(403)
+    data = load_entity_hidden()
+    hidden = set(data.get(eid, []))
+    if sig_id in hidden:
+        hidden.discard(sig_id)
+    else:
+        hidden.add(sig_id)
+    data[eid] = list(hidden)
+    save_entity_hidden(data)
+    return redirect(request.form.get("next") or url_for("dashboard"))
+
+@app.route("/view-as", methods=["POST"])
+@role_required("superadmin")
+def view_as():
+    uid = request.form.get("user_id", "").strip()
+    users = load_users()
+    target = next((u for u in users if u["id"] == uid), None)
+    if not target or target.get("role") == "superadmin":
+        abort(400)
+    session["view_as_entity_id"] = target.get("entity_id")
+    session["view_as_role"]      = target.get("role", "user")
+    session["view_as_user_id"]   = uid
+    return redirect(url_for("dashboard"))
+
+@app.route("/view-as/exit")
+@login_required
+def view_as_exit():
+    session.pop("view_as_entity_id", None)
+    session.pop("view_as_role",      None)
+    session.pop("view_as_user_id",   None)
+    return redirect(url_for("sa_dashboard"))
+
 @app.route("/")
 @login_required
 def dashboard():
+    # Superadmin without active view-as goes to SA home
+    if session.get("role") == "superadmin" and not session.get("view_as_entity_id"):
+        return redirect(url_for("sa_home"))
+
     all_signals = load_signal_final().get("signals", [])
     sections    = load_sections()
     sec_map     = {s["id"]: s for s in sections}
@@ -862,7 +1113,8 @@ def dashboard():
         allowed_section_ids = None  # sees everything
     else:
         entity = get_entity(entity_id)
-        allowed_section_ids = set(entity.get("section_ids", [])) if entity else set()
+        _sids = entity.get("section_ids") if entity else None
+        allowed_section_ids = set(_sids) if _sids else None  # None = sieht alles
 
     # Filter signals to allowed sections
     if allowed_section_ids is not None:
@@ -872,6 +1124,30 @@ def dashboard():
     else:
         signals = all_signals
         visible_sections = sections
+
+    # Ausgeblendete Signale herausfiltern (nur fuer Nicht-Superadmin)
+    _hidden = load_hidden_signals()
+    if role != "superadmin" and _hidden:
+        signals = [s for s in signals if s.get("id") not in _hidden]
+
+    # Entity-lokales Ausblenden (Admin-spezifisch)
+    if role not in ('superadmin',) and entity_id:
+        _entity_hidden_data = load_entity_hidden()
+        _entity_hidden_ids  = set(_entity_hidden_data.get(entity_id, []))
+        if _entity_hidden_ids:
+            signals = [s for s in signals if s.get("id") not in _entity_hidden_ids]
+    else:
+        _entity_hidden_ids = set()
+
+    # Praxisprofil-Filter (Fachrichtung)
+    if role != "superadmin" and entity_id:
+        entity_obj = get_entity(entity_id)
+        if entity_obj:
+            profil = entity_obj.get("praxis_profil") or {}
+            fach = profil.get("fachrichtung")
+            if fach and fach in _QUELLEN_FILTER:
+                signals = [s for s in signals
+                           if _signal_relevant_fachrichtung(s, fach)]
 
     # For "user" role: additionally filter by team categories
     if role == "user" and entity_id:
@@ -885,6 +1161,29 @@ def dashboard():
                     team_cats.update(tm.get("category_ids", []))
                 if team_cats:
                     signals = [s for s in signals if s.get("category") in team_cats]
+
+    # Apply prio overrides (Variant A: signal-specific, Variant B: category profile)
+    import copy as _copy
+    if role != "superadmin" and entity_id:
+        _entity_full = get_entity(entity_id)
+        _cat_profile  = (_entity_full or {}).get("category_prio_profile") or {}
+        _sig_overrides = {o["signal_id"]: o["prio"] for o in load_prio_overrides()
+                          if o.get("entity_id") == entity_id}
+        if _cat_profile or _sig_overrides:
+            signals = [_copy.copy(s) for s in signals]
+            for sig in signals:
+                orig = sig.get("priority", "sollte")
+                new  = orig
+                cat_ov = _cat_profile.get(sig.get("category"))
+                if cat_ov:
+                    new = cat_ov
+                sig_ov = _sig_overrides.get(sig.get("id"))
+                if sig_ov:
+                    new = sig_ov
+                if new != orig:
+                    sig["priority"]          = new
+                    sig["_prio_orig"]        = orig
+                    sig["_prio_overridden"]  = True
 
     prio_order = ["muss", "sollte", "kann"]
     def sort_key(s):
@@ -904,9 +1203,25 @@ def dashboard():
         for sid in sig.get("section_ids", []):
             sec_counts[sid] = sec_counts.get(sid, 0) + 1
 
+    # Signal-IDs mit offenen Todos (fuer Badge "Handlung ausgeloest")
+    _all_todos_d = load_todos()
+    signal_ids_with_todos = {
+        t["signal_id"] for t in _all_todos_d
+        if t.get("entity_id") == entity_id and not t.get("done")
+    }
+
+    # Ensure entity_hidden_ids is defined for all paths
+    if 'entity_hidden_ids' not in dir():
+        _entity_hidden_ids = set()
+    if role == 'superadmin':
+        _entity_hidden_ids = set()
+
     return render_template(
         "dashboard.html",
-        signals=signals, prio_counts=prio_counts,
+        signals=signals,
+        signal_ids_with_todos=signal_ids_with_todos, prio_counts=prio_counts,
+        hidden_signal_ids=load_hidden_signals(),
+        entity_hidden_ids=_entity_hidden_ids if role != "superadmin" else set(),
         categories=CATEGORIES, status_labels=STATUS_LABELS,
         priority_labels=SIGNAL_PRIORITY_LABELS,
         entwicklungsstand_labels=ENTWICKLUNGSSTAND_LABELS,
@@ -919,6 +1234,19 @@ def dashboard():
 
 
 # ── Superadmin: Entity management ─────────────────────────────────────────────
+
+@app.route("/sa")
+@role_required("superadmin")
+def sa_home():
+    entities = load_entities()
+    cfg = load_settings()
+    cats = cfg.get("default_todo_categories", DEFAULT_TODO_CATEGORIES)
+    stats = []
+    for e in sorted(entities, key=lambda x: x.get("name","")):
+        todos = [t for t in load_todos() if t.get("entity_id") == e["id"]]
+        open_todos = [t for t in todos if t.get("status","offen") not in ("erledigt","archiviert")]
+        stats.append({"entity": e, "open_todos": len(open_todos), "total_todos": len(todos)})
+    return render_template("sa_home.html", entity_stats=stats, categories=cats)
 
 @app.route("/superadmin")
 @role_required("superadmin")
@@ -1099,6 +1427,143 @@ def admin_user_delete(uid):
 
 # ── Signal management (admin + superadmin) ────────────────────────────────────
 
+VERA_STATUS_FILE  = os.path.join(DATA_DIR, "vera_status.json")
+VERA_HISTORY_FILE = os.path.join(DATA_DIR, "vera_history.json")
+_vera_running = False
+
+@app.route("/admin/signal/<sig_id>/toggle_hidden", methods=["POST"])
+@role_required("superadmin")
+def signal_toggle_hidden(sig_id):
+    hidden = load_hidden_signals()
+    if sig_id in hidden:
+        hidden.discard(sig_id)
+        action = "eingeblendet"
+    else:
+        hidden.add(sig_id)
+        action = "ausgeblendet"
+    save_hidden_signals(hidden)
+    flash(f"Signal {action}.", "success")
+    return redirect(_safe_next(request.form.get("next")) or url_for("dashboard"))
+
+
+@app.route("/admin/vera/run", methods=["POST"])
+@role_required("superadmin")
+def vera_run():
+    global _vera_running
+    if _vera_running:
+        return jsonify({"ok": False, "error": "Vera laeuft bereits."})
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt."})
+    force = request.json.get("force", False) if request.is_json else False
+    import threading
+
+    def _run():
+        global _vera_running
+        _vera_running = True
+        try:
+            import anthropic
+            from datetime import datetime as _dt
+            client = anthropic.Anthropic(api_key=api_key)
+            data    = load_signal_final()
+            signals = data.get("signals", [])
+            updated = skipped = errors = total_in = total_out = 0
+
+            for sig in signals:
+                if not force and sig.get("handlungs_varianten"):
+                    skipped += 1
+                    continue
+                title   = sig.get("title", "")
+                summary = (sig.get("summary", "") or "")[:600]
+                action  = sig.get("action", "")
+                prio    = (sig.get("priority", "sollte") or "sollte").upper()
+
+                lines = [
+                    "Du bist ein kompakter Berater fuer Arztpraxen.",
+                    "Erstelle GENAU 3 Handlungsvarianten fuer das folgende Praxissignal.",
+                    "",
+                    "Signal: " + title,
+                    "Zusammenfassung: " + summary,
+                    "Empfohlener Handlungsschritt: " + action,
+                    "Prioritaet: " + prio,
+                    "",
+                    "Die 3 Varianten unterscheiden sich im Aufwand:",
+                    "- basis: Minimale Compliance-Reaktion, wenig Aufwand",
+                    "- standard: Solide Umsetzung (empfohlen fuer die meisten Praxen)",
+                    "- proaktiv: Vollstaendige Umsetzung mit Wettbewerbsvorteil",
+                    "",
+                    'Antworte NUR mit JSON-Array, kein Prosatext:',
+                    '[',
+                    '  {"typ": "basis",    "titel": "<8-12 Woerter aktiv>", "beschreibung": "<2-3 Saetze konkret>"},',
+                    '  {"typ": "standard",  "titel": "<8-12 Woerter aktiv>", "beschreibung": "<2-3 Saetze konkret>"},',
+                    '  {"typ": "proaktiv", "titel": "<8-12 Woerter aktiv>", "beschreibung": "<2-3 Saetze konkret>"}',
+                    ']',
+                ]
+                prompt = "\n".join(lines)
+
+                try:
+                    msg = client.messages.create(
+                        model="claude-haiku-4-5-20251001",
+                        max_tokens=700,
+                        messages=[{"role": "user", "content": prompt}],
+                    )
+                    total_in  += msg.usage.input_tokens
+                    total_out += msg.usage.output_tokens
+                    raw = msg.content[0].text.strip()
+                    raw = re.sub(r'^').strip()
+                    m = re.search(r'\[.*?\]', raw, re.DOTALL)
+                    if m:
+                        varianten = json.loads(m.group(0))
+                        if isinstance(varianten, list) and len(varianten) == 3:
+                            sig["handlungs_varianten"] = varianten
+                            updated += 1
+                        else:
+                            errors += 1
+                    else:
+                        errors += 1
+                except Exception as ex:
+                    app.logger.warning("Vera: Signal %s Fehler: %s", sig.get("id", "?"), str(ex))
+                    errors += 1
+
+            save_signal_final(signals, data.get("timestamp"))
+            cost = (total_in / 1_000_000 * 1.00) + (total_out / 1_000_000 * 5.00)
+            status = {
+                "run_at": _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "updated": updated, "skipped": skipped, "errors": errors,
+                "tokens_in": total_in, "tokens_out": total_out,
+                "cost_usd": round(cost, 4),
+            }
+            _save(VERA_STATUS_FILE, status)
+            _append_agent_history(VERA_HISTORY_FILE, status)
+        except Exception as e:
+            import traceback
+            tb = traceback.format_exc()
+            app.logger.error("Vera thread error: %s", tb)
+            try:
+                err = {"run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e), "traceback": tb[:500]}
+                _save(VERA_STATUS_FILE, err)
+                _append_agent_history(VERA_HISTORY_FILE, err)
+            except Exception:
+                pass
+        finally:
+            _vera_running = False
+
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({"ok": True, "started": True})
+
+
+@app.route("/admin/vera/status")
+@role_required("superadmin")
+def vera_status():
+    if _vera_running:
+        return jsonify({"running": True})
+    if not os.path.exists(VERA_STATUS_FILE):
+        return jsonify({"running": False, "exists": False})
+    with open(VERA_STATUS_FILE, encoding="utf-8") as f:
+        d = json.load(f)
+    return jsonify({"running": False, "exists": True, **d})
+
+
 @app.route("/admin/signals/raw")
 @role_required("admin", "superadmin")
 def signal_list_raw():
@@ -1175,6 +1640,65 @@ def signal_delete(sig_id):
 
 # ── ToDos ─────────────────────────────────────────────────────────────────────
 
+@app.route("/todos/<todo_id>/set-status", methods=["POST"])
+@role_required("admin", "superadmin")
+def todo_set_status(todo_id):
+    status = request.form.get("status", "").strip()
+    if status not in ("offen", "in_bearbeitung", "erledigt", "archiviert"):
+        abort(400)
+    todos = load_todos()
+    for t in todos:
+        if t["id"] == todo_id:
+            t["status"] = status
+            if status == "erledigt":
+                t["done"]    = True
+                t["done_at"] = __import__('datetime').datetime.now().isoformat()
+                t["done_by"] = session.get("user_id")
+            elif status == "offen" or status == "in_bearbeitung":
+                t["done"]    = False
+                t["done_at"] = None
+                t["done_by"] = None
+            break
+    save_todos(todos)
+    return redirect(request.form.get("next") or url_for("todos"))
+
+@app.route("/todos/<todo_id>/mark-read", methods=["POST"])
+@login_required
+def todo_mark_read(todo_id):
+    uid = session.get("user_id")
+    todos = load_todos()
+    for t in todos:
+        if t["id"] == todo_id:
+            read_by = t.get("read_by") or []
+            if not any(r.get("user_id") == uid for r in read_by):
+                read_by.append({"user_id": uid, "read_at": datetime.now().isoformat()})
+                t["read_by"] = read_by
+            break
+    save_todos(todos)
+    return redirect(request.form.get("next") or url_for("todos"))
+
+@app.route("/todos/<todo_id>/add-comment", methods=["POST"])
+@login_required
+def todo_add_comment(todo_id):
+    uid  = session.get("user_id")
+    text = request.form.get("comment_text", "").strip()
+    if not text:
+        return redirect(request.form.get("next") or url_for("todos"))
+    todos = load_todos()
+    for t in todos:
+        if t["id"] == todo_id:
+            comments = t.get("comments") or []
+            comments.append({
+                "id":         str(uuid.uuid4())[:8],
+                "user_id":    uid,
+                "text":       text,
+                "created_at": datetime.now().isoformat(),
+            })
+            t["comments"] = comments
+            break
+    save_todos(todos)
+    return redirect((request.form.get("next") or url_for("todos")) + f"#todo-{todo_id}")
+
 @app.route("/todos")
 @login_required
 def todos():
@@ -1204,13 +1728,17 @@ def todos():
         if changed:
             save_todos(all_todos)
 
-    sig_map    = {s["id"]: s for s in load_signals()}
-    user_map   = {u["id"]: u for u in load_users()}
+    all_users  = [u for u in load_users() if u.get("entity_id") == eid]
+    sig_map    = {s["id"]: s for s in load_signal_final().get("signals", [])}
+    user_map   = {u["id"]: u for u in all_users}
     cats       = entity_todo_categories(eid)
     today      = datetime.now().strftime("%Y-%m-%d")
+    entity_obj = get_entity(eid) or {}
+    entity_teams = entity_obj.get("teams", [])
     return render_template("todos.html",
         todos=my_todos, sig_map=sig_map, user_map=user_map,
-        categories=cats, today=today, status_labels=STATUS_LABELS)
+        categories=cats, today=today, entity_users=all_users,
+        role=role, current_user_id=uid, entity_teams=entity_teams)
 
 @app.route("/todos/new", methods=["POST"])
 @role_required("admin", "superadmin")
@@ -1226,6 +1754,8 @@ def todo_new():
         "category":        request.form.get("category", ""),
         "deadline":        request.form.get("deadline", ""),
         "comment":         request.form.get("comment", "").strip(),
+        "notes":           request.form.get("notes", "").strip(),
+        "status":          "offen",
         "done":            False,
         "done_at":         None,
         "done_comment":    "",
@@ -1237,6 +1767,10 @@ def todo_new():
         "admin_read_at":   None,
         "created_by":      uid,
         "created_at":      datetime.now().isoformat(),
+        "todo_type":       request.form.get("todo_type", "task"),
+        "recipients":      request.form.get("recipients", "all"),
+        "read_by":         [],
+        "comments":        [],
     }
     todos = load_todos()
     todos.append(todo)
@@ -1270,6 +1804,7 @@ def todo_complete(todo_id):
             t["done"]          = True
             t["done_at"]       = datetime.now().isoformat()
             t["done_comment"]  = request.form.get("done_comment", "").strip()
+            t["status"]        = "erledigt"
             t["done_by"]       = uid
             t["admin_read_at"] = None  # admin gets notified
             break
@@ -1285,6 +1820,7 @@ def todo_reopen(todo_id):
             t["done"]         = False
             t["done_at"]      = None
             t["done_comment"] = ""
+            t["status"]        = "offen"
             t["done_by"]      = None
             t["admin_read_at"] = None
             break
@@ -1314,6 +1850,13 @@ def settings():
         if action == "categories":
             cats = [c.strip() for c in request.form.getlist("categories") if c.strip()]
             entity["todo_categories"] = cats
+        elif action == "risk_profile":
+            profile = {}
+            for cat_key in CATEGORIES.keys():
+                val = request.form.get(f"cat_prio_{cat_key}", "").strip()
+                if val in ("muss", "sollte", "kann"):
+                    profile[cat_key] = val
+            entity["category_prio_profile"] = profile
         elif action == "teams":
             teams = []
             i = 0
@@ -1332,8 +1875,29 @@ def settings():
     cats       = entity.get("todo_categories", DEFAULT_TODO_CATEGORIES)
     teams      = entity.get("teams", [])
     all_users  = [u for u in load_users() if u.get("entity_id") == eid]
+    # praxis_profil speichern
+    if request.method == "POST" and action == "praxis_profil":
+        profil_s = entity.get("praxis_profil") or {}
+        profil_s["fachrichtung"] = request.form.get("fachrichtung","").strip() or profil_s.get("fachrichtung")
+        profil_s["zulassung"]    = request.form.get("zulassung","").strip()    or profil_s.get("zulassung")
+        profil_s["struktur"]     = request.form.get("struktur","").strip()     or profil_s.get("struktur")
+        profil_s["bundesland"]   = request.form.get("bundesland","").strip() or None
+        profil_s["schwerpunkte"] = request.form.getlist("schwerpunkte")
+        entity["praxis_profil"] = profil_s
+        save_entities(entities)
+        flash("Praxisprofil aktualisiert.", "success")
+        return redirect(url_for("settings"))
+
+    profil_s = entity.get("praxis_profil") or {}
+    cat_prio_profile = entity.get("category_prio_profile") or {}
     return render_template("settings.html", entity=entity, categories=cats,
-        teams=teams, entity_users=all_users, signal_categories=CATEGORIES)
+        profil=profil_s,
+        fachrichtungen=PRAXIS_FACHRICHTUNGEN,
+        zulassungen=PRAXIS_ZULASSUNG,
+        strukturen=PRAXIS_STRUKTUR,
+        bundeslaender=PRAXIS_BUNDESLAENDER,
+        teams=teams, entity_users=all_users, signal_categories=CATEGORIES,
+        cat_prio_profile=cat_prio_profile)
 
 @app.route("/superadmin/functions")
 @role_required("superadmin")
@@ -1346,9 +1910,9 @@ def sa_functions():
 def sa_logbook():
     return render_template("sa_logbook.html")
 
-@app.route("/superadmin/settings", methods=["GET", "POST"])
+@app.route("/sa/default-setup", methods=["GET", "POST"])
 @role_required("superadmin")
-def sa_settings():
+def sa_default_setup():
     cfg = load_settings()
     if request.method == "POST":
         section = request.args.get("section", "todo")
@@ -1362,10 +1926,18 @@ def sa_settings():
             cfg["default_todo_categories"] = cats
             save_settings(cfg)
             flash("Standard-Kategorien gespeichert.", "success")
-        return redirect(url_for("sa_settings"))
+        return redirect(url_for("sa_default_setup"))
     cats  = cfg.get("default_todo_categories", DEFAULT_TODO_CATEGORIES)
     teams = cfg.get("default_team_names", ["Team Abrechnung", "Team Personal"])
-    return render_template("sa_settings.html", categories=cats, default_teams=teams)
+    return render_template("sa_default_setup.html", categories=cats, default_teams=teams)
+
+@app.route("/superadmin/settings", methods=["GET", "POST"])
+@role_required("superadmin")
+def sa_settings():
+    if request.method == "POST":
+        pass  # backup and other SA-specific actions handled here
+        return redirect(url_for("sa_settings"))
+    return render_template("sa_settings.html")
 
 
 FETCHER_FEED_OUTPUT = os.path.join(DATA_DIR, "fetcher_feed_latest.json")
@@ -1461,6 +2033,178 @@ def fetcher_scrape_export():
 SELECTOR_STATUS_FILE = os.path.join(DATA_DIR, "selector_finder_status.json")
 MAJA_STATUS_FILE     = os.path.join(DATA_DIR, "maja_status.json")
 MAJA_HISTORY_FILE    = os.path.join(DATA_DIR, "maja_history.json")
+NILS_HISTORY_FILE    = os.path.join(DATA_DIR, "nils_history.json")
+
+
+
+
+# ── Sol / Fletcher / Frank history & on-demand insights ──────────────────────
+
+SOL_HISTORY_FILE      = os.path.join(DATA_DIR, "sol_history.json")
+FLETCHER_HISTORY_FILE = os.path.join(DATA_DIR, "fletcher_history.json")
+FRANK_HISTORY_FILE    = os.path.join(DATA_DIR, "frank_history.json")
+
+def _load_history(path, limit=50):
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8") as fh:
+        return json.load(fh)[:limit]
+
+@app.route("/admin/sol/history")
+@role_required("superadmin")
+def sol_history():
+    return jsonify(_load_history(SOL_HISTORY_FILE))
+
+@app.route("/admin/fletcher/history")
+@role_required("superadmin")
+def fletcher_history():
+    return jsonify(_load_history(FLETCHER_HISTORY_FILE))
+
+@app.route("/admin/frank/history")
+@role_required("superadmin")
+def frank_history():
+    return jsonify(_load_history(FRANK_HISTORY_FILE))
+
+@app.route("/admin/sol/insights", methods=["POST"])
+@role_required("superadmin")
+def sol_insights_generate():
+    hist = _load_history(SOL_HISTORY_FILE, 20)
+    status = {}
+    sf = os.path.join(DATA_DIR, "selector_finder_status.json")
+    if os.path.exists(sf):
+        with open(sf, encoding="utf-8") as fh:
+            status = json.load(fh)
+    return _generate_tool_insights(
+        "Sol", "Selektor-Finder", hist, status,
+        extra_hint=(
+            "Sol findet CSS-Selektoren. Achte auf: Domains die wiederholt fehlschlagen, "
+            "Laeufe mit vielen 'failed' ohne 'updated', auffaellige Muster."
+        ),
+    )
+
+@app.route("/admin/fletcher/insights", methods=["POST"])
+@role_required("superadmin")
+def fletcher_insights_generate():
+    hist = _load_history(FLETCHER_HISTORY_FILE, 20)
+    latest = {}
+    lf = os.path.join(DATA_DIR, "fetcher_feed_latest.json")
+    if os.path.exists(lf):
+        with open(lf, encoding="utf-8") as fh:
+            latest = json.load(fh)
+    return _generate_tool_insights(
+        "Fletcher", "Feed-Fetcher", hist, latest,
+        extra_hint=(
+            "Fletcher crawlt RSS/Atom-Feeds. Achte auf: Quellen mit dauerhaft 0 neuen "
+            "Eintraegen (Feed tot?), sinkende Gesamtzahlen, wachsende Fehlerquoten."
+        ),
+    )
+
+@app.route("/admin/frank/insights", methods=["POST"])
+@role_required("superadmin")
+def frank_insights_generate():
+    hist = _load_history(FRANK_HISTORY_FILE, 20)
+    latest = {}
+    lf = os.path.join(DATA_DIR, "fetcher_scrape_latest.json")
+    if os.path.exists(lf):
+        with open(lf, encoding="utf-8") as fh:
+            latest = json.load(fh)
+    return _generate_tool_insights(
+        "Frank", "Scrape-Fetcher", hist, latest,
+        extra_hint=(
+            "Frank scrapet HTML-Endpunkte mit CSS-Selektoren. Achte auf: Endpunkte mit 0 "
+            "neuen Links (Selektor veraltet?), steigende Fehlerrate, strukturelle Muster."
+        ),
+    )
+
+def _generate_tool_insights(agent_name, agent_role, history, latest_run, extra_hint=""):
+    import anthropic as _ant
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        cfg = {}
+        cfg_path = os.path.join(os.path.dirname(__file__), "agent_configs.json")
+        if os.path.exists(cfg_path):
+            with open(cfg_path, encoding="utf-8") as fh:
+                cfg = json.load(fh)
+        api_key = cfg.get("anthropic_api_key", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "Kein API-Key konfiguriert"}), 500
+
+    hist_summary = json.dumps(history[:10], ensure_ascii=False, indent=2)
+    latest_summary = json.dumps(
+        {k: v for k, v in (latest_run or {}).items()
+         if k not in ("candidates", "crawl_receipt", "results")},
+        ensure_ascii=False, indent=2,
+    )
+
+    lines = [
+        "Du analysierst die Performance-Daten von " + agent_name + ", dem " + agent_role,
+        "des Branchenradar Gesundheitswesen.",
+        "",
+        "Letzte 10 Laeufe (History):",
+        hist_summary,
+        "",
+        "Letzter Lauf Detail:",
+        latest_summary,
+        "",
+        extra_hint,
+        "",
+        "Analysiere die Daten und leite daraus konkrete, systemische Erkenntnisse ab.",
+        "Fokus: Muster ueber mehrere Laeufe, nicht Einzelereignisse.",
+        "",
+        'Antworte NUR mit einem JSON-Array, ohne Erklaerung:',
+        '[',
+        '  {',
+        '    "category": "Effizienz | Qualitaet | Fehler | Trend",',
+        '    "title": "Kurzer Titel (max 60 Zeichen)",',
+        '    "description": "Konkrete Beschreibung (2-3 Saetze)"',
+        '  }',
+        ']',
+        "",
+        "Maximal 4 Vorschlaege. Nur wenn du wirklich etwas Konkretes siehst.",
+    ]
+    prompt = chr(10).join(lines)
+
+    try:
+        client = _ant.Anthropic(api_key=api_key)
+        msg = client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        raw = msg.content[0].text if msg.content else "[]"
+        m = re.search(r"\[.*\]", raw, re.DOTALL)
+        proposals = json.loads(m.group(0)) if m else []
+        return jsonify({"ok": True, "insights": proposals})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+NILS_INSIGHTS_FILE   = os.path.join(DATA_DIR, "nils_insights.json")
+
+@app.route("/admin/nils/insights")
+@role_required("superadmin")
+def nils_insights():
+    if not os.path.exists(NILS_INSIGHTS_FILE):
+        return jsonify([])
+    with open(NILS_INSIGHTS_FILE, encoding="utf-8") as f:
+        return jsonify(json.load(f))
+
+@app.route("/admin/nils/insights/<insight_id>", methods=["POST"])
+@role_required("superadmin")
+def nils_insights_update(insight_id):
+    if not os.path.exists(NILS_INSIGHTS_FILE):
+        return jsonify({"ok": False}), 404
+    with open(NILS_INSIGHTS_FILE, encoding="utf-8") as f:
+        insights = json.load(f)
+    data = request.get_json(silent=True) or {}
+    for item in insights:
+        if item.get("id") == insight_id:
+            if "status" in data:
+                item["status"] = data["status"]
+            break
+    with open(NILS_INSIGHTS_FILE, "w", encoding="utf-8") as f:
+        json.dump(insights, f, ensure_ascii=False, indent=2)
+    return jsonify({"ok": True})
+
 MAJA_INSIGHTS_FILE   = os.path.join(DATA_DIR, "maja_insights.json")
 
 # ── APScheduler ───────────────────────────────────────────────────────────────
@@ -1491,25 +2235,353 @@ def _apply_maja_schedule(cfg):
     _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
     if not maja.get("schedule_enabled"):
         return
-    stype   = maja.get("schedule_type", "")
-    s_time  = maja.get("schedule_time", "08:00")
+    # "after_nils" mode: no own schedule — triggered by _nils_scheduled_job
+    if maja.get("trigger_mode") == "after_nils":
+        return
+    interval_days = int(maja.get("interval_days", 30) or 30)
+    s_time = maja.get("schedule_time", "08:00")
     try:
         hour, minute = s_time.split(":")
     except Exception:
         hour, minute = "8", "0"
-    if stype == "monthly":
-        day = maja.get("schedule_day", "1")
-        _scheduler.add_job(_maja_scheduled_job, CronTrigger(day=day, hour=hour, minute=minute),
-                           id=job_id, replace_existing=True)
-    elif stype == "weekly":
-        weekday = maja.get("schedule_weekday", "mon")
-        _scheduler.add_job(_maja_scheduled_job, CronTrigger(day_of_week=weekday, hour=hour, minute=minute),
-                           id=job_id, replace_existing=True)
+    from apscheduler.triggers.interval import IntervalTrigger as _MajaIT
+    import datetime as _dt3
+    next_date_str = maja.get("next_run_date", "")
+    try:
+        _msd = _dt3.datetime.strptime(next_date_str, "%Y-%m-%d").replace(
+            hour=int(hour), minute=int(minute), second=0)
+    except Exception:
+        _now = _dt3.datetime.now()
+        _cand = _now.replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
+        if _cand <= _now: _cand += _dt3.timedelta(days=1)
+        _msd = _cand
+    _scheduler.add_job(_maja_scheduled_job, _MajaIT(days=interval_days, start_date=_msd),
+                       id=job_id, replace_existing=True)
+
+def _nils_scheduled_job():
+    """Called by APScheduler — runs nils_runner.py for automated source research."""
+    import importlib.util, logging, sys
+    log = logging.getLogger("nils_runner")
+    runner_path = os.path.join(os.path.dirname(__file__), "nils_runner.py")
+    if not os.path.exists(runner_path):
+        log.error("nils_runner.py not found at %s", runner_path)
+        return
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        log.warning("ANTHROPIC_API_KEY not set — skipping Nils run")
+        return
+    # Ensure venv site-packages are on path (anthropic package lives there)
+    venv_site = os.path.join(os.path.dirname(sys.executable), "..", "lib")
+    try:
+        import glob as _glob
+        sp = _glob.glob(os.path.join(venv_site, "python*/site-packages"))
+        for p in sp:
+            if p not in sys.path:
+                sys.path.insert(0, p)
+    except Exception:
+        pass
+    try:
+        spec = importlib.util.spec_from_file_location("nils_runner", runner_path)
+        mod  = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        mod.run()
+        log.info("Nils scheduled run completed")
+        # Trigger Maya if she is configured to run after Nils
+        try:
+            _cfg2 = load_agent_configs()
+            _maja = _cfg2.get("agents", {}).get("source_maintenance", {})
+            if _maja.get("schedule_enabled") and _maja.get("trigger_mode") == "after_nils":
+                import threading as _thr
+                _t = _thr.Thread(target=_maja_scheduled_job, daemon=True)
+                _t.start()
+                log.info("Maya triggered after Nils completion")
+        except Exception as _me:
+            log.error("Failed to trigger Maya after Nils: %s", _me)
+    except Exception as e:
+        log.error("Nils scheduled run failed: %s", e)
+
+def _apply_nils_schedule(cfg):
+    """Register/replace APScheduler job for Nils based on interval_days setting."""
+    nils = cfg.get("agents", {}).get("source_research", {})
+    job_id = "nils_scheduled"
+    _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
+    if not nils.get("schedule_enabled"):
+        return
+    interval_days = int(nils.get("interval_days", 7))
+    s_time  = nils.get("schedule_time", "08:00")
+    try:
+        hour, minute = s_time.split(":")
+    except Exception:
+        hour, minute = "8", "0"
+    from apscheduler.triggers.interval import IntervalTrigger
+    import datetime as _dt
+    # Determine start_date from next_run_date config (or next occurrence of time)
+    next_date_str = nils.get("next_run_date", "")
+    try:
+        start_d = _dt.datetime.strptime(next_date_str, "%Y-%m-%d").replace(
+            hour=int(hour), minute=int(minute), second=0)
+    except Exception:
+        # No date set: use next occurrence of the time (today if not passed, else tomorrow)
+        now = _dt.datetime.now()
+        candidate = now.replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
+        if candidate <= now:
+            candidate += _dt.timedelta(days=1)
+        start_d = candidate
+    _scheduler.add_job(
+        _nils_scheduled_job,
+        IntervalTrigger(days=interval_days, start_date=start_d),
+        id=job_id, replace_existing=True)
+
+
+# ── Scheduling: Fletcher, Frank, Fred (feed-AI), Finn (scrape-AI), Theo, Ida ──
+
+import threading as _sched_threading
+import datetime as _sched_dt
+
+def _make_interval_start(time_str, interval_days):
+    """Return next start_date for an IntervalTrigger at time_str."""
+    try:
+        hour, minute = time_str.split(":")
+    except Exception:
+        hour, minute = "6", "0"
+    now = _sched_dt.datetime.now()
+    cand = now.replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
+    if cand <= now:
+        cand += _sched_dt.timedelta(days=1)
+    return cand
+
+def _run_fetcher(module_name, after_job_fn=None, label=""):
+    """Import and run a fetcher module, then optionally trigger a follow-up job."""
+    import importlib, logging
+    log = logging.getLogger(label or module_name)
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    try:
+        mod = importlib.import_module(module_name)
+        importlib.reload(mod)
+        mod.run()
+        log.info("%s scheduled run completed", label)
+    except Exception as e:
+        log.error("%s scheduled run failed: %s", label, e)
+        return
+    if after_job_fn:
+        try:
+            cfg2 = load_agent_configs()
+            t = _sched_threading.Thread(target=after_job_fn, daemon=True)
+            t.start()
+            log.info("%s triggered after %s", after_job_fn.__name__, label)
+        except Exception as e2:
+            log.error("Failed to trigger follow-up after %s: %s", label, e2)
+
+def _run_ai_agent(runner_fn, label=""):
+    """Run a Claude-backed agent function safely."""
+    import logging
+    log = logging.getLogger(label)
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        log.warning("ANTHROPIC_API_KEY not set — skipping %s", label)
+        return
+    try:
+        runner_fn()
+        log.info("%s completed", label)
+    except Exception as e:
+        log.error("%s failed: %s", label, e)
+
+# ── Fred (feed AI) ────────────────────────────────────────────────────────────
+def _fred_scheduled_job():
+    def _run():
+        import fetcher_feed
+        cfg = load_agent_configs()
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            return
+        # Fred runs the AI analysis on the latest feed export
+        # fetcher_feed.run_ai_analysis() if it exists, otherwise log
+        if hasattr(fetcher_feed, 'run_ai_analysis'):
+            fetcher_feed.run_ai_analysis(cfg.get("agents", {}).get("feed", {}), api_key)
+    _run_ai_agent(_run, "Fred")
+
+# ── Finn (scrape AI) ──────────────────────────────────────────────────────────
+def _finn_scheduled_job():
+    def _run():
+        import fetcher_scrape
+        cfg = load_agent_configs()
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            return
+        if hasattr(fetcher_scrape, 'run_ai_analysis'):
+            fetcher_scrape.run_ai_analysis(cfg.get("agents", {}).get("scrape", {}), api_key)
+    _run_ai_agent(_run, "Finn")
+    # After Finn: trigger Theo if configured
+    try:
+        cfg2 = load_agent_configs()
+        theo = cfg2.get("agents", {}).get("group", {})
+        if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_finn":
+            t = _sched_threading.Thread(target=_theo_scheduled_job, daemon=True)
+            t.start()
+    except Exception:
+        pass
+
+# ── Fletcher ──────────────────────────────────────────────────────────────────
+def _fletcher_scheduled_job():
+    import logging, importlib
+    log = logging.getLogger("Fletcher")
+    try:
+        import fetcher_feed
+        importlib.reload(fetcher_feed)
+        fetcher_feed.run()
+        log.info("Fletcher scheduled run completed")
+    except Exception as e:
+        log.error("Fletcher scheduled run failed: %s", e)
+        return
+    # Trigger Fred if configured after_fletcher
+    try:
+        cfg2 = load_agent_configs()
+        fred = cfg2.get("agents", {}).get("feed", {})
+        if fred.get("schedule_enabled") and fred.get("trigger_mode") == "after_fletcher":
+            t = _sched_threading.Thread(target=_fred_scheduled_job, daemon=True)
+            t.start()
+            log.info("Fred triggered after Fletcher")
+    except Exception as e:
+        log.error("Failed to trigger Fred after Fletcher: %s", e)
+
+def _apply_fletcher_schedule(cfg):
+    fl = cfg.get("agents", {}).get("fletcher_feed", {})
+    job_id = "fletcher_scheduled"
+    _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
+    if not fl.get("schedule_enabled"):
+        return
+    from apscheduler.triggers.interval import IntervalTrigger as _IT
+    days = int(fl.get("interval_days", 7) or 7)
+    start = _make_interval_start(fl.get("schedule_time", "06:00"), days)
+    _scheduler.add_job(_fletcher_scheduled_job, _IT(days=days, start_date=start),
+                       id=job_id, replace_existing=True)
+    import logging; logging.getLogger("scheduler").info(
+        "Fletcher scheduled every %d days at %s", days, fl.get("schedule_time","06:00"))
+
+# ── Frank ─────────────────────────────────────────────────────────────────────
+def _frank_scheduled_job():
+    import logging, importlib
+    log = logging.getLogger("Frank")
+    try:
+        import fetcher_scrape
+        importlib.reload(fetcher_scrape)
+        fetcher_scrape.run()
+        log.info("Frank scheduled run completed")
+    except Exception as e:
+        log.error("Frank scheduled run failed: %s", e)
+        return
+    # Trigger Finn if configured after_frank
+    try:
+        cfg2 = load_agent_configs()
+        finn = cfg2.get("agents", {}).get("scrape", {})
+        if finn.get("schedule_enabled") and finn.get("trigger_mode") == "after_frank":
+            t = _sched_threading.Thread(target=_finn_scheduled_job, daemon=True)
+            t.start()
+            log.info("Finn triggered after Frank")
+    except Exception as e:
+        log.error("Failed to trigger Finn after Frank: %s", e)
+
+def _apply_frank_schedule(cfg):
+    fr = cfg.get("agents", {}).get("frank_scrape", {})
+    job_id = "frank_scheduled"
+    _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
+    if not fr.get("schedule_enabled"):
+        return
+    from apscheduler.triggers.interval import IntervalTrigger as _IT
+    days = int(fr.get("interval_days", 7) or 7)
+    start = _make_interval_start(fr.get("schedule_time", "06:00"), days)
+    _scheduler.add_job(_frank_scheduled_job, _IT(days=days, start_date=start),
+                       id=job_id, replace_existing=True)
+    import logging; logging.getLogger("scheduler").info(
+        "Frank scheduled every %d days at %s", days, fr.get("schedule_time","06:00"))
+
+# ── Theo ──────────────────────────────────────────────────────────────────────
+def _theo_scheduled_job():
+    import logging
+    log = logging.getLogger("Theo")
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        log.warning("ANTHROPIC_API_KEY not set — skipping Theo")
+        return
+    try:
+        from theo_runner import run as theo_run
+        cfg = load_agent_configs()
+        theo_run(cfg.get("agents", {}).get("group", {}), api_key)
+        log.info("Theo scheduled run completed")
+    except ImportError:
+        # Fall back to the existing /admin/theo/run logic via internal call
+        log.warning("theo_runner.py not found — skipping")
+        return
+    except Exception as e:
+        log.error("Theo scheduled run failed: %s", e)
+        return
+    # Trigger Ida if configured after_theo
+    try:
+        cfg2 = load_agent_configs()
+        ida = cfg2.get("agents", {}).get("bewertung", {})
+        if ida.get("schedule_enabled") and ida.get("trigger_mode") == "after_theo":
+            t = _sched_threading.Thread(target=_ida_scheduled_job, daemon=True)
+            t.start()
+            log.info("Ida triggered after Theo")
+    except Exception as e:
+        log.error("Failed to trigger Ida after Theo: %s", e)
+
+def _apply_theo_schedule(cfg):
+    th = cfg.get("agents", {}).get("group", {})
+    job_id = "theo_scheduled"
+    _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
+    if not th.get("schedule_enabled"):
+        return
+    if th.get("trigger_mode") in ("after_finn", "after_fletcher", "after_frank"):
+        return  # triggered by predecessor, no own timer
+    from apscheduler.triggers.interval import IntervalTrigger as _IT
+    days = int(th.get("interval_days", 7) or 7)
+    start = _make_interval_start(th.get("schedule_time", "08:00"), days)
+    _scheduler.add_job(_theo_scheduled_job, _IT(days=days, start_date=start),
+                       id=job_id, replace_existing=True)
+
+# ── Ida ───────────────────────────────────────────────────────────────────────
+def _ida_scheduled_job():
+    import logging
+    log = logging.getLogger("Ida")
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        log.warning("ANTHROPIC_API_KEY not set — skipping Ida")
+        return
+    try:
+        from ida_runner import run as ida_run
+        cfg = load_agent_configs()
+        ida_run(cfg.get("agents", {}).get("bewertung", {}), api_key)
+        log.info("Ida scheduled run completed")
+    except ImportError:
+        log.warning("ida_runner.py not found — skipping")
+    except Exception as e:
+        log.error("Ida scheduled run failed: %s", e)
+
+def _apply_ida_schedule(cfg):
+    ida = cfg.get("agents", {}).get("bewertung", {})
+    job_id = "ida_scheduled"
+    _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
+    if not ida.get("schedule_enabled"):
+        return
+    if ida.get("trigger_mode") == "after_theo":
+        return  # triggered by Theo, no own timer
+    from apscheduler.triggers.interval import IntervalTrigger as _IT
+    days = int(ida.get("interval_days", 7) or 7)
+    start = _make_interval_start(ida.get("schedule_time", "08:00"), days)
+    _scheduler.add_job(_ida_scheduled_job, _IT(days=days, start_date=start),
+                       id=job_id, replace_existing=True)
 
 # Apply schedule on startup
 with app.app_context():
     try:
-        _apply_maja_schedule(load_agent_configs())
+        _cfg0 = load_agent_configs()
+        _apply_maja_schedule(_cfg0)
+        _apply_nils_schedule(_cfg0)
+        _apply_fletcher_schedule(_cfg0)
+        _apply_frank_schedule(_cfg0)
+        _apply_theo_schedule(_cfg0)
+        _apply_ida_schedule(_cfg0)
     except Exception:
         pass
 
@@ -1620,23 +2692,74 @@ def maja_status():
         "next_run":        next_run,
     })
 
-@app.route("/admin/maja/schedule", methods=["POST"])
+@app.route("/admin/maja/run-now", methods=["POST"])
+@role_required("superadmin")
+def maja_run_now():
+    """Start a Maya automated run immediately in a background thread."""
+    global _maja_running
+    if _maja_running:
+        return jsonify({"ok": False, "error": "Maja läuft bereits"}), 409
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt"}), 500
+    import threading, logging
+    log = logging.getLogger("maja_runner")
+    cfg  = load_agent_configs()
+    maja_cfg = cfg["agents"].get("source_maintenance", {})
+    model    = maja_cfg.get("maja_model", "claude-haiku-4-5-20251001")
+    from_idx = None
+    to_idx   = None
+
+    def _run():
+        global _maja_running
+        _maja_running = True
+        try:
+            import maja_runner
+            maja_runner.run(maja_cfg, api_key, model=model,
+                            from_idx=from_idx, to_idx=to_idx)
+            log.info("Maya run-now completed")
+        except Exception as e:
+            log.error("Maya run-now failed: %s", e)
+        finally:
+            _maja_running = False
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    return jsonify({"ok": True, "message": "Maya-Lauf gestartet"})
+
+@app.route("/admin/maja/schedule", methods=["GET", "POST"])
 @role_required("superadmin")
 def maja_schedule():
     cfg  = load_agent_configs()
     maja = cfg["agents"].setdefault("source_maintenance", {})
+    job  = _scheduler.get_job("maja_scheduled")
+    next_run = job.next_run_time.strftime("%Y-%m-%d %H:%M") if job and job.next_run_time else None
+    if request.method == "GET":
+        return jsonify({
+            "schedule_enabled": maja.get("schedule_enabled", False),
+            "trigger_mode":     maja.get("trigger_mode", "interval"),
+            "interval_days":    maja.get("interval_days", 30),
+            "schedule_time":    maja.get("schedule_time", "08:00"),
+            "next_run_date":    maja.get("next_run_date", ""),
+            "maja_model":       maja.get("maja_model", "claude-haiku-4-5-20251001"),
+            "cost_limit_usd":   maja.get("cost_limit_usd", 0),
+            "cost_limit_rel":   maja.get("cost_limit_rel", 0),
+            "next_run":         next_run,
+        })
     body = request.get_json(silent=True) or {}
     maja["schedule_enabled"] = bool(body.get("schedule_enabled"))
-    maja["schedule_type"]    = body.get("schedule_type", "monthly")
-    maja["schedule_day"]     = body.get("schedule_day", "1")
-    maja["schedule_weekday"] = body.get("schedule_weekday", "mon")
+    maja["trigger_mode"]     = body.get("trigger_mode", "interval")
+    maja["interval_days"]    = int(body.get("interval_days", 30) or 30)
     maja["schedule_time"]    = body.get("schedule_time", "08:00")
+    maja["next_run_date"]    = body.get("next_run_date", "")
     maja["maja_model"]       = body.get("maja_model", "claude-haiku-4-5-20251001")
+    maja["cost_limit_usd"]   = float(body.get("cost_limit_usd", 0) or 0)
+    maja["cost_limit_rel"]   = float(body.get("cost_limit_rel", 0) or 0)
     save_agent_configs(cfg)
     _apply_maja_schedule(cfg)
-    job = _scheduler.get_job("maja_scheduled")
-    next_run = job.next_run_time.strftime("%Y-%m-%d %H:%M") if job and job.next_run_time else None
-    return jsonify({"ok": True, "next_run": next_run})
+    job2 = _scheduler.get_job("maja_scheduled")
+    next_run2 = job2.next_run_time.strftime("%Y-%m-%d %H:%M") if job2 and job2.next_run_time else None
+    return jsonify({"ok": True, "next_run": next_run2})
 
 def _maja_quality(sources):
     total = len(sources)
@@ -1690,13 +2813,232 @@ def maja_insight_update(insight_id):
 @app.route("/admin/maja/report")
 @role_required("admin", "superadmin")
 def maja_report():
+    from datetime import datetime, timedelta, timezone
     sources = load_sources()
     quality = _maja_quality(sources)
     history = []
     if os.path.exists(MAJA_HISTORY_FILE):
         with open(MAJA_HISTORY_FILE, encoding="utf-8") as f:
-            history = json.load(f)[:10]
-    return jsonify({"quality": quality, "history": history})
+            history = json.load(f)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+    last_month_cost = 0.0
+    for r in history:
+        try:
+            run_dt = datetime.fromisoformat(r.get("run_at","").replace("Z","+00:00"))
+            if run_dt.tzinfo is None:
+                run_dt = run_dt.replace(tzinfo=timezone.utc)
+            if run_dt >= cutoff:
+                last_month_cost += float(r.get("cost_usd") or 0)
+        except Exception:
+            pass
+    costs = [float(r.get("cost_usd") or 0) for r in history if r.get("cost_usd") is not None]
+    avg_cost = sum(costs) / len(costs) if costs else 0.0
+    maja_cfg = {}
+    maja_sched_file = os.path.join(DATA_DIR, "maja_schedule.json")
+    if os.path.exists(maja_sched_file):
+        with open(maja_sched_file, encoding="utf-8") as f:
+            maja_cfg = json.load(f)
+    trigger_mode = maja_cfg.get("trigger_mode", "interval")
+    interval_days = int(maja_cfg.get("interval_days") or 30)
+    enabled = bool(maja_cfg.get("enabled", False))
+    if trigger_mode == "after_nils":
+        nils_cfg = {}
+        nils_sched_file = os.path.join(DATA_DIR, "nils_schedule.json")
+        if os.path.exists(nils_sched_file):
+            with open(nils_sched_file, encoding="utf-8") as f:
+                nils_cfg = json.load(f)
+        interval_days = int(nils_cfg.get("interval_days") or 7)
+        enabled = bool(nils_cfg.get("enabled", False))
+    runs_per_month = (30 / interval_days) if (enabled and interval_days > 0) else 0
+    forecast_cost = avg_cost * runs_per_month
+    return jsonify({
+        "quality": quality,
+        "history": history[:20],
+        "last_month_cost": round(last_month_cost, 4),
+        "forecast_cost": round(forecast_cost, 4),
+        "avg_cost_per_run": round(avg_cost, 4),
+        "schedule_interval_days": interval_days,
+        "schedule_enabled": enabled,
+        "trigger_mode": trigger_mode,
+    })
+
+@app.route("/admin/nils/report")
+@role_required("superadmin")
+def nils_report():
+    history = []
+    if os.path.exists(NILS_HISTORY_FILE):
+        with open(NILS_HISTORY_FILE, encoding="utf-8") as f:
+            history = json.load(f)
+    sources = load_sources()
+    total_sources = len(sources)
+    # last-month cost (all runs in past 30 days)
+    from datetime import datetime, timedelta, timezone
+    cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+    last_month_cost = 0.0
+    for r in history:
+        try:
+            run_dt = datetime.fromisoformat(r.get("run_at","").replace("Z","+00:00"))
+            if run_dt.tzinfo is None:
+                run_dt = run_dt.replace(tzinfo=timezone.utc)
+            if run_dt >= cutoff:
+                last_month_cost += float(r.get("cost_usd") or 0)
+        except Exception:
+            pass
+    # avg cost per run (over all runs)
+    costs = [float(r.get("cost_usd") or 0) for r in history if r.get("cost_usd") is not None]
+    avg_cost = sum(costs) / len(costs) if costs else 0.0
+    # schedule interval
+    nils_cfg = {}
+    nils_sched_file = os.path.join(DATA_DIR, "nils_schedule.json")
+    if os.path.exists(nils_sched_file):
+        with open(nils_sched_file, encoding="utf-8") as f:
+            nils_cfg = json.load(f)
+    interval_days = int(nils_cfg.get("interval_days") or 7)
+    enabled = bool(nils_cfg.get("enabled", False))
+    runs_per_month = (30 / interval_days) if (enabled and interval_days > 0) else 0
+    forecast_cost = avg_cost * runs_per_month
+    return jsonify({
+        "history": history[:20],
+        "total_sources": total_sources,
+        "last_month_cost": round(last_month_cost, 4),
+        "forecast_cost": round(forecast_cost, 4),
+        "avg_cost_per_run": round(avg_cost, 4),
+        "schedule_interval_days": interval_days,
+        "schedule_enabled": enabled,
+    })
+
+@app.route("/admin/nils/report/add", methods=["POST"])
+@role_required("superadmin")
+def nils_report_add():
+    """Manually add or update a Nils run entry (for manual/external KI runs)."""
+    data = request.get_json(silent=True) or {}
+    history = []
+    if os.path.exists(NILS_HISTORY_FILE):
+        with open(NILS_HISTORY_FILE, encoding="utf-8") as f:
+            history = json.load(f)
+    entry = {
+        "run_at":         data.get("run_at", datetime.now().strftime("%Y-%m-%d %H:%M")),
+        "model":          data.get("model", "—"),
+        "sources_before": int(data.get("sources_before", 0)),
+        "sources_after":  int(data.get("sources_after", 0)),
+        "new_sources":    int(data.get("new_sources", 0)),
+        "input_tokens":   int(data.get("input_tokens", 0)),
+        "output_tokens":  int(data.get("output_tokens", 0)),
+        "duration_s":     float(data.get("duration_s", 0)),
+        "cost_usd":       float(data.get("cost_usd", 0)),
+        "note":           data.get("note", ""),
+    }
+    history.insert(0, entry)
+    history = history[:50]  # keep last 50
+    with open(NILS_HISTORY_FILE, "w", encoding="utf-8") as f:
+        import json as _json
+        _json.dump(history, f, ensure_ascii=False, indent=2)
+    return jsonify({"ok": True, "entry": entry})
+
+
+@app.route("/admin/notifications")
+@role_required("superadmin")
+def notifications_list():
+    notifs = load_notifications()
+    unread = [n for n in notifs if not n.get("read")]
+    return jsonify({"notifications": notifs[:50], "unread_count": len(unread)})
+
+@app.route("/admin/notifications/read", methods=["POST"])
+@role_required("superadmin")
+def notifications_mark_read():
+    data   = request.get_json(silent=True) or {}
+    nid    = data.get("id")          # specific id, or None = mark all
+    notifs = load_notifications()
+    for n in notifs:
+        if nid is None or n.get("id") == nid:
+            n["read"] = True
+    save_notifications(notifs)
+    return jsonify({"ok": True})
+
+# Global run-state for Nils (polled by frontend)
+_nils_run_state = {"status": "idle", "message": "", "new_sources": 0, "started_at": None}
+
+@app.route("/admin/nils/run-now", methods=["POST"])
+@role_required("superadmin")
+def nils_run_now():
+    """Start a Nils run immediately in a background thread."""
+    import threading, importlib.util, logging, sys as _sys
+    log = logging.getLogger("nils_runner")
+    runner_path = os.path.join(os.path.dirname(__file__), "nils_runner.py")
+    if not os.path.exists(runner_path):
+        return jsonify({"ok": False, "error": "nils_runner.py nicht gefunden"}), 500
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt"}), 500
+
+    import datetime as _dtnow
+    _nils_run_state.update({"status": "running", "message": "Nils läuft …", "new_sources": 0,
+                             "started_at": _dtnow.datetime.now().strftime("%H:%M:%S")})
+
+    def _run():
+        venv_site = os.path.join(os.path.dirname(_sys.executable), "..", "lib")
+        try:
+            import glob as _glob
+            for p in _glob.glob(os.path.join(venv_site, "python*/site-packages")):
+                if p not in _sys.path:
+                    _sys.path.insert(0, p)
+        except Exception:
+            pass
+        try:
+            spec = importlib.util.spec_from_file_location("nils_runner", runner_path)
+            mod  = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            result = mod.run()
+            new_n = (result or {}).get("new_sources", 0) if isinstance(result, dict) else 0
+            msg = f"Abgeschlossen — {new_n} neue Quelle{'n' if new_n != 1 else ''} gefunden" if new_n else "Abgeschlossen — keine neuen Quellen"
+            _nils_run_state.update({"status": "done", "message": msg, "new_sources": new_n})
+            log.info("Nils run-now completed: %s", msg)
+            # Maya after_nils: only triggered by automatic Nils runs, not manual ones
+        except Exception as e:
+            _nils_run_state.update({"status": "error", "message": f"Fehler: {e}"})
+            log.error("Nils run-now failed: %s", e)
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    return jsonify({"ok": True, "message": "Nils-Lauf gestartet"})
+
+@app.route("/admin/nils/run-status", methods=["GET"])
+@role_required("superadmin")
+def nils_run_status():
+    return jsonify(_nils_run_state)
+
+@app.route("/admin/nils/schedule", methods=["GET", "POST"])
+@role_required("superadmin")
+def nils_schedule():
+    cfg = load_agent_configs()
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        nils = cfg.setdefault("agents", {}).setdefault("source_research", {})
+        nils["schedule_enabled"] = bool(data.get("schedule_enabled", False))
+        nils["interval_days"]    = int(data.get("interval_days", 7))
+        nils["schedule_time"]    = data.get("schedule_time", "08:00")
+        nils["next_run_date"]    = data.get("next_run_date", "")
+        nils["nils_model"]       = data.get("nils_model", "claude-opus-4-8")
+        nils["cost_limit_usd"]   = float(data.get("cost_limit_usd", 0) or 0)
+        nils["cost_limit_rel"]   = float(data.get("cost_limit_rel", 0) or 0)
+        save_agent_configs(cfg)
+        _apply_nils_schedule(cfg)
+        job_post = _scheduler.get_job("nils_scheduled")
+        next_run_post = job_post.next_run_time.strftime("%Y-%m-%d %H:%M") if job_post and job_post.next_run_time else None
+        return jsonify({"ok": True, "next_run": next_run_post})
+    nils = cfg.get("agents", {}).get("source_research", {})
+    # Next run time
+    job = _scheduler.get_job("nils_scheduled")
+    next_run = job.next_run_time.strftime("%Y-%m-%d %H:%M") if job and job.next_run_time else None
+    return jsonify({
+        "schedule_enabled": nils.get("schedule_enabled", False),
+        "interval_days":    nils.get("interval_days", 7),
+        "schedule_time":    nils.get("schedule_time", "08:00"),
+        "next_run_date":    nils.get("next_run_date", ""),
+        "nils_model":       nils.get("nils_model", "claude-opus-4-8"),
+        "cost_limit_usd":   nils.get("cost_limit_usd", 0),
+        "cost_limit_rel":   nils.get("cost_limit_rel", 0),
+        "next_run":         next_run,
+    })
 
 @app.route("/admin/theo/report")
 @role_required("superadmin")
@@ -2828,6 +4170,13 @@ def agent_reports():
 
 
 # ── Agents ────────────────────────────────────────────────────────────────────
+
+@app.route("/admin/agents/overview", methods=["GET"])
+@role_required("admin", "superadmin")
+def agents_overview():
+    return render_template("agents_overview.html")
+
+
 
 @app.route("/admin/agents", methods=["GET"])
 @role_required("admin", "superadmin")

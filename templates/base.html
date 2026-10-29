@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no">
   <title>{% block title %}Praxis-Radar{% endblock %}</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -153,10 +154,229 @@
     .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
     .btn-danger  { background: var(--s-action); color: #fff; }
     .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    /* ── Superadmin Left Sidebar ─────────────────────────────────── */
+    body.sa-mode { min-height:100vh; padding-top:0; padding-left:240px; background:var(--bg); }
+    body.sa-mode .header { display:none; }
+    body.sa-mode .nav-drawer { display:none !important; }
+    @media (max-width:768px) {
+      body.sa-mode { padding-left:0; padding-top:48px; }
+      .sa-sidebar { display:none !important; }
+      .sa-mobile-bar { display:flex !important; }
+    }
+    .sa-mobile-bar { display:none; position:fixed; top:0; left:0; right:0; height:48px; background:var(--surface); border-bottom:1px solid var(--border); z-index:250; align-items:center; padding:0 16px; gap:12px; }
+    .sa-mobile-bar .brand-title { font-family:Georgia,serif; font-size:16px; color:var(--text); text-decoration:none; flex:1; }
+    .sa-mobile-bar .brand-amp { color:var(--primary); }
+    /* flash handled below */
+    .sa-sidebar {
+      display:none;
+      width:240px; min-width:240px; background:#f7f8f6; color:var(--text); border-right:1px solid var(--border);
+      flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:200;
+      overflow-y:auto;
+    }
+    body.sa-mode .sa-sidebar { display:flex; }
+    @media (prefers-color-scheme: dark) {
+      .sa-sidebar { background: #1e1e1e !important; }
+    }
+    :root[data-theme="dark"] .sa-sidebar { background: #1e1e1e !important; }
+    :root[data-theme="light"] .sa-sidebar { background: #f7f8f6 !important; }
+    .sa-sidebar-brand { padding:20px 20px 16px; font-family:Georgia,serif; font-size:15px; font-weight:normal; color:var(--text); text-decoration:none; display:block; border-bottom:1px solid var(--border); }
+    .sa-sidebar-brand small { display:block; font-family:inherit; font-size:10px; font-weight:normal; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-top:2px; }
+    .sa-nav { flex:1; padding:12px 0; }
+    .sa-nav-item { display:block; padding:8px 20px; font-size:13px; color:var(--text); text-decoration:none; transition:all .15s; }
+    .sa-nav-item:hover, .sa-nav-item.active { color:var(--navy); background:rgba(29,61,40,.08); }
+    .sa-nav-sep { height:1px; background:var(--border); margin:8px 16px; }
+    .sa-nav-group-btn {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; padding:8px 20px; font-size:13px; color:var(--muted);
+      background:none; border:none; cursor:pointer; font-family:inherit; text-align:left;
+      transition:all .15s;
+    }
+    .sa-nav-group-btn:hover { color:var(--navy); background:rgba(29,61,40,.06); }
+    .sa-nav-group-btn .chevron { font-size:9px; transition:transform .2s; opacity:.6; }
+    .sa-nav-group-btn.open .chevron { transform:rotate(180deg); }
+    .sa-nav-sub { display:none; padding:2px 0; }
+    .sa-nav-sub.open { display:block; }
+    .sa-nav-sub a { display:block; padding:6px 20px 6px 32px; font-size:12px; color:var(--muted); text-decoration:none; transition:all .15s; }
+    .sa-nav-sub a:hover, .sa-nav-sub a.active { color:var(--navy); background:rgba(29,61,40,.07); }
+    /* Notification Bell */
+  .sa-notif-bell-wrap { position:relative; display:flex; align-items:center; margin-right:6px; }
+  .sa-notif-bell { background:none; border:none; cursor:pointer; color:var(--muted); padding:4px; border-radius:6px; display:flex; align-items:center; font-size:16px; transition:color .15s; }
+  .sa-notif-bell:hover { color:var(--text); }
+  .sa-notif-badge { position:absolute; top:-3px; right:-3px; background:#e85; color:#fff; font-size:9px; font-weight:700; min-width:15px; height:15px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 3px; line-height:1; pointer-events:none; }
+  .sa-notif-badge.hidden { display:none; }
+  /* Notification Dropdown */
+  .sa-notif-panel { display:none; position:fixed; bottom:56px; left:4px; width:232px; max-height:420px; overflow-y:auto; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,.28); z-index:2000; }
+  .sa-notif-panel.open { display:block; }
+  .sa-notif-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px 8px; border-bottom:1px solid var(--border); font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .sa-notif-header button { background:none; border:none; color:var(--muted); font-size:11px; cursor:pointer; font-family:inherit; padding:2px 6px; border-radius:4px; }
+  .sa-notif-header button:hover { background:var(--surface2); color:var(--text); }
+  .sa-notif-item { padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .1s; }
+  .sa-notif-item:last-child { border-bottom:none; }
+  .sa-notif-item:hover { background:var(--surface2); }
+  .sa-notif-item.unread { border-left:3px solid #e85; }
+  .sa-notif-item.unread.info { border-left-color:var(--primary); }
+  .sa-notif-item.unread.error { border-left-color:#c44; }
+  .sa-notif-title { font-size:12px; font-weight:600; color:var(--text); margin-bottom:3px; }
+  .sa-notif-msg { font-size:11px; color:var(--muted); line-height:1.5; }
+  .sa-notif-time { font-size:10px; color:var(--faint); margin-top:3px; }
+  .sa-notif-empty { padding:24px 16px; text-align:center; font-size:12px; color:var(--faint); }
+
+  .sa-sidebar-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:12px; color:var(--muted); }
+    .sa-sidebar-foot a { color:var(--muted); text-decoration:none; }
+    .sa-sidebar-foot a:hover { color:var(--navy); }
+    .sa-foot-name { margin-top:8px; font-size:12px; color:var(--muted); line-height:1.5; }
+    .sa-sidebar-foot .initials-btn { width:34px; height:34px; font-size:13px; }
+    .sa-sidebar-foot .impersonate-panel { bottom:100%; top:auto; left:0; right:0; width:auto; min-width:0; margin-bottom:8px; }
+    .sa-content { width:100%; min-width:0; overflow-x:hidden; }
+
+    /* flash: no extra margin needed in sa-mode */
+    /* Impersonation widget */
+    .sa-topbar { display:flex; align-items:center; justify-content:flex-end; padding:12px 24px; border-bottom:1px solid var(--border); background:var(--surface); gap:12px; }
+    .impersonate-wrap { position:relative; }
+    .initials-btn {
+      width:36px; height:36px; border-radius:50%; background:var(--navy); color:#fff;
+      font-size:13px; font-weight:700; border:none; cursor:pointer; font-family:inherit;
+      display:flex; align-items:center; justify-content:center; letter-spacing:.02em;
+      transition:opacity .15s;
+    }
+    .initials-btn:hover { opacity:.85; }
+    .impersonate-panel {
+      display:none; position:absolute; right:0; top:44px; background:var(--surface);
+      border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 8px 32px rgba(0,0,0,.18);
+      padding:16px; min-width:280px; z-index:300;
+    }
+    .impersonate-panel.open { display:block; }
+    .impersonate-panel label { display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:5px; margin-top:12px; }
+    .impersonate-panel label:first-child { margin-top:0; }
+    .impersonate-panel select { width:100%; padding:7px 10px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); font-size:13px; color:var(--text); outline:none; font-family:inherit; }
+    .impersonate-panel select:focus { border-color:var(--navy); }
+    .impersonate-submit { margin-top:14px; width:100%; padding:8px; background:var(--navy); color:#fff; border:none; border-radius:var(--radius); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .impersonate-submit:hover { opacity:.85; }
+    /* View-as banner */
+    .view-as-banner { background:#FEF3C7; border-bottom:1px solid #F59E0B; padding:8px 24px; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:#92400E; }
+    .view-as-banner a { color:#92400E; font-weight:600; text-decoration:none; border:1px solid currentColor; border-radius:4px; padding:2px 10px; }
+    .view-as-banner a:hover { background:rgba(0,0,0,.05); }
+    @media (prefers-color-scheme:dark) {
+      .view-as-banner { background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.3); color:#FDE68A; }
+      .view-as-banner a { color:#FDE68A; }
+    }
   </style>
   {% block head %}{% endblock %}
 </head>
-<body>
+<body{% if session.get("role") == "superadmin" %} class="sa-mode"{% endif %}>
+
+{% if session.get('role') == 'superadmin' %}
+<aside class="sa-sidebar">
+  <a href="{{ url_for('sa_dashboard') }}" class="sa-sidebar-brand">
+    Ole <span style="font-style:italic">&amp;</span> Joy
+    <small>Superadmin</small>
+  </a>
+  <nav class="sa-nav">
+    <a href="{{ url_for('sa_home') }}" class="sa-nav-item">Home</a>
+    <a href="{{ url_for('sa_dashboard') }}" class="sa-nav-item">Entities und Nutzer</a>
+    <div class="sa-nav-sep"></div>
+    <a href="{{ url_for('sources') }}" class="sa-nav-item">Quellen</a>
+    <div>
+      <button class="sa-nav-group-btn open" onclick="toggleSaGroup(this)">
+        Agenten <span class="chevron">▼</span>
+      </button>
+      <div class="sa-nav-sub open">
+        <a href="{{ url_for('agents_overview') }}">Übersicht</a>
+        <a href="{{ url_for('agents') }}">Agenten</a>
+        <a href="{{ url_for('agent_reports') }}">Reports</a>
+        <a href="{{ url_for('agent_reports_raw') }}">Reports (RAW)</a>
+      </div>
+    </div>
+    <div>
+      <button class="sa-nav-group-btn open" onclick="toggleSaGroup(this)">
+        Signale <span class="chevron">▼</span>
+      </button>
+      <div class="sa-nav-sub open">
+        <a href="{{ url_for('signal_list') }}">RAW</a>
+        <a href="{{ url_for('signal_match') }}">MATCH</a>
+        <a href="{{ url_for('signal_final') }}">FINAL</a>
+        <a href="{{ url_for('signal_archive') }}">Archiv</a>
+        <a href="{{ url_for('dashboard') }}">Dashboard (Vorschau)</a>
+      </div>
+    </div>
+    <div class="sa-nav-sep"></div>
+    <a href="{{ url_for('sa_functions') }}" class="sa-nav-item">Funktionen</a>
+    <a href="{{ url_for('sa_logbook') }}" class="sa-nav-item">Log-Buch</a>
+    <a href="{{ url_for('sa_default_setup') }}" class="sa-nav-item">Default Entity Setup</a>
+    <a href="{{ url_for('sa_settings') }}" class="sa-nav-item">SA-Einstellungen</a>
+  </nav>
+  <div class="sa-sidebar-foot">
+    <div class="impersonate-wrap">
+      {% set initials = (session.name or 'SA')[:2].upper() %}
+      <button class="initials-btn" onclick="toggleImpersonate()" title="Als Nutzer anzeigen">{{ initials }}</button>
+      <div class="impersonate-panel" id="impersonate-panel">
+        <form method="post" action="{{ url_for('view_as') }}">
+          <label>Praxis</label>
+          <select id="imp-entity" onchange="filterImpUsers(this.value)">
+            <option value="">— alle —</option>
+            {% for e in all_entities | sort(attribute='name') %}
+            <option value="{{ e.id }}">{{ e.name }}</option>
+            {% endfor %}
+          </select>
+          <label>Nutzer</label>
+          <select name="user_id" id="imp-user" required>
+            <option value="">— bitte wählen —</option>
+            {% for u in all_impersonate_users | sort(attribute='name') %}
+            <option value="{{ u.id }}" data-entity="{{ u.entity_id }}">
+              {{ u.name }} ({{ 'Admin' if u.role == 'admin' else 'Nutzer' }})
+            </option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="impersonate-submit">Ansicht öffnen →</button>
+        </form>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center">
+      {% if session.role == "superadmin" %}
+      <div class="sa-notif-bell-wrap">
+        <button class="sa-notif-bell" onclick="toggleNotifPanel()" title="Benachrichtigungen" id="notif-bell-btn">&#128276;</button>
+        <span class="sa-notif-badge{% if not sa_unread_notifications %} hidden{% endif %}" id="notif-badge">{{ sa_unread_notifications or '' }}</span>
+      </div>
+      <div class="sa-notif-panel" id="sa-notif-panel">
+        <div class="sa-notif-header">
+          <span>Benachrichtigungen</span>
+          <button onclick="markAllRead()">Alle gelesen</button>
+        </div>
+        <div id="sa-notif-list">
+          <div class="sa-notif-empty">Wird geladen&#x2026;</div>
+        </div>
+      </div>
+      {% endif %}
+      <div class="sa-foot-name">{{ session.name }}<br><a href="{{ url_for('logout') }}">Abmelden</a></div>
+    </div>
+  </div>
+</aside>
+
+<div class="sa-mobile-bar">
+  <a href="{{ url_for('sa_home') }}" class="brand-title">Ole <span class="brand-amp">&amp;</span> Joy</a>
+</div>
+
+<div class="sa-content">
+  {# Topbar with impersonation #}
+  {% if session.get('view_as_entity_id') %}
+  <div class="sa-topbar">
+    <span style="font-size:12px;color:var(--muted)">
+      Ansicht: <strong style="color:var(--text)">{{ (all_entities | selectattr('id','equalto',session.view_as_entity_id) | first or {}).get('name','?') }}</strong>
+      als <strong style="color:var(--text)">{{ session.view_as_role }}</strong>
+    </span>
+    <a href="{{ url_for('view_as_exit') }}" style="font-size:12px;color:var(--navy);font-weight:600">← Superadmin</a>
+  </div>
+  {% endif %}
+  {# View-as banner when active #}
+  {% if session.get('view_as_entity_id') %}
+  <div class="view-as-banner">
+    <span>Ansicht als <strong>{{ (all_entities | selectattr('id','equalto',session.view_as_entity_id) | first or {}).get('name','?') }}</strong> ({{ session.view_as_role }})</span>
+    <a href="{{ url_for('view_as_exit') }}">Ansicht beenden</a>
+  </div>
+  {% endif %}
+{% endif %}
+
 <header class="header">
   <div class="header-inner">
     <div>
@@ -167,48 +387,17 @@
     <div class="header-right">
       {% if session.get('user_id') %}
         <a href="{{ url_for('dashboard') }}" class="header-link header-link-primary">Dashboard</a>
-        {% if session.role in ('admin', 'superadmin') %}
+        {% if session.role == 'admin' %}
           <a href="{{ url_for('todos') }}" class="header-link header-link-primary" style="position:relative">
             ToDos{% if pending_todos %}<span style="position:absolute;top:-5px;right:-8px;background:#B03060;color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 4px;min-width:14px;text-align:center">{{ pending_todos }}</span>{% endif %}
           </a>
         {% endif %}
         {% if session.role == 'superadmin' %}
-          <span style="width:1px;height:14px;background:rgba(255,255,255,.2);display:inline-block;margin:0 4px"></span>
-          <a href="{{ url_for('sa_dashboard') }}" class="header-link">Nutzerverwaltung</a>
-          <a href="{{ url_for('sources') }}" class="header-link">Quellen</a>
-          <div class="nav-dropdown">
-            <span class="header-link" style="cursor:default">Agenten ▾</span>
-            <div class="nav-dropdown-menu">
-              <a href="{{ url_for('agents') }}">Agenten</a>
-              <a href="{{ url_for('agent_reports') }}">Agenten-Reports</a>
-              <a href="{{ url_for('agent_reports_raw') }}">Agenten-Reports (RAW)</a>
-            </div>
-          </div>
-          <div class="nav-dropdown">
-            <span class="header-link" style="cursor:default">Signale ▾</span>
-            <div class="nav-dropdown-menu">
-              <a href="{{ url_for('signal_list') }}">Signale (RAW)</a>
-              <a href="{{ url_for('signal_match') }}">Signale (MATCH)</a>
-              <a href="{{ url_for('signal_final') }}">Signale (FINAL)</a>
-              <a href="{{ url_for('signal_archive') }}">Archiv</a>
-            </div>
-          </div>
-          <a href="{{ url_for('sa_functions') }}" class="header-link">Funktionen</a>
-          <a href="{{ url_for('sa_logbook') }}" class="header-link">Log-Buch</a>
-          <a href="{{ url_for('sa_settings') }}" class="header-link">Einstellungen</a>
+          {# SA nav is in the left sidebar #}
         {% elif session.role == 'admin' %}
           <span style="width:1px;height:14px;background:rgba(255,255,255,.2);display:inline-block;margin:0 4px"></span>
           <a href="{{ url_for('admin_dashboard') }}" class="header-link">Nutzerverwaltung</a>
-          <a href="{{ url_for('sources') }}" class="header-link">Quellen</a>
-          <div class="nav-dropdown">
-            <span class="header-link" style="cursor:default">Signale ▾</span>
-            <div class="nav-dropdown-menu">
-              <a href="{{ url_for('signal_list') }}">Signale (RAW)</a>
-              <a href="{{ url_for('signal_match') }}">Signale (MATCH)</a>
-              <a href="{{ url_for('signal_final') }}">Signale (FINAL)</a>
-              <a href="{{ url_for('signal_archive') }}">Archiv</a>
-            </div>
-          </div>
+          <a href="{{ url_for('dashboard') }}?tutorial=1" class="header-link">Tutorial</a>
           <a href="{{ url_for('settings') }}" class="header-link">Einstellungen</a>
         {% endif %}
         <span style="width:1px;height:14px;background:rgba(255,255,255,.15);display:inline-block"></span>
@@ -243,33 +432,17 @@
     </div>
     <div class="nav-drawer-links">
       <a href="{{ url_for('dashboard') }}" onclick="closeDrawer()" style="color:#fff;font-weight:500">Dashboard</a>
-      {% if session.role in ('admin', 'superadmin') %}
+      {% if session.role == 'admin' %}
         <a href="{{ url_for('todos') }}" onclick="closeDrawer()" style="color:#fff;font-weight:500">
           ToDos{% if pending_todos %}<span class="nav-badge">{{ pending_todos }}</span>{% endif %}
         </a>
       {% endif %}
       {% if session.role == 'superadmin' %}
-        <div class="nav-drawer-sep"></div>
-        <a href="{{ url_for('sa_dashboard') }}" onclick="closeDrawer()">Nutzerverwaltung</a>
-        <a href="{{ url_for('sources') }}" onclick="closeDrawer()">Quellen</a>
-        <a href="{{ url_for('agents') }}" onclick="closeDrawer()">Agenten</a>
-        <a href="{{ url_for('agent_reports') }}" onclick="closeDrawer()">Agenten-Reports</a>
-        <a href="{{ url_for('agent_reports_raw') }}" onclick="closeDrawer()">Agenten-Reports (RAW)</a>
-        <a href="{{ url_for('signal_list') }}" onclick="closeDrawer()">Signale (RAW)</a>
-        <a href="{{ url_for('signal_match') }}" onclick="closeDrawer()">Signale (MATCH)</a>
-        <a href="{{ url_for('signal_final') }}" onclick="closeDrawer()">Signale (FINAL)</a>
-        <a href="{{ url_for('signal_archive') }}" onclick="closeDrawer()">Archiv</a>
-        <a href="{{ url_for('sa_functions') }}" onclick="closeDrawer()">Funktionen</a>
-        <a href="{{ url_for('sa_logbook') }}" onclick="closeDrawer()">Log-Buch</a>
-        <a href="{{ url_for('sa_settings') }}" onclick="closeDrawer()">Einstellungen</a>
+        {# SA uses sidebar, no drawer #}
       {% elif session.role == 'admin' %}
         <div class="nav-drawer-sep"></div>
         <a href="{{ url_for('admin_dashboard') }}" onclick="closeDrawer()">Nutzerverwaltung</a>
-        <a href="{{ url_for('sources') }}" onclick="closeDrawer()">Quellen</a>
-        <a href="{{ url_for('signal_list') }}" onclick="closeDrawer()">Signale (RAW)</a>
-        <a href="{{ url_for('signal_match') }}" onclick="closeDrawer()">Signale (MATCH)</a>
-        <a href="{{ url_for('signal_final') }}" onclick="closeDrawer()">Signale (FINAL)</a>
-        <a href="{{ url_for('signal_archive') }}" onclick="closeDrawer()">Archiv</a>
+        <a href="{{ url_for('dashboard') }}?tutorial=1" onclick="closeDrawer()">Tutorial</a>
         <a href="{{ url_for('settings') }}" onclick="closeDrawer()">Einstellungen</a>
       {% endif %}
       <div class="nav-drawer-sep"></div>
@@ -279,6 +452,56 @@
   </div>
 </div>
 <script>
+
+function toggleSaGroup(btn) {
+  btn.classList.toggle('open');
+  var sub = btn.nextElementSibling;
+  if (sub) sub.classList.toggle('open');
+}
+function toggleImpersonate() {
+  var p = document.getElementById('impersonate-panel');
+  if (p) p.classList.toggle('open');
+}
+function filterImpUsers(entityId) {
+  var sel = document.getElementById('imp-user');
+  if (!sel) return;
+  // Store all options on first call
+  if (!sel._allOptions) {
+    sel._allOptions = Array.from(sel.options).map(function(o) {
+      return {value: o.value, text: o.text, entity: o.dataset.entity};
+    });
+  }
+  sel.innerHTML = '';
+  sel._allOptions.forEach(function(o) {
+    if (!o.value || !entityId || o.entity === entityId) {
+      var opt = document.createElement('option');
+      opt.value = o.value;
+      opt.text = o.text;
+      if (o.entity) opt.dataset.entity = o.entity;
+      sel.appendChild(opt);
+    }
+  });
+  sel.value = '';
+}
+document.addEventListener('click', function(e) {
+  var wrap = document.querySelector('.impersonate-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    var p = document.getElementById('impersonate-panel');
+    if (p) p.classList.remove('open');
+  }
+});
+// Highlight active SA nav link
+(function() {
+  var path = window.location.pathname;
+  document.querySelectorAll('.sa-nav-item, .sa-nav-sub a').forEach(function(a) {
+    if (a.getAttribute('href') && path === a.getAttribute('href')) {
+      a.classList.add('active');
+      // Open parent group if in sub
+      var sub = a.closest('.sa-nav-sub');
+      if (sub) { sub.classList.add('open'); var btn = sub.previousElementSibling; if (btn) btn.classList.add('open'); }
+    }
+  });
+})();
 function openDrawer()  { document.getElementById('nav-drawer').classList.add('open'); document.body.style.overflow='hidden'; }
 function closeDrawer() { document.getElementById('nav-drawer').classList.remove('open'); document.body.style.overflow=''; }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
@@ -296,12 +519,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
 {% endwith %}
 
 {% block content %}{% endblock %}
+{% if session.get('role') == 'superadmin' %}</div>{% endif %}
 
 {% if session.get('role') in ('admin', 'superadmin') %}
 <style>
   .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:500; align-items:center; justify-content:center; }
   .modal-backdrop.open { display:flex; }
-  .modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 8px 40px rgba(0,0,0,.25); width:100%; max-width:480px; padding:28px 32px; position:relative; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 8px 40px rgba(0,0,0,.25); width:100%; max-width:480px; padding:28px 32px; position:relative; overflow-y:auto; max-height:90vh; }
   .modal-title { font-family:Georgia,serif; font-size:18px; font-weight:normal; margin-bottom:4px; }
   .modal-signal { font-size:12px; color:var(--muted); margin-bottom:20px; line-height:1.4; }
   .modal label { display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:5px; margin-top:14px; }
@@ -315,6 +539,23 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
   .modal-actions { display:flex; gap:8px; margin-top:20px; }
   .modal-close { position:absolute; top:14px; right:16px; background:none; border:none; font-size:18px; color:var(--faint); cursor:pointer; line-height:1; }
   .modal-close:hover { color:var(--text); }
+  .varianten-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px; }
+  @media (max-width:540px) { .varianten-grid { grid-template-columns:1fr; } }
+  .var-card { border:1.5px solid var(--border); border-radius:var(--radius); padding:10px 12px; cursor:pointer; transition:all .15s; }
+  .var-card:hover { border-color:var(--navy); background:color-mix(in srgb,var(--navy) 5%,transparent); }
+  .var-card.selected { border-color:var(--navy); background:color-mix(in srgb,var(--navy) 10%,transparent); }
+  .var-typ { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:4px; }
+  .var-card.selected .var-typ { color:var(--navy); }
+  .var-titel { font-size:12px; font-weight:600; color:var(--text); line-height:1.4; margin-bottom:4px; }
+  .var-beschr { font-size:11px; color:var(--muted); line-height:1.5; display:none; }
+  .var-card.selected .var-beschr { display:block; }
+  .modal-var-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:6px; display:block; }
+  .shortcut-btn { background:none; border:1px solid var(--border); border-radius:4px; font-size:11px; font-weight:600; color:var(--muted); padding:4px 9px; cursor:pointer; white-space:nowrap; font-family:inherit; transition:all .15s; }
+  .shortcut-btn:hover { border-color:var(--navy); color:var(--navy); background:var(--surface2); }
+  .type-tab-row { display:flex; gap:0; margin-bottom:18px; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .type-tab { flex:1; background:none; border:none; padding:8px 14px; font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; font-family:inherit; transition:all .15s; }
+  .type-tab.active { background:var(--navy); color:#fff; }
+  .type-tab:not(.active):hover { background:var(--surface2); color:var(--text); }
   @media (max-width:560px) { .modal { margin:16px; padding:20px 16px; } }
 </style>
 <div class="modal-backdrop" id="todo-modal" onclick="closeTodoModal(event)">
@@ -326,14 +567,25 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
       <input type="hidden" name="signal_id"    id="todo-signal-id">
       <input type="hidden" name="signal_title" id="todo-signal-title">
       <input type="hidden" name="next"         id="todo-next">
+      <input type="hidden" name="variante"     id="todo-variante">
+      <div id="todo-varianten-wrap" style="display:none;margin-bottom:4px">
+        <span class="modal-var-label">Handlungsvorschläge — als Basis übernehmen oder frei formulieren</span>
+        <div class="varianten-grid" id="todo-varianten-grid"></div>
+      </div>
       <label for="todo-cat">Kategorie</label>
       <select name="category" id="todo-cat">
         {% for cat in todo_categories %}
         <option value="{{ cat }}">{{ cat }}</option>
         {% endfor %}
       </select>
+      </div>
       <label for="todo-deadline">Frist</label>
-      <input type="date" name="deadline" id="todo-deadline">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:0">
+        <input type="date" name="deadline" id="todo-deadline" style="max-width:180px;margin-bottom:0">
+        <button type="button" class="shortcut-btn" onclick="setDeadline('week1')">+1 Woche</button>
+        <button type="button" class="shortcut-btn" onclick="setDeadline('end-week')">Ende Woche</button>
+        <button type="button" class="shortcut-btn" onclick="setDeadline('end-month')">Ende Monat</button>
+      </div>
       {% if entity_users %}
       <label for="todo-assign">Zuweisen an</label>
       <select name="assigned_to" id="todo-assign">
@@ -343,8 +595,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
         {% endfor %}
       </select>
       {% endif %}
-      <label for="todo-comment">Kommentar</label>
+      <label for="todo-comment">Aufgabenbeschreibung</label>
       <textarea name="comment" id="todo-comment" placeholder="Was genau ist zu tun?"></textarea>
+      <label for="todo-notes">Notiz</label>
+      <textarea name="notes" id="todo-notes" placeholder="Interne Anmerkung, Kontext oder Erinnerung…" style="min-height:60px"></textarea>
       <div class="modal-actions">
         <button type="submit" class="btn btn-primary">ToDo anlegen</button>
         <button type="button" class="btn btn-secondary" onclick="closeTodoModal()">Abbrechen</button>
@@ -353,13 +607,46 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
   </div>
 </div>
 <script>
-function openTodoModal(signalId, signalTitle, nextUrl) {
+function openTodoModal(signalId, signalTitle, nextUrl, variantenJson) {
   document.getElementById('todo-signal-id').value    = signalId;
   document.getElementById('todo-signal-title').value = signalTitle;
   document.getElementById('todo-modal-signal').textContent = signalTitle;
   document.getElementById('todo-next').value = nextUrl || window.location.href;
-  document.getElementById('todo-deadline').value = '';
-  document.getElementById('todo-comment').value  = '';
+  document.getElementById('todo-deadline').value   = '';
+  document.getElementById('todo-comment').value    = '';
+  document.getElementById('todo-notes').value      = '';
+  document.getElementById('todo-variante').value   = '';
+  setTodoType('task');
+  _populateFyiRecipients();
+
+  // Varianten rendern
+  var wrap = document.getElementById('todo-varianten-wrap');
+  var grid = document.getElementById('todo-varianten-grid');
+  grid.innerHTML = '';
+  var varianten = [];
+  try { varianten = variantenJson ? JSON.parse(variantenJson) : []; } catch(e) {}
+  if (varianten && varianten.length === 3) {
+    wrap.style.display = '';
+    varianten.forEach(function(v) {
+      var card = document.createElement('div');
+      card.className = 'var-card';
+      card.dataset.typ = v.typ;
+      card.innerHTML =
+        '<div class="var-typ">' + v.typ + '</div>' +
+        '<div class="var-titel">' + v.titel + '</div>' +
+        '<div class="var-beschr">' + v.beschreibung + '</div>';
+      card.addEventListener('click', function() {
+        grid.querySelectorAll('.var-card').forEach(function(c){ c.classList.remove('selected'); });
+        card.classList.add('selected');
+        document.getElementById('todo-variante').value = v.typ;
+        document.getElementById('todo-comment').value  = v.beschreibung;
+      });
+      grid.appendChild(card);
+    });
+  } else {
+    wrap.style.display = 'none';
+  }
+
   document.getElementById('todo-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -369,6 +656,53 @@ function closeTodoModal(e) {
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTodoModal(); });
+function setTodoType(type) {
+  document.getElementById('todo-type-hidden').value = type;
+  document.getElementById('tab-task').classList.toggle('active', type === 'task');
+  document.getElementById('tab-fyi').classList.toggle('active',  type === 'fyi');
+  document.getElementById('fyi-recipients-row').style.display = type === 'fyi' ? '' : 'none';
+  document.getElementById('task-assignee-row').style.display  = type === 'task' ? '' : 'none';
+}
+function _populateFyiRecipients() {
+  var sel = document.getElementById('todo-recipients');
+  if (!sel) return;
+  // Clear all but first option (Alle)
+  while (sel.options.length > 1) sel.remove(1);
+  // Add teams
+  if (window._entityTeams) {
+    window._entityTeams.forEach(function(t) {
+      var o = document.createElement('option');
+      o.value = 'team:' + t.id;
+      o.textContent = 'Team: ' + t.name;
+      sel.appendChild(o);
+    });
+  }
+  // Add individual users
+  if (window._entityUsers) {
+    window._entityUsers.forEach(function(u) {
+      var o = document.createElement('option');
+      o.value = 'user:' + u.id;
+      o.textContent = u.name || u.email || u.id;
+      sel.appendChild(o);
+    });
+  }
+}
+function setDeadline(type) {
+  var d = new Date();
+  if (type === 'week1') {
+    d.setDate(d.getDate() + 7);
+  } else if (type === 'end-week') {
+    var day = d.getDay();
+    var diff = day === 0 ? 0 : 7 - day;
+    d.setDate(d.getDate() + diff);
+  } else if (type === 'end-month') {
+    d = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  }
+  var y = d.getFullYear();
+  var mo = String(d.getMonth() + 1).padStart(2, '0');
+  var dy = String(d.getDate()).padStart(2, '0');
+  document.getElementById('todo-deadline').value = y + '-' + mo + '-' + dy;
+}
 </script>
 {% endif %}
 
@@ -385,6 +719,88 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTodoMod
     });
   });
 })();
+
+// ── SA Notifications ───────────────────────────────────────────────────────
+async function loadNotifications() {
+  try {
+    const r = await fetch('/admin/notifications');
+    const d = await r.json();
+    const list = document.getElementById('sa-notif-list');
+    const badge = document.getElementById('notif-badge');
+    if (!list) return;
+    if (badge) {
+      if (d.unread_count > 0) { badge.textContent = d.unread_count; badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+    }
+    if (!d.notifications || d.notifications.length === 0) {
+      list.innerHTML = '<div class="sa-notif-empty">Keine Benachrichtigungen</div>';
+      return;
+    }
+    list.innerHTML = d.notifications.map(function(n) { return (
+      '<div class="sa-notif-item ' + (n.read ? '' : 'unread') + ' ' + (n.level||'warning') + '"' +
+      ' onclick="markRead(\'' + n.id + '\',this)">' +
+      '<div class="sa-notif-title">' + (n.title||'') + '</div>' +
+      '<div class="sa-notif-msg">' + (n.message||'') + '</div>' +
+      '<div class="sa-notif-time">' + (n.created_at||'') + '</div></div>'); }).join('');
+  } catch(e) { console.error(e); }
+}
+function toggleNotifPanel() {
+  const panel = document.getElementById('sa-notif-panel');
+  let backdrop = document.getElementById('notif-backdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'notif-backdrop';
+    backdrop.style.cssText = 'position:fixed;inset:0;z-index:1999;';
+    backdrop.onclick = toggleNotifPanel;
+    document.body.appendChild(backdrop);
+  }
+  if (!panel) return;
+  const wasOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  let bd = document.getElementById('notif-backdrop');
+  if (!wasOpen) {
+    loadNotifications();
+    if (!bd) {
+      bd = document.createElement('div');
+      bd.id = 'notif-backdrop';
+      bd.style.cssText = 'position:fixed;inset:0;z-index:1999;';
+      bd.onclick = toggleNotifPanel;
+      document.body.appendChild(bd);
+    }
+  } else {
+    if (bd) bd.remove();
+  }
+}
+async function markRead(id, el) {
+  await fetch('/admin/notifications/read', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id: id})});
+  if (el) el.classList.remove('unread');
+  loadNotifications();
+}
+async function markAllRead() {
+  await fetch('/admin/notifications/read', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({})});
+  loadNotifications();
+}
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('sa-notif-panel');
+  const btn   = document.getElementById('notif-bell-btn');
+  if (panel && panel.classList.contains('open') && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.classList.remove('open');
+    const bd = document.getElementById('notif-backdrop'); if (bd) bd.remove();
+  }
+});
+if (document.getElementById('notif-badge')) {
+  setInterval(function() {
+    if (!document.getElementById('sa-notif-panel').classList.contains('open')) {
+      fetch('/admin/notifications').then(function(r){return r.json();}).then(function(d){
+        var badge = document.getElementById('notif-badge');
+        if (badge) {
+          if (d.unread_count > 0) { badge.textContent = d.unread_count; badge.classList.remove('hidden'); }
+          else badge.classList.add('hidden');
+        }
+      }).catch(function(){});
+    }
+  }, 60000);
+}
 </script>
 </body>
 </html>
