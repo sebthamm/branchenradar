@@ -43,7 +43,14 @@
   /* Combined legend bar */
   .legend-bar { background: var(--surface); border-bottom: 1px solid var(--border); }
   .legend-inner { max-width: 1200px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; height: 44px; flex-wrap: nowrap; }
-  .legend-item { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .legend-item { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); white-space: nowrap; cursor: pointer; user-select: none; transition: opacity .15s, color .15s; }
+  .legend-item:hover { color: var(--text); }
+  .legend-item.prio-active { color: var(--text); }
+  .legend-item.prio-dimmed { opacity: .3; }
+  /* filter chips */
+  .filter-chip { display: inline-flex; align-items: center; gap: 4px; background: none; border: 1px solid var(--border); border-radius: 5px; padding: 4px 9px; font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all .15s; font-family: inherit; }
+  .filter-chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .filter-chip:hover:not(.active) { border-color: var(--text); color: var(--text); }
   .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
   .legend-count { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); margin-left: 1px; }
   .legend-sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; }
@@ -115,8 +122,13 @@
   .card-stripe.kann   { background: var(--s-active); }
   .card-body { flex: 1; padding: 16px 18px; min-width: 0; }
 
-  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-  .card-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-top: 2px; }
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .card-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .card-todo-row { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .todo-quick-btn { background: none; border: 1px solid var(--border); border-radius: 3px; color: var(--muted); font-size: 10px; font-weight: 600; padding: 2px 7px; cursor: pointer; letter-spacing: .03em; transition: all .15s; white-space: nowrap; line-height: 1.5; }
+  .todo-quick-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--surface2); }
+  .todo-quick-btn.has-todo { border-color: color-mix(in srgb,var(--navy) 30%,transparent); color: var(--navy); background: color-mix(in srgb,var(--navy) 8%,transparent); }
+  .todo-quick-btn.has-todo:hover { background: color-mix(in srgb,var(--navy) 15%,transparent); }
   .prio-badge { display: inline-flex; padding: 3px 9px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
   .prio-badge.muss   { background: rgba(176,48,96,.12);  color: var(--s-action); }
   .prio-badge.sollte { background: rgba(196,120,14,.12); color: var(--s-announced); }
@@ -162,18 +174,51 @@
   .card-detail p { margin: 0 0 10px; white-space: pre-wrap; }
   .card-detail .detail-row { display: flex; gap: 6px; align-items: baseline; font-size: 12px; margin-top: 8px; }
   .card-detail .detail-row strong { color: var(--muted); font-weight: 600; white-space: nowrap; }
-  .card-detail .src-row { display: flex; gap: 10px; align-items: baseline; font-size: 12px; margin-top: 6px; flex-wrap: wrap; }
-  .card-detail .src-label { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .src-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .src-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 5px; white-space: nowrap; text-decoration: none; transition: opacity .12s; }
+  .src-chip-link { color: var(--navy); background: rgba(0,50,120,.07); border: 1px solid rgba(0,50,120,.15); }
+  .src-chip-link:hover { opacity: .75; }
+  .src-chip-nolink { color: var(--muted); background: var(--surface2); border: 1px solid var(--border); cursor: default; }
+  .src-chip-arrow { font-size: 9px; opacity: .7; }
 
   .card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
   .card-source { display: none; font-size: 11px; color: var(--faint); }
   .card.open .card-source { display: block; }
   .card-foot-right { display: flex; align-items: center; gap: 8px; }
+
+  /* Welcome-Banner */
+  .welcome-banner { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin: 16px auto 20px; max-width: 1200px; padding: 0 28px; box-sizing: border-box; }
+  .welcome-banner.collapsed .welcome-banner-inner { display: none; }
+  .welcome-head { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 14px 0; }
+  .welcome-head-title { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .welcome-collapse-btn { font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 4px; padding: 3px 10px; cursor: pointer; }
+  .welcome-collapse-btn:hover { color: var(--text); border-color: var(--text); }
+  .welcome-body { font-size: 13px; color: var(--muted); line-height: 1.7; padding-bottom: 18px; }
+  .welcome-body p { margin: 0 0 10px; }
+  .welcome-body strong { color: var(--text); }
+  .welcome-tutorial-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; background: var(--navy); color: #fff; border: none; border-radius: 5px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; letter-spacing: .02em; }
+  .welcome-tutorial-btn:hover { opacity: .88; }
+  /* Tutorial Overlay */
+  .tutorial-overlay { display: none; position: fixed; inset: 0; z-index: 9000; }
+  .tutorial-overlay.open { display: block; }
+  .tutorial-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
+  .tutorial-box { position: absolute; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 28px; max-width: 380px; width: calc(100vw - 48px); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+  .tutorial-step-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 8px; }
+  .tutorial-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .tutorial-text { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 20px; }
+  .tutorial-foot { display: flex; justify-content: space-between; align-items: center; }
+  .tutorial-dots { display: flex; gap: 5px; }
+  .tutorial-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+  .tutorial-dot.active { background: var(--navy); }
+  .tutorial-btns { display: flex; gap: 8px; }
+  .tutorial-btn-skip { font-size: 12px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 6px 0; }
+  .tutorial-btn-next { font-size: 12px; font-weight: 600; background: var(--navy); color: #fff; border: none; border-radius: 5px; padding: 7px 18px; cursor: pointer; }
+
   .card-date { display: none; font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
   .card.open .card-date { display: block; }
   .todo-btn-wrap { display: none; }
   .card.open .todo-btn-wrap { display: block; }
-  .chevron { font-size: 9px; color: var(--faint); transition: transform .2s; }
+  .chevron { font-size: 9px; color: var(--faint); transition: transform .2s; margin-left: 6px; opacity: .5; }
   .card.open .chevron { transform: rotate(180deg); }
 
   .entwicklungsstand-tag { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 3px; font-size: 10px; font-weight: 600; background: var(--surface2); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
@@ -181,15 +226,26 @@
   .empty { text-align: center; padding: 48px 24px; color: var(--faint); font-size: 14px; }
   .update-time { font-size: 11px; color: rgba(255,255,255,.45); }
   .update-time strong { color: rgba(255,255,255,.75); }
-  .todo-btn { background: none; border: 1px solid var(--border); border-radius: 3px; color: var(--muted); font-size: 10px; font-weight: 600; padding: 2px 7px; cursor: pointer; letter-spacing: .03em; transition: all .15s; }
+  .todo-btn { background: none; border: 1px solid var(--border); border-radius: 3px; color: var(--muted); font-size: 10px; font-weight: 600; padding: 2px 7px; cursor: pointer; letter-spacing: .03em; transition: all .15s; white-space: nowrap; }
   .todo-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--surface2); }
+  .prio-override-marker { font-size: 8px; opacity: .55; margin-left: 2px; vertical-align: middle; }
+  .prio-select-wrap { display:none; }
+  .card.open .prio-select-wrap { display:inline-flex; align-items:center; gap:5px; }
+  .prio-select-wrap select { background:var(--bg); border:1px solid var(--border); border-radius:4px; font-size:11px; color:var(--text); padding:2px 6px; cursor:pointer; font-family:inherit; outline:none; }
+  .prio-select-wrap select:focus { border-color:var(--navy); }
+  .prio-select-wrap .save-prio-btn { font-size:10px; font-weight:600; color:var(--navy); background:none; border:1px solid var(--border); border-radius:3px; padding:2px 7px; cursor:pointer; white-space:nowrap; transition:all .15s; font-family:inherit; }
+  .prio-select-wrap .save-prio-btn:hover { border-color:var(--navy); background:var(--surface2); }
+  .prio-reset-wrap { display:none; }
+  .card.open .prio-reset-wrap { display:inline; }
 </style>
+
+<!-- Tutorial Overlay -->
 {% endblock %}
 
 {% block content %}
 
-{# Section tabs above legend — only when >1 section #}
-{% if sections | length > 1 %}
+{# Section tabs above legend — only for superadmin when >1 section #}
+{% if session.role == "superadmin" and sections | length > 1 %}
 <div class="sec-tabs-wrap">
   <div class="sec-tabs">
     <button class="sec-tab active" data-sec="all" onclick="filterSec(this)">Alle</button>
@@ -200,27 +256,50 @@
 </div>
 {% endif %}
 
+{%- if session.role in ('admin', 'user') %}
+<div class="welcome-banner" id="welcome-banner">
+  <div class="welcome-head" onclick="toggleWelcome()">
+    <span class="welcome-head-title">&#128075; Willkommen bei Ole &amp; Joy</span>
+    <button class="welcome-collapse-btn" id="welcome-collapse-btn" onclick="event.stopPropagation();toggleWelcome()">Einklappen</button>
+  </div>
+  <div class="welcome-banner-inner">
+    <div class="welcome-body">
+      <p><strong>Ole &amp; Joy</strong> ist Ihr persönlicher Praxisradar. Wir beobachten täglich die relevanten Quellen aus Gesundheitspolitik, Recht und Fachmedizin und bündeln alles, was für Ihre Praxis wichtig ist, in einem kuratierten Überblick.</p>
+      <p>Im <strong>Dashboard</strong> sehen Sie aktuelle Signale, priorisiert nach Handlungsbedarf: Was müssen Sie tun, was sollten Sie im Blick behalten, was ist optional? Zu jedem Signal können Sie direkt eine <strong>Aufgabe anlegen</strong> und einem Teammitglied zuweisen.</p>
+      <p>Neu hier? Das kurze Tutorial führt Sie in wenigen Minuten durch alle wichtigen Funktionen.</p>
+      <button class="welcome-tutorial-btn" onclick="startTutorial()">&#9654; Tutorial starten</button>
+    </div>
+  </div>
+</div>
+{%- endif %}
+
 {# Legend bar with counts + search icon #}
 <div class="legend-bar">
   <div class="legend-inner">
     <div class="legend-row-counts">
-      <span class="legend-item">
+      <span class="legend-item" id="legend-muss" onclick="togglePrio('muss')" title="Nur Muss-Signale anzeigen">
         <span class="legend-dot" style="background:var(--s-action)"></span>
         Muss <span class="legend-count" id="count-muss">{{ prio_counts.muss }}</span>
       </span>
       <div class="legend-sep"></div>
-      <span class="legend-item">
+      <span class="legend-item" id="legend-sollte" onclick="togglePrio('sollte')" title="Nur Sollte-Signale anzeigen">
         <span class="legend-dot" style="background:var(--s-announced)"></span>
         Sollte <span class="legend-count" id="count-sollte">{{ prio_counts.sollte }}</span>
       </span>
       <div class="legend-sep"></div>
-      <span class="legend-item">
+      <span class="legend-item" id="legend-kann" onclick="togglePrio('kann')" title="Nur Kann-Signale anzeigen">
         <span class="legend-dot" style="background:var(--s-active)"></span>
         Kann <span class="legend-count" id="count-kann">{{ prio_counts.kann }}</span>
       </span>
       <button class="info-btn" onclick="document.getElementById('prio-info').classList.add('open')" title="Hinweis zur Einstufung">ⓘ</button>
     </div>
     <div class="legend-row-controls">
+    <div class="filter-chips-row" style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">
+      <button class="filter-chip" id="chip-todo" onclick="toggleFilterChip('todo')" title="Signale mit angelegten Aufgaben">Mit Aufgabe</button>
+      {% if session.get('role') == 'superadmin' %}
+      <button class="filter-chip" id="chip-hidden" onclick="toggleFilterChip('hidden')" title="Nur ausgeblendete Signale anzeigen">Verborgen</button>
+      {% endif %}
+    </div>
     <div class="search-toggle">
       <span class="result-count" id="result-count"></span>
       {# Kategorie-Dropdown #}
@@ -243,6 +322,13 @@
           {% endfor %}
         </div>
       </div>
+      {# Sort select #}
+      <select id="sort-select" onchange="sortCards(this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--muted);padding:5px 8px;cursor:pointer;outline:none;font-family:inherit">
+        <option value="prio">Priorität</option>
+        <option value="date-desc">Datum (neu)</option>
+        <option value="date-asc">Datum (alt)</option>
+        <option value="todo-first">Aufgabe zuerst</option>
+      </select>
       {# Search: icon first, then expandable input to the right #}
       <button class="search-icon-btn" id="search-icon-btn" onclick="toggleSearch()" title="Suchen">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -250,6 +336,7 @@
       <div class="search-expand" id="search-expand">
         <input type="text" id="search-input" placeholder="Signale durchsuchen…" oninput="doSearch(this.value)" autocomplete="off">
       </div>
+    </div>
     </div>
     </div>{# /legend-row-controls #}
   </div>
@@ -269,11 +356,17 @@
   {% set ezstand = entwicklungsstand_labels.get(s.get('entwicklungsstand',''), '') %}
   {% set hzpunkt = handlungszeitpunkt_labels.get(s.get('handlungszeitpunkt',''), '') %}
   {% set aufwand = aufwand_labels.get(s.get('aufwand',''), '') %}
+  {% set _var = s.get('handlungs_varianten') %}
   <div class="card"
+       data-sig-id="{{ s.id }}"
        data-cat="{{ s.category }}"
        data-prio="{{ prio }}"
        data-sections="{{ s.get('section_ids', []) | join(',') }}"
+       {% if _var %}data-varianten="{{ _var | tojson | forceescape }}"{% endif %}
        data-text="{{ (s.title ~ ' ' ~ s.summary ~ ' ' ~ s.get('detail','')) | lower }}"
+       data-date="{{ s.get('date', '') }}"
+       data-has-todo="{{ '1' if s.id in signal_ids_with_todos else '0' }}"
+       {% if session.get('role') == 'superadmin' %}data-hidden="{{ '1' if s.id in (hidden_signal_ids or set()) else '0' }}"{% endif %}
        onclick="toggleCard(this)">
     <div class="card-stripe {{ prio }}"></div>
     <div class="card-body">
@@ -285,9 +378,20 @@
           {% elif s.get('reporting_status') == 'UPDATE' %}
           <span class="reporting-badge update">Update</span>
           {% endif %}
-          <span class="prio-badge {{ prio }}">{{ prio_labels_map.get(prio, prio) }}</span>
+          <span class="prio-badge {{ prio }}">{{ prio_labels_map.get(prio, prio) }}{% if s.get('_prio_overridden') %}<span class="prio-override-marker" title="Prio individuell angepasst">✎</span>{% endif %}</span>
+          <span class="chevron">▼</span>
         </div>
       </div>
+
+      {% if session.get('role') in ('admin', 'superadmin') %}
+      {% set _tc = signal_ids_with_todos.get(s.id, 0) %}
+      <div class="card-todo-row" onclick="event.stopPropagation()">
+        <button class="todo-quick-btn{% if _tc > 0 %} has-todo{% endif %}"
+                onclick="openTodoFromCard(this)"
+                title="{% if _tc > 0 %}ToDo ansehen / neues anlegen{% else %}ToDo anlegen{% endif %}">
+          {%- if _tc > 0 %}+ {{ _tc }} ToDo{%- else %}+{%- endif %}</button>
+      </div>
+      {% endif %}
 
       <div class="card-title">{{ s.title }}</div>
 
@@ -307,12 +411,19 @@
         {% if s.get('betroffene_rollen') %}
         <div class="detail-row"><strong>Betroffene Rollen:</strong> <span>{{ s.betroffene_rollen | join(', ') }}</span></div>
         {% endif %}
-        {% for src in s.get('sources', []) %}
-        <div class="src-row">
-          <span class="src-label">Quelle {{ loop.index }}:</span>
-          <span>{% if src.get('url') %}<a href="{{ src.url }}" target="_blank" rel="noopener" style="color:var(--navy)" onclick="event.stopPropagation()">{{ src.get('name') or src.url }}</a>{% else %}{{ src.get('name') or '—' }}{% endif %}{% if src.get('date') %} <span style="color:var(--faint)">· {{ src.date }}</span>{% endif %}</span>
+        {% if s.get('sources') %}
+        <div class="src-chips" onclick="event.stopPropagation()">
+          {% for src in s.get('sources', []) %}
+          {% if src.get('url') %}
+          <a class="src-chip src-chip-link" href="{{ src.url }}" target="_blank" rel="noopener">
+            {{ src.get('name') or src.url }}<span class="src-chip-arrow"> ↗</span>
+          </a>
+          {% else %}
+          <span class="src-chip src-chip-nolink">{{ src.get('name') or '—' }}</span>
+          {% endif %}
+          {% endfor %}
         </div>
-        {% endfor %}
+        {% endif %}
       </div>
 
       {% if s.get('naechster_schritt') %}
@@ -323,13 +434,47 @@
         <span class="card-source">{{ s.get('sources', [{}])[0].get('name', '') }}</span>
         <div class="card-foot-right">
           {% if session.get('role') in ('admin', 'superadmin') %}
+          {% if session.get('role') == 'superadmin' %}
+          <span class="todo-btn-wrap" style="display:inline-flex">
+            <form method="post" action="{{ url_for('signal_toggle_hidden', sig_id=s.id) }}" style="display:inline" onclick="event.stopPropagation()">
+              <input type="hidden" name="next" value="{{ request.url }}">
+              {% if s.id in (hidden_signal_ids or []) %}
+              <button class="todo-btn" style="border-color:#B03060;color:#B03060" title="Wieder einblenden">&#9679; Verborgen</button>
+              {% else %}
+              <button class="todo-btn" title="Signal ausblenden">Ausblenden</button>
+              {% endif %}
+            </form>
+          </span>
+          {% elif session.get('role') == 'admin' %}
+          <span class="todo-btn-wrap" style="display:inline-flex">
+            <form method="post" action="{{ url_for('signal_entity_toggle_hidden', sig_id=s.id) }}" style="display:inline" onclick="event.stopPropagation()">
+              <input type="hidden" name="next" value="{{ request.url }}">
+              {% if entity_hidden_ids and s.id in entity_hidden_ids %}
+              <button class="todo-btn" style="border-color:#B03060;color:#B03060" title="Wieder anzeigen">&#9679; Verborgen</button>
+              {% else %}
+              <button class="todo-btn" title="Signal ausblenden">Ausblenden</button>
+              {% endif %}
+            </form>
+          </span>
+          {% endif %}
+          <span class="prio-select-wrap" onclick="event.stopPropagation()">
+            <form method="post" action="{{ url_for('signal_set_prio', sig_id=s.id) }}" style="display:inline-flex;align-items:center;gap:5px">
+              <input type="hidden" name="next" value="{{ request.url }}">
+              <select name="prio" onchange="">
+                <option value="" {% if not s.get('_prio_overridden') %}selected{% endif %}>Standard ({{ prio_labels_map.get(s.get('_prio_orig', s.get('priority','')), '') }})</option>
+                <option value="muss"   {% if s.get('_prio_overridden') and s.priority=='muss'   %}selected{% endif %}>Muss</option>
+                <option value="sollte" {% if s.get('_prio_overridden') and s.priority=='sollte' %}selected{% endif %}>Sollte</option>
+                <option value="kann"   {% if s.get('_prio_overridden') and s.priority=='kann'   %}selected{% endif %}>Kann</option>
+              </select>
+              <button type="submit" class="save-prio-btn">Prio setzen</button>
+            </form>
+          </span>
           <span class="todo-btn-wrap">
-            <button class="todo-btn" onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href)"
+            <button class="todo-btn" onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href,{% if _var %}this.closest('.card').dataset.varianten{% else %}null{% endif %})"
                     title="Als Aufgabe übernehmen">+ Aufgabe</button>
           </span>
           {% endif %}
           <span class="card-date">{{ s.date }}</span>
-          <span class="chevron">▼</span>
         </div>
       </div>
     </div>
@@ -365,9 +510,19 @@
 </main>
 
 <script>
-let _activeSec  = 'all';
-let _activeCats = new Set(); // empty = alle
+let _activeSec       = 'all';
+let _activeCats      = new Set(); // empty = alle
+let _activePrio      = new Set(); // empty = alle
+let _filterHasTodo   = false;
+let _filterShowHidden = false;
 
+function openTodoFromCard(btn) {
+  var card = btn.closest('.card');
+  var sigId = card.dataset.sigId;
+  var title = card.querySelector('.card-title') ? card.querySelector('.card-title').textContent.trim() : '';
+  var varianten = card.dataset.varianten || null;
+  openTodoModal(sigId, title, window.location.href, varianten);
+}
 function toggleCard(card) {
   if (card.querySelector('.card-detail')) card.classList.toggle('open');
 }
@@ -396,6 +551,36 @@ document.addEventListener('keydown', e => {
     closeKat();
   }
 });
+
+// ── Prio filter ──────────────────────────────────────────────
+function togglePrio(p) {
+  if (_activePrio.has(p)) _activePrio.delete(p);
+  else _activePrio.add(p);
+  _syncPrioUI();
+  updateVisibility();
+}
+function _syncPrioUI() {
+  const active = _activePrio.size > 0;
+  ['muss','sollte','kann'].forEach(function(p) {
+    const el = document.getElementById('legend-' + p);
+    if (!el) return;
+    el.classList.toggle('prio-active', _activePrio.has(p));
+    el.classList.toggle('prio-dimmed', active && !_activePrio.has(p));
+  });
+}
+
+function toggleFilterChip(type) {
+  if (type === 'todo') {
+    _filterHasTodo = !_filterHasTodo;
+    const btn = document.getElementById('chip-todo');
+    if (btn) btn.classList.toggle('active', _filterHasTodo);
+  } else if (type === 'hidden') {
+    _filterShowHidden = !_filterShowHidden;
+    const btn = document.getElementById('chip-hidden');
+    if (btn) btn.classList.toggle('active', _filterShowHidden);
+  }
+  updateVisibility();
+}
 
 // ── Section tabs ──────────────────────────────────────────────
 function filterSec(btn) {
@@ -458,11 +643,14 @@ function updateVisibility() {
   let visible = 0;
   const prioCounts = {muss: 0, sollte: 0, kann: 0};
   document.querySelectorAll('.card').forEach(card => {
-    const cardSecs = (card.dataset.sections || '').split(',').filter(Boolean);
-    const secOk  = _activeSec === 'all' || cardSecs.includes(_activeSec);
-    const catOk  = _activeCats.size === 0 || _activeCats.has(card.dataset.cat);
-    const srchOk = card.dataset.searchHidden !== '1';
-    const hide   = !secOk || !catOk || !srchOk;
+    const cardSecs2 = (card.dataset.sections || '').split(',').filter(Boolean);
+    const secOk    = _activeSec === 'all' || cardSecs2.includes(_activeSec);
+    const catOk    = _activeCats.size === 0 || _activeCats.has(card.dataset.cat);
+    const prioOk   = _activePrio.size === 0 || _activePrio.has(card.dataset.prio);
+    const todoOk   = !_filterHasTodo || card.dataset.hasTodo === '1';
+    const hiddenOk = _filterShowHidden ? card.dataset.hidden === '1' : true;
+    const srchOk   = card.dataset.searchHidden !== '1';
+    const hide     = !secOk || !catOk || !prioOk || !todoOk || !hiddenOk || !srchOk;
     card.style.display = hide ? 'none' : '';
     if (!hide) {
       visible++;
@@ -478,6 +666,114 @@ function updateVisibility() {
   const filtered = _activeSec !== 'all' || _activeCats.size > 0 || q;
   document.getElementById('result-count').textContent = filtered ? `${visible} Ergebnis${visible !== 1 ? 'se' : ''}` : '';
   document.getElementById('empty-state').style.display = visible === 0 && document.querySelectorAll('.card').length > 0 ? '' : 'none';
+}
+</script>
+
+<!-- Tutorial Overlay -->
+<div class="tutorial-overlay" id="tutorial-overlay">
+  <div class="tutorial-backdrop" onclick="closeTutorial()"></div>
+  <div class="tutorial-box">
+    <div class="tutorial-step-label" id="tut-step-label"></div>
+    <div class="tutorial-title" id="tut-title"></div>
+    <div class="tutorial-text" id="tut-text"></div>
+    <div class="tutorial-foot">
+      <div class="tutorial-dots" id="tut-dots"></div>
+      <div class="tutorial-btns">
+        <button class="tutorial-btn-skip" onclick="closeTutorial()">Beenden</button>
+        <button class="tutorial-btn-next" id="tut-next-btn" onclick="tutorialNext()">Weiter &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Tutorial per URL-Parameter starten (?tutorial=1)
+  if (new URLSearchParams(window.location.search).get('tutorial') === '1') {
+    window.addEventListener('DOMContentLoaded', function() { startTutorial(); });
+  }
+})();
+
+(function() {
+  var banner = document.getElementById('welcome-banner');
+  if (!banner) return;
+  try {
+    if (localStorage.getItem('oj_welcome_collapsed')) {
+      banner.classList.add('collapsed');
+      var btn = document.getElementById('welcome-collapse-btn');
+      if (btn) btn.textContent = 'Aufklappen';
+    }
+  } catch(e) {}
+})();
+
+function toggleWelcome() {
+  var banner = document.getElementById('welcome-banner');
+  if (!banner) return;
+  var collapsed = banner.classList.toggle('collapsed');
+  var btn = document.getElementById('welcome-collapse-btn');
+  if (btn) btn.textContent = collapsed ? 'Aufklappen' : 'Einklappen';
+  try {
+    if (collapsed) localStorage.setItem('oj_welcome_collapsed', '1');
+    else localStorage.removeItem('oj_welcome_collapsed');
+  } catch(e) {}
+}
+
+var _tutSteps = [
+  { title: "Ihr Dashboard", text: "Hier sehen Sie alle Signale, die für Ihre Praxis relevant sind — gefiltert nach Ihrem Fachbereich und priorisiert nach Handlungsbedarf. Signale mit rotem Punkt erfordern zeitnahe Maßnahmen." },
+  { title: "Signal aufklappen", text: "Klicken Sie auf eine Signalkarte, um die vollständige Zusammenfassung, den empfohlenen Handlungsschritt und die Originalquellen zu sehen." },
+  { title: "Aufgabe anlegen", text: "Mit dem Button '+ Aufgabe' erstellen Sie direkt aus einem Signal eine Aufgabe. Sie können eine Handlungsvariante wählen, eine Frist setzen und die Aufgabe einem Teammitglied zuweisen." },
+  { title: "Aufgaben verwalten", text: "Unter 'Aufgaben' im Menü finden Sie alle offenen und erledigten Todos Ihrer Praxis. Teammitglieder mit zugewiesenen Aufgaben sehen einen Badge-Hinweis im Menü." },
+  { title: "Einstellungen & Praxisprofil", text: "Unter 'Einstellungen' pflegen Sie Ihr Praxisprofil: Fachrichtung, Zulassungsstatus und Praxisstruktur. Diese Angaben steuern, welche Signale für Sie angezeigt werden. Das war's — viel Erfolg!" }
+];
+var _tutIdx = 0;
+
+function startTutorial() {
+  _tutIdx = 0; _renderTutStep();
+  document.getElementById('tutorial-overlay').classList.add('open');
+}
+function closeTutorial() {
+  document.getElementById('tutorial-overlay').classList.remove('open');
+  try { localStorage.setItem('oj_tutorial_done', '1'); } catch(e) {}
+}
+function tutorialNext() {
+  if (_tutIdx < _tutSteps.length - 1) { _tutIdx++; _renderTutStep(); }
+  else { closeTutorial(); }
+}
+function _renderTutStep() {
+  var s = _tutSteps[_tutIdx], total = _tutSteps.length;
+  document.getElementById('tut-step-label').textContent = 'Schritt ' + (_tutIdx+1) + ' von ' + total;
+  document.getElementById('tut-title').textContent = s.title;
+  document.getElementById('tut-text').textContent = s.text;
+  document.getElementById('tut-next-btn').innerHTML = _tutIdx < total-1 ? 'Weiter &rarr;' : 'Fertig &#10004;';
+  var dots = document.getElementById('tut-dots');
+  dots.innerHTML = '';
+  for (var i = 0; i < total; i++) {
+    var d = document.createElement('div');
+    d.className = 'tutorial-dot' + (i === _tutIdx ? ' active' : '');
+    dots.appendChild(d);
+  }
+}
+// ── Sortierung ────────────────────────────────────────────────
+function sortCards(mode) {
+  const grid = document.getElementById('card-grid');
+  const cards = Array.from(grid.querySelectorAll('.card'));
+  const prioOrder = {muss: 0, sollte: 1, kann: 2};
+  cards.sort(function(a, b) {
+    if (mode === 'prio') {
+      return (prioOrder[a.dataset.prio] ?? 1) - (prioOrder[b.dataset.prio] ?? 1);
+    } else if (mode === 'date-desc') {
+      return (b.dataset.date || '').localeCompare(a.dataset.date || '');
+    } else if (mode === 'date-asc') {
+      return (a.dataset.date || '').localeCompare(b.dataset.date || '');
+    } else if (mode === 'todo-first') {
+      const ta = a.dataset.hasTodo === '1' ? 0 : 1;
+      const tb = b.dataset.hasTodo === '1' ? 0 : 1;
+      if (ta !== tb) return ta - tb;
+      return (prioOrder[a.dataset.prio] ?? 1) - (prioOrder[b.dataset.prio] ?? 1);
+    }
+    return 0;
+  });
+  cards.forEach(c => grid.appendChild(c));
 }
 </script>
 {% endblock %}

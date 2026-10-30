@@ -83,9 +83,9 @@ DEPLOY_TOKEN = os.environ.get("DEPLOY_TOKEN", "")
 
 STATUS_ORDER = ["action", "announced", "develop", "radar", "active"]
 CATEGORIES = {
-    "krankenkassen": "Krankenkassen & GKV",
-    "digital":       "Digitalisierung & TI",
-    "gesetze":       "Gesetze & Regulatorien",
+    "krankenkassen": "GKV & Kassen",
+    "digital":       "Digital & TI",
+    "gesetze":       "Gesetze & Recht",
     "personal":      "Personal & Tarife",
     "praxis":        "Praxismanagement",
 }
@@ -1211,12 +1211,13 @@ def dashboard():
         for sid in sig.get("section_ids", []):
             sec_counts[sid] = sec_counts.get(sid, 0) + 1
 
-    # Signal-IDs mit offenen Todos (fuer Badge "Handlung ausgeloest")
+    # Signal-IDs mit offenen Todos -- dict {signal_id: count}
     _all_todos_d = load_todos()
-    signal_ids_with_todos = {
-        t["signal_id"] for t in _all_todos_d
-        if t.get("entity_id") == entity_id and not t.get("done")
-    }
+    _todo_counts = {}
+    for _t in _all_todos_d:
+        if _t.get("entity_id") == entity_id and not _t.get("done"):
+            _todo_counts[_t["signal_id"]] = _todo_counts.get(_t["signal_id"], 0) + 1
+    signal_ids_with_todos = _todo_counts
 
     # Ensure entity_hidden_ids is defined for all paths
     if 'entity_hidden_ids' not in dir():
