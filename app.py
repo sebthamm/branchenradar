@@ -89,6 +89,7 @@ CATEGORIES = {
     "personal":      "Personal & Tarife",
     "praxis":        "Praxismanagement",
 }
+LABEL_TO_CAT = {v: k for k, v in CATEGORIES.items()}
 STATUS_LABELS = {
     "action":    "Handlungsbedarf",
     "announced": "Angekündigt",
@@ -1185,6 +1186,12 @@ def dashboard():
                     sig["priority"]          = new
                     sig["_prio_orig"]        = orig
                     sig["_prio_overridden"]  = True
+
+    # Normalize: signal_final may store full labels instead of short keys
+    for _sig in signals:
+        _c = _sig.get("category", "")
+        if _c in LABEL_TO_CAT:
+            _sig["category"] = LABEL_TO_CAT[_c]
 
     prio_order = ["muss", "sollte", "kann"]
     def sort_key(s):
