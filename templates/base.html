@@ -477,8 +477,8 @@ function syncMobIframe(f) {
           <a href="{{ url_for('dashboard') }}?tutorial=1" class="header-link">Tutorial</a>
           <a href="{{ url_for('settings') }}" class="header-link">Einstellungen</a>
         {% endif %}
-        <span style="width:1px;height:14px;background:rgba(255,255,255,.15);display:inline-block"></span>
-        <span style="font-size:12px;color:rgba(255,255,255,.4)">{{ session.name }}</span>
+        <span style="width:1px;height:14px;background:var(--border);display:inline-block"></span>
+        <span style="font-size:12px;color:var(--muted)">{{ session.name }}</span>
         <a href="{{ url_for('logout') }}" class="header-link">Abmelden</a>
       {% else %}
         <a href="{{ url_for('login') }}" class="header-link">Login</a>
