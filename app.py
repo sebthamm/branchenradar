@@ -1109,8 +1109,9 @@ def dashboard():
     sec_map     = {s["id"]: s for s in sections}
 
     # Determine which sections the current user's entity has access to
-    entity_id   = session.get("entity_id")
-    role        = session.get("role")
+    # When in view_as mode, use the impersonated entity/role
+    entity_id   = session.get("view_as_entity_id") or session.get("entity_id")
+    role        = session.get("view_as_role") or session.get("role")
     if role == "superadmin" or not entity_id:
         allowed_section_ids = None  # sees everything
     else:
