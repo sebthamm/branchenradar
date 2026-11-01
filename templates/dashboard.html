@@ -187,7 +187,7 @@
   .src-chip-arrow { font-size: 9px; opacity: .7; }
 
   .card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
-  .card-foot-right { display: flex; align-items: center; gap: 8px; }
+  .card-foot-right { display: flex; align-items: center; gap: 8px; position: relative; }
 
   /* Welcome-Banner */
   .welcome-banner { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin: 16px auto 20px; max-width: 1200px; padding: 0 28px; box-sizing: border-box; }
@@ -237,6 +237,14 @@
   .prio-override-marker { font-size: 8px; opacity: .55; margin-left: 2px; vertical-align: middle; }
   .prio-reset-wrap { display:none; }
   .card.open .prio-reset-wrap { display:inline; }
+  .history-btn { background:none; border:none; padding:0 3px; cursor:pointer; font-size:13px; color:var(--muted); line-height:1; opacity:.6; transition:opacity .15s; position:relative; }
+  .history-btn:hover { opacity:1; }
+  .history-popover { display:none; position:absolute; bottom:calc(100% + 6px); right:0; z-index:300; background:var(--surface); border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 18px rgba(0,0,0,.13); min-width:260px; }
+  .history-popover-inner { padding:10px 14px; display:flex; flex-direction:column; gap:6px; }
+  .history-row { display:flex; gap:10px; align-items:baseline; }
+  .history-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); white-space:nowrap; min-width:72px; }
+  .history-val { font-size:11px; color:var(--text); }
+  .history-btn.open + .history-popover { display:block; }
 </style>
 
 <!-- Tutorial Overlay -->
@@ -476,6 +484,14 @@
                     title="Als Aufgabe übernehmen">+ Aufgabe</button>
           </span>
           {% endif %}
+          <button class="history-btn" onclick="event.stopPropagation();toggleHistoryPopover(this)" title="Kartenhistorie">ℹ</button>
+          <div class="history-popover">
+            <div class="history-popover-inner">
+              <div class="history-row"><span class="history-label">Eingestellt</span><span class="history-val">{{ s.get('sys_created_at', s.get('date','—')) }}{% if s.get('sys_created_by') %} · {{ s.get('sys_created_by') }}{% endif %}</span></div>
+              {% if s.get('sys_updated_at') %}<div class="history-row"><span class="history-label">Geändert</span><span class="history-val">{{ s.sys_updated_at }} · {{ s.get('sys_updated_by','—') }}</span></div>{% endif %}
+              <div class="history-row"><span class="history-label">Signal-ID</span><span class="history-val" style="font-size:9px;font-family:monospace">{{ s.id }}</span></div>
+            </div>
+          </div>
           <span class="card-date">{{ s.date }}</span>
           <span class="chevron">▼</span>
         </div>
@@ -518,6 +534,17 @@ let _activeCats      = new Set(); // empty = alle
 let _activePrio      = new Set(); // empty = alle
 let _filterHasTodo   = false;
 let _filterShowHidden = false;
+
+function toggleHistoryPopover(btn) {
+  var isOpen = btn.classList.contains('open');
+  document.querySelectorAll('.history-btn.open').forEach(function(b){ b.classList.remove('open'); });
+  if (!isOpen) btn.classList.add('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.history-btn') && !e.target.closest('.history-popover')) {
+    document.querySelectorAll('.history-btn.open').forEach(function(b){ b.classList.remove('open'); });
+  }
+});
 
 function togglePrioDropdown(btn) {
   var wrap = btn.closest('.prio-badge-wrap');

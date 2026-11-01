@@ -1600,6 +1600,8 @@ def signal_list():
 def signal_new():
     if request.method == "POST":
         sig = _signal_from_form(request.form)
+        sig["sys_created_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+        sig["sys_created_by"] = session.get("username", "—")
         signals = load_signals()
         signals.append(sig)
         save_signals(signals)
@@ -1623,6 +1625,10 @@ def signal_edit(sig_id):
         abort(404)
     if request.method == "POST":
         updated = _signal_from_form(request.form, existing_id=sig_id)
+        updated["sys_created_at"] = sig.get("sys_created_at")
+        updated["sys_created_by"] = sig.get("sys_created_by")
+        updated["sys_updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+        updated["sys_updated_by"] = session.get("username", "—")
         for i, s in enumerate(signals):
             if s["id"] == sig_id:
                 signals[i] = updated
