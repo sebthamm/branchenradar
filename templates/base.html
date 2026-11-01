@@ -464,18 +464,20 @@ function syncMobIframe(f) {
     </div>
 
     {# Desktop nav #}
+    {# Beim Impersonieren: effektive Rolle = view_as_role #}
+    {% set _eff_role = session.get('view_as_role') if session.get('view_as_entity_id') else session.role %}
     <div class="header-right">
       {% if session.get('user_id') %}
         <a href="{{ url_for('dashboard') }}" class="header-link header-link-primary">Dashboard</a>
-        {% if session.role == 'admin' %}
+        {% if _eff_role == 'admin' %}
           <a href="{{ url_for('todos') }}" class="header-link header-link-primary" style="position:relative">
             ToDos{% if pending_todos %}<span style="position:absolute;top:-5px;right:-8px;background:#B03060;color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 4px;min-width:14px;text-align:center">{{ pending_todos }}</span>{% endif %}
           </a>
         {% endif %}
-        {% if session.role == 'superadmin' %}
+        {% if _eff_role == 'superadmin' %}
           {# SA nav is in the left sidebar #}
-        {% elif session.role == 'admin' %}
-          <span style="width:1px;height:14px;background:rgba(255,255,255,.2);display:inline-block;margin:0 4px"></span>
+        {% elif _eff_role == 'admin' %}
+          <span style="width:1px;height:14px;background:var(--border);display:inline-block;margin:0 4px"></span>
           <a href="{{ url_for('admin_dashboard') }}" class="header-link">Nutzerverwaltung</a>
           <a href="{{ url_for('dashboard') }}?tutorial=1" class="header-link">Tutorial</a>
           <a href="{{ url_for('settings') }}" class="header-link">Einstellungen</a>
@@ -512,14 +514,14 @@ function syncMobIframe(f) {
     </div>
     <div class="nav-drawer-links">
       <a href="{{ url_for('dashboard') }}" onclick="closeDrawer()" style="color:#fff;font-weight:500">Dashboard</a>
-      {% if session.role == 'admin' %}
+      {% if _eff_role == 'admin' %}
         <a href="{{ url_for('todos') }}" onclick="closeDrawer()" style="color:#fff;font-weight:500">
           ToDos{% if pending_todos %}<span class="nav-badge">{{ pending_todos }}</span>{% endif %}
         </a>
       {% endif %}
-      {% if session.role == 'superadmin' %}
+      {% if _eff_role == 'superadmin' %}
         {# SA uses sidebar, no drawer #}
-      {% elif session.role == 'admin' %}
+      {% elif _eff_role == 'admin' %}
         <div class="nav-drawer-sep"></div>
         <a href="{{ url_for('admin_dashboard') }}" onclick="closeDrawer()">Nutzerverwaltung</a>
         <a href="{{ url_for('dashboard') }}?tutorial=1" onclick="closeDrawer()">Tutorial</a>
