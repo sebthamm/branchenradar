@@ -90,6 +90,13 @@ CATEGORIES = {
     "praxis":        "Praxismanagement",
 }
 LABEL_TO_CAT = {v: k for k, v in CATEGORIES.items()}
+# Legacy-Labels aus älteren Signal-Datensätzen
+LABEL_TO_CAT.update({
+    "Krankenkassen & GKV":   "krankenkassen",
+    "Gesetze & Regulatorien":"gesetze",
+    "Digitalisierung & TI":  "digital",
+    "Digitalisierung":       "digital",
+})
 STATUS_LABELS = {
     "action":    "Handlungsbedarf",
     "announced": "Angekündigt",
