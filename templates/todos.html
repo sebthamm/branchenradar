@@ -13,6 +13,20 @@
   .pill-count { background: var(--surface2); color: var(--muted); border-radius: 99px; padding: 1px 6px; font-size: 10px; }
   .pill.active .pill-count { background: rgba(255,255,255,.2); color: #fff; }
 
+  /* Filter sections */
+  .filter-section { margin-bottom: 8px; }
+  .filter-section-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin-bottom: 5px; font-weight: 600; }
+  .view-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .view-bar select { font-size: 12px; padding: 5px 10px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); outline: none; cursor: pointer; }
+  .view-bar select:focus { border-color: var(--navy); color: var(--text); }
+  @media (max-width: 700px) {
+    .filter-section { margin-bottom: 6px; }
+    .view-bar { margin-bottom: 16px; }
+    .filter-bar { gap: 5px; }
+    .pill { padding: 5px 10px; font-size: 11px; }
+    .page-head { margin-bottom: 14px; }
+  }
+
   /* Todo cards */
   .todo-list { display: flex; flex-direction: column; gap: 8px; }
   .todo-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; box-shadow: var(--shadow); position: relative; }
@@ -77,7 +91,10 @@
 {% block content %}
 <div class="main">
   <div class="page-head">
-    <div class="page-title">ToDos</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <a href="{{ url_for('dashboard') }}" class="back-btn" title="Zurück zum Dashboard" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:99px;padding:4px 10px;background:var(--surface);transition:color .15s,border-color .15s">← Dashboard</a>
+      <div class="page-title">ToDos</div>
+    </div>
   </div>
 
   {% set role = session.get('role') %}
@@ -87,13 +104,36 @@
   {% set done_todos = todos | selectattr('done') | list %}
   {% set notif_todos = done_todos | selectattr('assigned_by', 'equalto', uid) | list if role in ('admin','superadmin') else [] %}
 
-  <div class="filter-bar">
-    <button class="pill active" data-filter="all"  onclick="filterTodos(this)">Alle <span class="pill-count">{{ todos | length }}</span></button>
-    <button class="pill"        data-filter="open" onclick="filterTodos(this)">Offen <span class="pill-count">{{ open_todos | length }}</span></button>
-    <button class="pill"        data-filter="done" onclick="filterTodos(this)">Erledigt <span class="pill-count">{{ done_todos | length }}</span></button>
-    {% for cat in categories %}
-    <button class="pill" data-cat="{{ cat }}" onclick="filterCat(this)">{{ cat }}</button>
-    {% endfor %}
+  {# ── Filter: Status & Fälligkeit ── #}
+  <div class="filter-section">
+    <div class="filter-bar" id="filter-status">
+      <button class="pill active" data-filter="all"  onclick="filterTodos(this)">Alle Aufgaben <span class="pill-count">{{ todos | length }}</span></button>
+      <button class="pill" data-filter="open" onclick="filterTodos(this)">Offen <span class="pill-count">{{ open_todos | length }}</span></button>
+      <button class="pill" data-filter="done" onclick="filterTodos(this)">Erledigt <span class="pill-count">{{ done_todos | length }}</span></button>
+      <button class="pill" data-filter="overdue" onclick="filterTodos(this)">⚠ Überfällig</button>
+      <button class="pill" data-filter="today"   onclick="filterTodos(this)">Heute fällig</button>
+      <button class="pill" data-filter="week"    onclick="filterTodos(this)">Diese Woche</button>
+    </div>
+  </div>
+
+  {# ── Filter: Kategorie ── #}
+  {% if categories %}
+  <div class="filter-section">
+    <div class="filter-bar" id="filter-cat">
+      {% for cat in categories %}
+      <button class="pill" data-cat="{{ cat }}" onclick="filterCat(this)">{{ cat }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Ansicht ── #}
+  <div class="view-bar">
+    <select id="group-select" onchange="applyFilter()">
+      <option value="">Keine Gruppierung</option>
+      <option value="cat">Nach Kategorie</option>
+      <option value="deadline">Nach Fälligkeit</option>
+    </select>
   </div>
 
   {% if todos %}
@@ -107,7 +147,7 @@
     {% set assignee = user_map.get(t.assigned_to) if t.assigned_to else None %}
     {% set assigner = user_map.get(t.assigned_by) if t.assigned_by else None %}
     {% set overdue = t.deadline and t.deadline < today %}
-    <div class="todo-card {% if overdue %}overdue{% endif %}" data-done="0" data-cat="{{ t.category }}">
+    <div class="todo-card {% if overdue %}overdue{% endif %}" data-done="0" data-cat="{{ t.category }}" data-deadline="{{ t.deadline or '' }}">
       <div class="todo-check">
         <button type="button" class="check-btn" onclick="openDoneModal('{{ t.id }}')" title="Als erledigt markieren">✓</button>
       </div>
@@ -153,7 +193,7 @@
     {% for t in notif_todos | sort(attribute='done_at', reverse=True) %}
     {% set sig     = sig_map.get(t.signal_id) %}
     {% set done_by = user_map.get(t.done_by) if t.done_by else None %}
-    <div class="todo-card done-notif" data-done="1" data-cat="{{ t.category }}">
+    <div class="todo-card done-notif" data-done="1" data-cat="{{ t.category }}" data-deadline="{{ t.deadline or '' }}">
       <div class="todo-check">
         <form method="post" action="{{ url_for('todo_reopen', todo_id=t.id) }}">
           <button type="submit" class="check-btn" title="Wieder öffnen" style="background:var(--s-active);border-color:var(--s-active);color:#fff">✓</button>
@@ -183,7 +223,7 @@
     {% for t in other_done | sort(attribute='done_at', reverse=True) %}
     {% set sig     = sig_map.get(t.signal_id) %}
     {% set assignee = user_map.get(t.assigned_to) if t.assigned_to else None %}
-    <div class="todo-card done" data-done="1" data-cat="{{ t.category }}">
+    <div class="todo-card done" data-done="1" data-cat="{{ t.category }}" data-deadline="{{ t.deadline or '' }}">
       <div class="todo-check">
         {% if role in ('admin','superadmin') %}
         <form method="post" action="{{ url_for('todo_reopen', todo_id=t.id) }}">
@@ -247,6 +287,8 @@
 
 <script>
 let _activeFilter = 'all', _activeCat = null;
+const _today = new Date(); _today.setHours(0,0,0,0);
+const _weekEnd = new Date(_today); _weekEnd.setDate(_weekEnd.getDate() + 7);
 
 function filterTodos(btn) {
   document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
@@ -259,22 +301,33 @@ function filterTodos(btn) {
 function filterCat(btn) {
   const same = btn.classList.contains('active');
   document.querySelectorAll('[data-cat].pill').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
-  document.querySelector('[data-filter="all"]').classList.add('active');
-  _activeFilter = 'all'; _activeCat = same ? null : btn.dataset.cat;
-  if (!same) btn.classList.add('active');
+  if (!same) { btn.classList.add('active'); _activeCat = btn.dataset.cat; }
+  else _activeCat = null;
   applyFilter();
 }
 function applyFilter() {
   document.querySelectorAll('.todo-card').forEach(card => {
-    const isDone   = card.dataset.done === '1';
-    const filterOk = _activeFilter === 'all' || (_activeFilter === 'open' && !isDone) || (_activeFilter === 'done' && isDone);
-    const catOk    = !_activeCat || card.dataset.cat === _activeCat;
+    const isDone    = card.dataset.done === '1';
+    const deadline  = card.dataset.deadline ? new Date(card.dataset.deadline) : null;
+    let filterOk = true;
+    switch (_activeFilter) {
+      case 'open':    filterOk = !isDone; break;
+      case 'done':    filterOk = isDone;  break;
+      case 'overdue': filterOk = !isDone && deadline && deadline < _today; break;
+      case 'today':   filterOk = !isDone && deadline && deadline.toDateString() === _today.toDateString(); break;
+      case 'week':    filterOk = !isDone && deadline && deadline >= _today && deadline <= _weekEnd; break;
+    }
+    const catOk = !_activeCat || card.dataset.cat === _activeCat;
     card.style.display = (filterOk && catOk) ? '' : 'none';
   });
   document.querySelectorAll('.section-lbl').forEach(lbl => {
-    const next = lbl.nextElementSibling;
-    lbl.style.display = next && next.style.display !== 'none' ? '' : 'none';
+    let sib = lbl.nextElementSibling;
+    let anyVisible = false;
+    while (sib && !sib.classList.contains('section-lbl')) {
+      if (sib.classList.contains('todo-card') && sib.style.display !== 'none') anyVisible = true;
+      sib = sib.nextElementSibling;
+    }
+    lbl.style.display = anyVisible ? '' : 'none';
   });
 }
 
