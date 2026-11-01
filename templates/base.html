@@ -268,10 +268,13 @@
 
 {% if session.get('role') == 'superadmin' %}
 <aside class="sa-sidebar">
-  <a href="{{ url_for('sa_dashboard') }}" class="sa-sidebar-brand">
-    Ole <span style="font-style:italic">&amp;</span> Joy
-    <small>Superadmin</small>
-  </a>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <a href="{{ url_for('sa_dashboard') }}" class="sa-sidebar-brand" style="flex:1">
+      Ole <span style="font-style:italic">&amp;</span> Joy
+      <small>Superadmin</small>
+    </a>
+    <button onclick="window.location.reload()" title="Seite neu laden" style="background:none;border:none;cursor:pointer;font-size:15px;color:rgba(255,255,255,.5);padding:4px;line-height:1;transition:color .15s" onmouseover="this.style.color='rgba(255,255,255,.9)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">↻</button>
+  </div>
   <nav class="sa-nav">
     <a href="{{ url_for('sa_home') }}" class="sa-nav-item">Home</a>
     <div>
