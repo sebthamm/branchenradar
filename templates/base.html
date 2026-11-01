@@ -283,7 +283,7 @@
         <a href="{{ url_for('sa_default_setup') }}">Default Entity Setup</a>
       </div>
     </div>
-    <a href="#" class="sa-nav-item" onclick="event.preventDefault();toggleImpersonate()">Impersonierung</a>
+    <a href="#" class="sa-nav-item" onclick="event.preventDefault();toggleImpersonate()">User-Ansicht</a>
     <div class="sa-nav-sep"></div>
     <a href="{{ url_for('sources') }}" class="sa-nav-item">Quellen</a>
     <div>
@@ -323,7 +323,7 @@
   <div class="sa-sidebar-foot">
     <div class="impersonate-wrap">
       {% set initials = (session.name or 'SA')[:2].upper() %}
-      <button class="initials-btn" onclick="toggleImpersonate()" title="Als Nutzer anzeigen">{{ initials }}</button>
+      <button class="initials-btn" title="{{ session.name or 'Superadmin' }}">{{ initials }}</button>
       <div class="impersonate-panel" id="impersonate-panel">
         <form method="post" action="{{ url_for('view_as') }}" target="_blank">
           <label>Praxis</label>
