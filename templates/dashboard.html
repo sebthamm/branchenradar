@@ -122,14 +122,9 @@
   .card-stripe.kann   { background: var(--s-active); }
   .card-body { flex: 1; padding: 16px 18px; min-width: 0; }
 
-  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
   .card-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .card-todo-row { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-  .todo-quick-btn { background: none; border: 1px solid var(--border); border-radius: 3px; color: var(--muted); font-size: 10px; font-weight: 600; padding: 2px 7px; cursor: pointer; letter-spacing: .03em; transition: all .15s; white-space: nowrap; line-height: 1.5; }
-  .todo-quick-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--surface2); }
-  .todo-quick-btn.has-todo { border-color: color-mix(in srgb,var(--navy) 30%,transparent); color: var(--navy); background: color-mix(in srgb,var(--navy) 8%,transparent); }
-  .todo-quick-btn.has-todo:hover { background: color-mix(in srgb,var(--navy) 15%,transparent); }
-  .prio-badge { display: inline-flex; padding: 3px 9px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+  .prio-badge { display: inline-flex; align-items: center; justify-content: center; padding: 3px 9px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; min-width: 52px; }
   .prio-badge.muss   { background: rgba(176,48,96,.12);  color: var(--s-action); }
   .prio-badge.sollte { background: rgba(196,120,14,.12); color: var(--s-announced); }
   .prio-badge.kann   { background: rgba(37,122,88,.12);  color: var(--s-active); }
@@ -218,8 +213,11 @@
   .card.open .card-date { display: block; }
   .todo-btn-wrap { display: none; }
   .card.open .todo-btn-wrap { display: block; }
-  .chevron { font-size: 9px; color: var(--faint); transition: transform .2s; margin-left: 6px; opacity: .5; }
+  .chevron { font-size: 9px; color: var(--faint); transition: transform .2s; opacity: .5; }
   .card.open .chevron { transform: rotate(180deg); }
+  .todo-prio-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 52px; padding: 3px 9px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-family: inherit; transition: all .15s; }
+  .todo-prio-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .todo-count-circle { position: absolute; top: -5px; right: -5px; background: var(--navy); color: #fff; border-radius: 50%; font-size: 8px; font-weight: 700; min-width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; padding: 0 2px; letter-spacing: 0; }
 
   .entwicklungsstand-tag { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 3px; font-size: 10px; font-weight: 600; background: var(--surface2); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
 
@@ -282,9 +280,9 @@
         Muss <span class="legend-count" id="count-muss">{{ prio_counts.muss }}</span>
       </span>
       <div class="legend-sep"></div>
-      <span class="legend-item" id="legend-sollte" onclick="togglePrio('sollte')" title="Nur Sollte-Signale anzeigen">
+      <span class="legend-item" id="legend-sollte" onclick="togglePrio('sollte')" title="Nur Soll-Signale anzeigen">
         <span class="legend-dot" style="background:var(--s-announced)"></span>
-        Sollte <span class="legend-count" id="count-sollte">{{ prio_counts.sollte }}</span>
+        Soll <span class="legend-count" id="count-sollte">{{ prio_counts.sollte }}</span>
       </span>
       <div class="legend-sep"></div>
       <span class="legend-item" id="legend-kann" onclick="togglePrio('kann')" title="Nur Kann-Signale anzeigen">
@@ -344,7 +342,7 @@
 
 <main class="main">
 
-  {% set prio_labels_map = {'muss': 'Muss', 'sollte': 'Sollte', 'kann': 'Kann'} %}
+  {% set prio_labels_map = {'muss': 'Muss', 'sollte': 'Soll', 'kann': 'Kann'} %}
   {% set ordered_signals =
       (signals | selectattr('priority', 'equalto', 'muss')   | list) +
       (signals | selectattr('priority', 'equalto', 'sollte') | list) +
@@ -372,26 +370,23 @@
     <div class="card-body">
       <div class="card-header">
         <div class="card-eyebrow">{{ categories.get(s.category, s.category) }}</div>
-        <div style="display:flex;align-items:center;flex-shrink:0;gap:4px">
-          {% if s.get('reporting_status') == 'NEU' %}
-          <span class="reporting-badge neu">Neu</span>
-          {% elif s.get('reporting_status') == 'UPDATE' %}
-          <span class="reporting-badge update">Update</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:4px">
+          <div style="display:flex;align-items:center;gap:4px">
+            {% if s.get('reporting_status') == 'NEU' %}
+            <span class="reporting-badge neu">Neu</span>
+            {% elif s.get('reporting_status') == 'UPDATE' %}
+            <span class="reporting-badge update">Update</span>
+            {% endif %}
+            <span class="prio-badge {{ prio }}">{{ prio_labels_map.get(prio, prio) }}{% if s.get('_prio_overridden') %}<span class="prio-override-marker" title="Prio individuell angepasst">✎</span>{% endif %}</span>
+          </div>
+          {% if session.get('role') in ('admin', 'superadmin') %}
+          {% set _tc = signal_ids_with_todos.get(s.id, 0) %}
+          <button class="todo-prio-btn" onclick="event.stopPropagation();openTodoFromCard(this)" title="{% if _tc > 0 %}ToDo ansehen / neues anlegen{% else %}ToDo anlegen{% endif %}">
+            ToDo{% if _tc > 0 %}<span class="todo-count-circle">{{ _tc }}</span>{% endif %}
+          </button>
           {% endif %}
-          <span class="prio-badge {{ prio }}">{{ prio_labels_map.get(prio, prio) }}{% if s.get('_prio_overridden') %}<span class="prio-override-marker" title="Prio individuell angepasst">✎</span>{% endif %}</span>
-          <span class="chevron">▼</span>
         </div>
       </div>
-
-      {% if session.get('role') in ('admin', 'superadmin') %}
-      {% set _tc = signal_ids_with_todos.get(s.id, 0) %}
-      <div class="card-todo-row" onclick="event.stopPropagation()">
-        <button class="todo-quick-btn{% if _tc > 0 %} has-todo{% endif %}"
-                onclick="openTodoFromCard(this)"
-                title="{% if _tc > 0 %}ToDo ansehen / neues anlegen{% else %}ToDo anlegen{% endif %}">
-          {%- if _tc > 0 %}+ {{ _tc }} ToDo{%- else %}+{%- endif %}</button>
-      </div>
-      {% endif %}
 
       <div class="card-title">{{ s.title }}</div>
 
@@ -463,7 +458,7 @@
               <select name="prio" onchange="">
                 <option value="" {% if not s.get('_prio_overridden') %}selected{% endif %}>Standard ({{ prio_labels_map.get(s.get('_prio_orig', s.get('priority','')), '') }})</option>
                 <option value="muss"   {% if s.get('_prio_overridden') and s.priority=='muss'   %}selected{% endif %}>Muss</option>
-                <option value="sollte" {% if s.get('_prio_overridden') and s.priority=='sollte' %}selected{% endif %}>Sollte</option>
+                <option value="sollte" {% if s.get('_prio_overridden') and s.priority=='sollte' %}selected{% endif %}>Soll</option>
                 <option value="kann"   {% if s.get('_prio_overridden') and s.priority=='kann'   %}selected{% endif %}>Kann</option>
               </select>
               <button type="submit" class="save-prio-btn">Prio setzen</button>
@@ -475,6 +470,7 @@
           </span>
           {% endif %}
           <span class="card-date">{{ s.date }}</span>
+          <span class="chevron">▼</span>
         </div>
       </div>
     </div>
@@ -501,7 +497,7 @@
     <button class="info-box-close" onclick="document.getElementById('prio-info').classList.remove('open')">×</button>
     <div class="info-box-title">Hinweis zur Prioritätseinstufung</div>
     <div class="info-box-text">
-      Die Einstufung von Signalen als <strong>Muss</strong>, <strong>Sollte</strong> oder <strong>Kann</strong> stellt eine redaktionelle Orientierungshilfe dar und ist keine Rechtsberatung. Sie ersetzt nicht die individuelle rechtliche oder fachliche Beratung durch zugelassene Berater, Rechtsanwälte oder Ihren Berufsverband.<br><br>
+      Die Einstufung von Signalen als <strong>Muss</strong>, <strong>Soll</strong> oder <strong>Kann</strong> stellt eine redaktionelle Orientierungshilfe dar und ist keine Rechtsberatung. Sie ersetzt nicht die individuelle rechtliche oder fachliche Beratung durch zugelassene Berater, Rechtsanwälte oder Ihren Berufsverband.<br><br>
       Die Einschätzungen beruhen auf einer allgemeinen Beurteilung der regulatorischen Lage zum Zeitpunkt der Veröffentlichung. Verbindliche Aussagen zur Rechtslage für Ihren konkreten Fall können nur durch qualifizierte Fachleute getroffen werden.
     </div>
   </div>

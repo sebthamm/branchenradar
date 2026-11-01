@@ -99,7 +99,7 @@ STATUS_LABELS = {
 }
 SIGNAL_PRIORITY_LABELS = {
     "muss":   "Muss",
-    "sollte": "Sollte",
+    "sollte": "Soll",
     "kann":   "Kann",
 }
 ENTWICKLUNGSSTAND_LABELS = {
