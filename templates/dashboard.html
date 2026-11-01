@@ -124,7 +124,17 @@
 
   .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
   .card-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .prio-badge { display: inline-flex; align-items: center; justify-content: center; padding: 3px 9px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; min-width: 52px; }
+  .prio-badge { display: inline-flex; align-items: center; justify-content: center; padding: 3px 9px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; min-width: 52px; border: none; cursor: default; font-family: inherit; gap: 4px; }
+  button.prio-badge { cursor: pointer; }
+  button.prio-badge:hover { filter: brightness(.92); }
+  .prio-drop-arrow { font-size: 7px; opacity: .75; flex-shrink: 0; }
+  .prio-badge-wrap { position: relative; display: inline-flex; }
+  .prio-dropdown { display: none; position: absolute; top: calc(100% + 4px); right: 0; z-index: 200; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,.12); min-width: 110px; overflow: hidden; }
+  .prio-badge-wrap.open .prio-dropdown { display: block; }
+  .prio-dropdown form { display: flex; flex-direction: column; }
+  .prio-dropdown button { background: none; border: none; padding: 7px 13px; font-size: 11px; font-weight: 600; text-align: left; cursor: pointer; color: var(--text); white-space: nowrap; font-family: inherit; width: 100%; }
+  .prio-dropdown button:hover { background: var(--surface2); }
+  .prio-dropdown button.active { color: var(--navy); }
   .prio-badge.muss   { background: rgba(176,48,96,.12);  color: var(--s-action); }
   .prio-badge.sollte { background: rgba(196,120,14,.12); color: var(--s-announced); }
   .prio-badge.kann   { background: rgba(37,122,88,.12);  color: var(--s-active); }
@@ -227,12 +237,6 @@
   .todo-btn { background: none; border: 1px solid var(--border); border-radius: 3px; color: var(--muted); font-size: 10px; font-weight: 600; padding: 2px 7px; cursor: pointer; letter-spacing: .03em; transition: all .15s; white-space: nowrap; }
   .todo-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--surface2); }
   .prio-override-marker { font-size: 8px; opacity: .55; margin-left: 2px; vertical-align: middle; }
-  .prio-select-wrap { display:none; }
-  .card.open .prio-select-wrap { display:inline-flex; align-items:center; gap:5px; }
-  .prio-select-wrap select { background:var(--bg); border:1px solid var(--border); border-radius:4px; font-size:11px; color:var(--text); padding:2px 6px; cursor:pointer; font-family:inherit; outline:none; }
-  .prio-select-wrap select:focus { border-color:var(--navy); }
-  .prio-select-wrap .save-prio-btn { font-size:10px; font-weight:600; color:var(--navy); background:none; border:1px solid var(--border); border-radius:3px; padding:2px 7px; cursor:pointer; white-space:nowrap; transition:all .15s; font-family:inherit; }
-  .prio-select-wrap .save-prio-btn:hover { border-color:var(--navy); background:var(--surface2); }
   .prio-reset-wrap { display:none; }
   .card.open .prio-reset-wrap { display:inline; }
 </style>
@@ -377,7 +381,24 @@
             {% elif s.get('reporting_status') == 'UPDATE' %}
             <span class="reporting-badge update">Update</span>
             {% endif %}
+            {% if session.get('role') in ('admin', 'superadmin') %}
+            <div class="prio-badge-wrap" onclick="event.stopPropagation()">
+              <button class="prio-badge {{ prio }}" onclick="togglePrioDropdown(this)">
+                {{ prio_labels_map.get(prio, prio) }}{% if s.get('_prio_overridden') %} ✎{% endif %}<span class="prio-drop-arrow">▾</span>
+              </button>
+              <div class="prio-dropdown">
+                <form method="post" action="{{ url_for('signal_set_prio', sig_id=s.id) }}">
+                  <input type="hidden" name="next" value="{{ request.url }}">
+                  <button type="submit" name="prio" value="" class="{% if not s.get('_prio_overridden') %}active{% endif %}">Standard ({{ prio_labels_map.get(s.get('_prio_orig', s.get('priority','')), '') }})</button>
+                  <button type="submit" name="prio" value="muss"   class="{% if s.get('_prio_overridden') and prio=='muss'   %}active{% endif %}">Muss</button>
+                  <button type="submit" name="prio" value="sollte" class="{% if s.get('_prio_overridden') and prio=='sollte' %}active{% endif %}">Soll</button>
+                  <button type="submit" name="prio" value="kann"   class="{% if s.get('_prio_overridden') and prio=='kann'   %}active{% endif %}">Kann</button>
+                </form>
+              </div>
+            </div>
+            {% else %}
             <span class="prio-badge {{ prio }}">{{ prio_labels_map.get(prio, prio) }}{% if s.get('_prio_overridden') %}<span class="prio-override-marker" title="Prio individuell angepasst">✎</span>{% endif %}</span>
+            {% endif %}
           </div>
           {% if session.get('role') in ('admin', 'superadmin') %}
           {% set _tc = signal_ids_with_todos.get(s.id, 0) %}
@@ -452,18 +473,6 @@
             </form>
           </span>
           {% endif %}
-          <span class="prio-select-wrap" onclick="event.stopPropagation()">
-            <form method="post" action="{{ url_for('signal_set_prio', sig_id=s.id) }}" style="display:inline-flex;align-items:center;gap:5px">
-              <input type="hidden" name="next" value="{{ request.url }}">
-              <select name="prio" onchange="">
-                <option value="" {% if not s.get('_prio_overridden') %}selected{% endif %}>Standard ({{ prio_labels_map.get(s.get('_prio_orig', s.get('priority','')), '') }})</option>
-                <option value="muss"   {% if s.get('_prio_overridden') and s.priority=='muss'   %}selected{% endif %}>Muss</option>
-                <option value="sollte" {% if s.get('_prio_overridden') and s.priority=='sollte' %}selected{% endif %}>Soll</option>
-                <option value="kann"   {% if s.get('_prio_overridden') and s.priority=='kann'   %}selected{% endif %}>Kann</option>
-              </select>
-              <button type="submit" class="save-prio-btn">Prio setzen</button>
-            </form>
-          </span>
           <span class="todo-btn-wrap">
             <button class="todo-btn" onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href,{% if _var %}this.closest('.card').dataset.varianten{% else %}null{% endif %})"
                     title="Als Aufgabe übernehmen">+ Aufgabe</button>
@@ -511,6 +520,18 @@ let _activeCats      = new Set(); // empty = alle
 let _activePrio      = new Set(); // empty = alle
 let _filterHasTodo   = false;
 let _filterShowHidden = false;
+
+function togglePrioDropdown(btn) {
+  var wrap = btn.closest('.prio-badge-wrap');
+  var isOpen = wrap.classList.contains('open');
+  document.querySelectorAll('.prio-badge-wrap.open').forEach(function(w){ w.classList.remove('open'); });
+  if (!isOpen) wrap.classList.add('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.prio-badge-wrap')) {
+    document.querySelectorAll('.prio-badge-wrap.open').forEach(function(w){ w.classList.remove('open'); });
+  }
+});
 
 function openTodoFromCard(btn) {
   var card = btn.closest('.card');
