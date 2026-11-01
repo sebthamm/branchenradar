@@ -388,7 +388,8 @@
 {% endif %}{# end: SA and not impersonating #}
 
 {# View-as banner — shown whenever impersonating, outside SA layout #}
-{% if session.get('view_as_entity_id') %}
+{# mob_inner=1 bedeutet: wir sind bereits im iframe, Banner unterdrücken #}
+{% if session.get('view_as_entity_id') and not request.args.get('mob_inner') %}
 {% set _va_entity = (all_entities | selectattr('id','equalto',session.view_as_entity_id) | first or {}) %}
 {% set _mob = request.args.get('mob') == '1' %}
 <div class="view-as-banner">
@@ -417,15 +418,40 @@
     <a href="{{ url_for('view_as_exit') }}">← Superadmin</a>
   </div>
 </div>
-{% if _mob %}<script>
-(function(){
-  var m = document.createElement('meta');
-  m.name='viewport'; m.content='width=390,initial-scale=1';
-  var existing = document.querySelector('meta[name="viewport"]');
-  if(existing) existing.replaceWith(m); else document.head.appendChild(m);
-  document.body.classList.add('mob-preview');
-})();
-</script>{% endif %}
+{% if _mob %}
+{# Mobil-Vorschau: iframe bei 390px — nur so triggern CSS Media Queries korrekt #}
+<div style="display:flex;justify-content:center;align-items:flex-start;padding:16px 0 60px;background:var(--bg);min-height:calc(100vh - 44px)">
+  <div style="position:relative">
+    <div style="width:390px;background:#1a1a1a;border-radius:44px;padding:14px 8px;box-shadow:0 24px 60px rgba(0,0,0,.45)">
+      <div style="width:374px;height:calc(100vh - 120px);border-radius:34px;overflow:hidden;background:#fff;position:relative">
+        <iframe src="{{ request.path }}?mob_inner=1"
+          style="width:390px;height:100%;border:none;display:block;transform-origin:top left;transform:scale(0.96);margin-left:-8px"
+          id="mob-iframe"
+          onload="syncMobIframe(this)">
+        </iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function syncMobIframe(f) {
+  try {
+    var d = f.contentDocument;
+    if (!d) return;
+    // Navigations im iframe sollen im iframe bleiben
+    d.addEventListener('click', function(e) {
+      var a = e.target.closest('a[href]');
+      if (!a) return;
+      var href = a.getAttribute('href');
+      if (href && !href.startsWith('#') && !href.startsWith('javascript') && !a.target) {
+        e.preventDefault();
+        f.src = href + (href.includes('?') ? '&' : '?') + 'mob_inner=1';
+      }
+    });
+  } catch(e) {}
+}
+</script>
+{% endif %}
 {% endif %}
 
 <header class="header">
