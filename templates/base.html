@@ -274,7 +274,16 @@
   </a>
   <nav class="sa-nav">
     <a href="{{ url_for('sa_home') }}" class="sa-nav-item">Home</a>
-    <a href="{{ url_for('sa_dashboard') }}" class="sa-nav-item">Entities und Nutzer</a>
+    <div>
+      <button class="sa-nav-group-btn open" onclick="toggleSaGroup(this)">
+        Nutzerverwaltung <span class="chevron">▼</span>
+      </button>
+      <div class="sa-nav-sub open">
+        <a href="{{ url_for('sa_dashboard') }}">Entities &amp; Nutzer</a>
+        <a href="{{ url_for('sa_default_setup') }}">Default Entity Setup</a>
+      </div>
+    </div>
+    <a href="#" class="sa-nav-item" onclick="event.preventDefault();toggleImpersonate()">Impersonierung</a>
     <div class="sa-nav-sep"></div>
     <a href="{{ url_for('sources') }}" class="sa-nav-item">Quellen</a>
     <div>
@@ -297,14 +306,19 @@
         <a href="{{ url_for('signal_match') }}">MATCH</a>
         <a href="{{ url_for('signal_final') }}">FINAL</a>
         <a href="{{ url_for('signal_archive') }}">Archiv</a>
-        <a href="{{ url_for('dashboard') }}">Dashboard (Vorschau)</a>
       </div>
     </div>
     <div class="sa-nav-sep"></div>
-    <a href="{{ url_for('sa_functions') }}" class="sa-nav-item">Funktionen</a>
-    <a href="{{ url_for('sa_logbook') }}" class="sa-nav-item">Log-Buch</a>
-    <a href="{{ url_for('sa_default_setup') }}" class="sa-nav-item">Default Entity Setup</a>
-    <a href="{{ url_for('sa_settings') }}" class="sa-nav-item">SA-Einstellungen</a>
+    <div>
+      <button class="sa-nav-group-btn" onclick="toggleSaGroup(this)">
+        System <span class="chevron">▼</span>
+      </button>
+      <div class="sa-nav-sub">
+        <a href="{{ url_for('sa_functions') }}">Funktionen</a>
+        <a href="{{ url_for('sa_logbook') }}">Log-Buch</a>
+        <a href="{{ url_for('sa_settings') }}">SA-Einstellungen</a>
+      </div>
+    </div>
   </nav>
   <div class="sa-sidebar-foot">
     <div class="impersonate-wrap">
