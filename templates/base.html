@@ -264,9 +264,9 @@
   </style>
   {% block head %}{% endblock %}
 </head>
-<body{% if session.get("role") == "superadmin" %} class="sa-mode"{% endif %}>
+<body{% if session.get("role") == "superadmin" and not session.get("view_as_entity_id") %} class="sa-mode"{% endif %}>
 
-{% if session.get('role') == 'superadmin' %}
+{% if session.get('role') == 'superadmin' and not session.get('view_as_entity_id') %}
 <aside class="sa-sidebar">
   <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
     <a href="{{ url_for('sa_dashboard') }}" class="sa-sidebar-brand" style="flex:1;border-bottom:none">
@@ -385,23 +385,39 @@
 </div>
 
 <div class="sa-content">
-  {# Topbar with impersonation #}
-  {% if session.get('view_as_entity_id') %}
-  <div class="sa-topbar">
-    <span style="font-size:12px;color:var(--muted)">
-      Ansicht: <strong style="color:var(--text)">{{ (all_entities | selectattr('id','equalto',session.view_as_entity_id) | first or {}).get('name','?') }}</strong>
-      als <strong style="color:var(--text)">{{ session.view_as_role }}</strong>
-    </span>
-    <a href="{{ url_for('view_as_exit') }}" style="font-size:12px;color:var(--navy);font-weight:600">← Superadmin</a>
+{% endif %}{# end: SA and not impersonating #}
+
+{# View-as banner — shown whenever impersonating, outside SA layout #}
+{% if session.get('view_as_entity_id') %}
+{% set _va_entity = (all_entities | selectattr('id','equalto',session.view_as_entity_id) | first or {}) %}
+{% set _mob = request.args.get('mob') == '1' %}
+<div class="view-as-banner">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span>Ansicht: <strong>{{ _va_entity.get('name','?') }}</strong> · {{ session.view_as_role }}</span>
+    <form method="post" action="{{ url_for('view_as') }}" target="_blank" style="display:inline-flex;align-items:center;gap:6px" onclick="event.stopPropagation()">
+      <select name="entity_id_filter" id="va-entity" onchange="filterVaUsers(this.value)" style="font-size:11px;padding:2px 6px;border-radius:4px;border:1px solid #F59E0B;background:rgba(255,255,255,.6);color:#92400E;font-family:inherit;outline:none">
+        <option value="">— Praxis —</option>
+        {% for e in all_entities | sort(attribute='name') %}
+        <option value="{{ e.id }}" {% if e.id == session.view_as_entity_id %}selected{% endif %}>{{ e.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="user_id" id="va-user" required style="font-size:11px;padding:2px 6px;border-radius:4px;border:1px solid #F59E0B;background:rgba(255,255,255,.6);color:#92400E;font-family:inherit;outline:none">
+        <option value="">— Nutzer —</option>
+        {% for u in all_impersonate_users | sort(attribute='name') %}
+        <option value="{{ u.id }}" data-entity="{{ u.entity_id }}" {% if u.id == session.view_as_user_id %}selected{% endif %}>
+          {{ u.name }} ({{ 'Admin' if u.role == 'admin' else 'Nutzer' }})
+        </option>
+        {% endfor %}
+      </select>
+      <button type="submit" style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:4px;border:1px solid #F59E0B;background:rgba(255,255,255,.6);color:#92400E;cursor:pointer;font-family:inherit">Wechseln →</button>
+    </form>
   </div>
-  {% endif %}
-  {# View-as banner when active #}
-  {% if session.get('view_as_entity_id') %}
-  <div class="view-as-banner">
-    <span>Ansicht als <strong>{{ (all_entities | selectattr('id','equalto',session.view_as_entity_id) | first or {}).get('name','?') }}</strong> ({{ session.view_as_role }})</span>
-    <a href="{{ url_for('view_as_exit') }}">Ansicht beenden</a>
+  <div style="display:flex;align-items:center;gap:8px">
+    <a href="{{ request.path }}{% if not _mob %}?mob=1{% endif %}" style="font-size:11px" title="{% if _mob %}Desktop-Ansicht{% else %}Mobil-Vorschau{% endif %}">{% if _mob %}🖥 Desktop{% else %}📱 Mobil{% endif %}</a>
+    <a href="{{ url_for('view_as_exit') }}">← Superadmin</a>
   </div>
-  {% endif %}
+</div>
+{% if _mob %}<style>.header-inner,.dashboard-grid,.signal-grid,.card-grid,main,[role="main"]{max-width:390px!important;}</style>{% endif %}
 {% endif %}
 
 <header class="header">
@@ -489,6 +505,26 @@ function toggleImpersonate() {
   var p = document.getElementById('impersonate-panel');
   if (p) p.classList.toggle('open');
 }
+function filterVaUsers(entityId) {
+  var sel = document.getElementById('va-user');
+  if (!sel) return;
+  if (!sel._allOptions) {
+    sel._allOptions = Array.from(sel.options).map(function(o) {
+      return {value: o.value, text: o.text, entity: o.dataset.entity};
+    });
+  }
+  sel.innerHTML = '';
+  var placeholder = document.createElement('option');
+  placeholder.value = ''; placeholder.text = '— Nutzer —';
+  sel.appendChild(placeholder);
+  sel._allOptions.forEach(function(o) {
+    if (!entityId || o.entity === entityId) {
+      var opt = document.createElement('option');
+      opt.value = o.value; opt.text = o.text; opt.dataset.entity = o.entity;
+      sel.appendChild(opt);
+    }
+  });
+}
 function filterImpUsers(entityId) {
   var sel = document.getElementById('imp-user');
   if (!sel) return;
@@ -546,7 +582,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
 {% endwith %}
 
 {% block content %}{% endblock %}
-{% if session.get('role') == 'superadmin' %}</div>{% endif %}
+{% if session.get('role') == 'superadmin' and not session.get('view_as_entity_id') %}</div>{% endif %}
 
 {% if session.get('role') in ('admin', 'superadmin') %}
 <style>
