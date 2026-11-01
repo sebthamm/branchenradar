@@ -55,6 +55,12 @@ if [ -z "$DEPLOY_TOKEN" ]; then
   exit 1
 fi
 
-curl -s -X POST "http://178.105.170.27/deploy?token=${DEPLOY_TOKEN}"
-echo ""
-echo "Deploy abgeschlossen."
+RESPONSE=$(ssh root@178.105.170.27 "cd /opt/branchenradar && git fetch origin main && git reset --hard origin/main && systemctl restart branchenradar && echo 'OK'" 2>&1)
+
+if echo "$RESPONSE" | grep -q "OK"; then
+  echo "Deploy abgeschlossen."
+else
+  echo "FEHLER beim Deploy:"
+  echo "$RESPONSE"
+  exit 1
+fi
