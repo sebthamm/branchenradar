@@ -684,11 +684,11 @@ function closeTodoModal(e) {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTodoModal(); });
 function setTodoType(type) {
-  document.getElementById('todo-type-hidden').value = type;
-  document.getElementById('tab-task').classList.toggle('active', type === 'task');
-  document.getElementById('tab-fyi').classList.toggle('active',  type === 'fyi');
-  document.getElementById('fyi-recipients-row').style.display = type === 'fyi' ? '' : 'none';
-  document.getElementById('task-assignee-row').style.display  = type === 'task' ? '' : 'none';
+  var h = document.getElementById('todo-type-hidden');       if (h) h.value = type;
+  var tt = document.getElementById('tab-task');              if (tt) tt.classList.toggle('active', type === 'task');
+  var tf = document.getElementById('tab-fyi');               if (tf) tf.classList.toggle('active', type === 'fyi');
+  var fr = document.getElementById('fyi-recipients-row');    if (fr) fr.style.display = type === 'fyi' ? '' : 'none';
+  var ar = document.getElementById('task-assignee-row');     if (ar) ar.style.display = type === 'task' ? '' : 'none';
 }
 function _populateFyiRecipients() {
   var sel = document.getElementById('todo-recipients');
