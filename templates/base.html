@@ -268,12 +268,12 @@
 
 {% if session.get('role') == 'superadmin' %}
 <aside class="sa-sidebar">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-    <a href="{{ url_for('sa_dashboard') }}" class="sa-sidebar-brand" style="flex:1">
+  <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
+    <a href="{{ url_for('sa_dashboard') }}" class="sa-sidebar-brand" style="flex:1;border-bottom:none">
       Ole <span style="font-style:italic">&amp;</span> Joy
       <small>Superadmin</small>
     </a>
-    <button onclick="window.location.reload()" title="Seite neu laden" style="background:none;border:none;cursor:pointer;font-size:15px;color:rgba(255,255,255,.5);padding:4px;line-height:1;transition:color .15s" onmouseover="this.style.color='rgba(255,255,255,.9)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">↻</button>
+    <button onclick="location.reload(true)" title="Hard Refresh (wie Strg+Shift+R)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:0 16px;line-height:1;transition:color .15s;flex-shrink:0" onmouseover="this.style.color='var(--navy)'" onmouseout="this.style.color='var(--muted)'">↻</button>
   </div>
   <nav class="sa-nav">
     <a href="{{ url_for('sa_home') }}" class="sa-nav-item">Home</a>
@@ -286,7 +286,38 @@
         <a href="{{ url_for('sa_default_setup') }}">Default Entity Setup</a>
       </div>
     </div>
-    <a href="#" class="sa-nav-item" onclick="event.preventDefault();event.stopPropagation();toggleImpersonate()">User-Ansicht</a>
+    <div>
+      <button class="sa-nav-group-btn" onclick="toggleSaGroup(this)">
+        User-Ansicht <span class="chevron">▼</span>
+      </button>
+      <div class="sa-nav-sub">
+        <div style="padding:8px 20px 12px">
+          <form method="post" action="{{ url_for('view_as') }}" target="_blank">
+            <div style="margin-bottom:6px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Praxis</div>
+              <select id="imp-entity" onchange="filterImpUsers(this.value)" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;font-size:12px;color:var(--text);outline:none;font-family:inherit">
+                <option value="">— alle —</option>
+                {% for e in all_entities | sort(attribute='name') %}
+                <option value="{{ e.id }}">{{ e.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Nutzer</div>
+              <select name="user_id" id="imp-user" required style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;font-size:12px;color:var(--text);outline:none;font-family:inherit">
+                <option value="">— bitte wählen —</option>
+                {% for u in all_impersonate_users | sort(attribute='name') %}
+                <option value="{{ u.id }}" data-entity="{{ u.entity_id }}">
+                  {{ u.name }} ({{ 'Admin' if u.role == 'admin' else 'Nutzer' }})
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit" style="width:100%;padding:6px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Ansicht öffnen →</button>
+          </form>
+        </div>
+      </div>
+    </div>
     <div class="sa-nav-sep"></div>
     <a href="{{ url_for('sources') }}" class="sa-nav-item">Quellen</a>
     <div>
@@ -324,30 +355,9 @@
     </div>
   </nav>
   <div class="sa-sidebar-foot">
-    <div class="impersonate-wrap">
+    <div>
       {% set initials = (session.name or 'SA')[:2].upper() %}
-      <button class="initials-btn" title="{{ session.name or 'Superadmin' }}">{{ initials }}</button>
-      <div class="impersonate-panel" id="impersonate-panel">
-        <form method="post" action="{{ url_for('view_as') }}" target="_blank">
-          <label>Praxis</label>
-          <select id="imp-entity" onchange="filterImpUsers(this.value)">
-            <option value="">— alle —</option>
-            {% for e in all_entities | sort(attribute='name') %}
-            <option value="{{ e.id }}">{{ e.name }}</option>
-            {% endfor %}
-          </select>
-          <label>Nutzer</label>
-          <select name="user_id" id="imp-user" required>
-            <option value="">— bitte wählen —</option>
-            {% for u in all_impersonate_users | sort(attribute='name') %}
-            <option value="{{ u.id }}" data-entity="{{ u.entity_id }}">
-              {{ u.name }} ({{ 'Admin' if u.role == 'admin' else 'Nutzer' }})
-            </option>
-            {% endfor %}
-          </select>
-          <button type="submit" class="impersonate-submit">Ansicht öffnen →</button>
-        </form>
-      </div>
+      <span class="initials-btn" style="cursor:default" title="{{ session.name or 'Superadmin' }}">{{ initials }}</span>
     </div>
     <div style="display:flex;align-items:center">
       {% if session.role == "superadmin" %}
