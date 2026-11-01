@@ -1081,6 +1081,11 @@ def signal_extended(sig_id):
 
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
+        cfg_path = os.path.join(os.path.dirname(__file__), "agent_configs.json")
+        if os.path.exists(cfg_path):
+            with open(cfg_path, encoding="utf-8") as fh:
+                api_key = json.load(fh).get("anthropic_api_key", "")
+    if not api_key:
         return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt"}), 500
 
     import anthropic
