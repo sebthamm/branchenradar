@@ -179,6 +179,14 @@
   .card-detail p { margin: 0 0 10px; white-space: pre-wrap; }
   .card-detail .detail-row { display: flex; gap: 6px; align-items: baseline; font-size: 12px; margin-top: 8px; }
   .card-detail .detail-row strong { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .extended-wrap { margin-top: 8px; }
+  .extended-btn { background: none; border: none; padding: 0; font-size: 12px; font-weight: 600; color: var(--navy); cursor: pointer; font-family: inherit; opacity: .8; transition: opacity .15s; }
+  .extended-btn:hover { opacity: 1; }
+  .extended-btn.loading { color: var(--muted); cursor: default; }
+  .extended-body { display: none; font-size: 13px; color: var(--muted); line-height: 1.65; padding-top: 10px; border-top: 1px solid var(--border); margin-top: 6px; }
+  .extended-body.open { display: block; }
+  .extended-body p { margin: 0 0 8px; }
+  .extended-body strong { color: var(--text); font-weight: 700; }
   .src-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .src-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 5px; white-space: nowrap; text-decoration: none; transition: opacity .12s; }
   .src-chip-link { color: var(--navy); background: rgba(0,50,120,.07); border: 1px solid rgba(0,50,120,.15); }
@@ -432,6 +440,16 @@
 
       <div class="card-detail">
         {% if s.get('detail') %}<p>{{ s.detail }}</p>{% endif %}
+
+        <div class="extended-wrap" data-sig-id="{{ s.id }}">
+          {% if s.get('detail_extended') %}
+          <div class="extended-body open">{{ s.detail_extended | replace('\n\n', '</p><p>') | replace('\n', '<br>') | safe }}</div>
+          {% else %}
+          <div class="extended-body"></div>
+          <button class="extended-btn" onclick="event.stopPropagation();loadExtended(this)">Mehr dazu →</button>
+          {% endif %}
+        </div>
+
         {% if s.get('betroffene_rollen') %}
         <div class="detail-row"><strong>Betroffene Rollen:</strong> <span>{{ s.betroffene_rollen | join(', ') }}</span></div>
         {% endif %}
@@ -566,6 +584,28 @@ function openTodoFromCard(btn) {
   var title = card.querySelector('.card-title') ? card.querySelector('.card-title').textContent.trim() : '';
   var varianten = card.dataset.varianten || null;
   openTodoModal(sigId, title, window.location.href, varianten);
+}
+function loadExtended(btn) {
+  var wrap = btn.closest('.extended-wrap');
+  var sigId = wrap.dataset.sigId;
+  var body = wrap.querySelector('.extended-body');
+  btn.textContent = 'Wird geladen …';
+  btn.classList.add('loading');
+  btn.disabled = true;
+  fetch('/signal/' + sigId + '/extended')
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (!d.ok) { btn.textContent = 'Fehler – erneut versuchen'; btn.classList.remove('loading'); btn.disabled = false; return; }
+      // render markdown-like bold: **text** → <strong>text</strong>
+      var html = d.text
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+      body.innerHTML = '<p>' + html + '</p>';
+      body.classList.add('open');
+      btn.remove();
+    })
+    .catch(function(){ btn.textContent = 'Fehler – erneut versuchen'; btn.classList.remove('loading'); btn.disabled = false; });
 }
 function toggleCard(card) {
   if (card.querySelector('.card-detail')) card.classList.toggle('open');

@@ -1060,6 +1060,79 @@ def signal_set_prio(sig_id):
     save_prio_overrides(overrides)
     return redirect(request.form.get("next") or url_for("dashboard"))
 
+@app.route("/signal/<sig_id>/extended", methods=["GET"])
+@role_required("admin", "superadmin")
+def signal_extended(sig_id):
+    signals = load_signals()
+    sig = next((s for s in signals if s["id"] == sig_id), None)
+    if not sig:
+        return jsonify({"ok": False, "error": "Signal nicht gefunden"}), 404
+
+    # Cache: already generated?
+    if sig.get("detail_extended"):
+        return jsonify({"ok": True, "text": sig["detail_extended"], "cached": True})
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "ANTHROPIC_API_KEY nicht gesetzt"}), 500
+
+    import anthropic
+    client = anthropic.Anthropic(api_key=api_key)
+
+    sources_text = ""
+    for src in sig.get("sources", []):
+        if src.get("name"):
+            sources_text += f"- {src['name']}"
+            if src.get("url"): sources_text += f" ({src['url']})"
+            sources_text += "\n"
+
+    prompt = f"""Du bist Assistent für inhabergeführte Zahnarztpraxen in Deutschland. Eine Praxisinhaberin mit 6–10 Mitarbeitern hat keine Zeit, Originaldokumente zu lesen. Erkläre ihr das folgende Signal in einer erweiterten, praxisnahen Zusammenfassung.
+
+SIGNAL:
+Titel: {sig.get('title', '')}
+Kurzbeschreibung: {sig.get('summary', '')}
+Detailtext: {sig.get('detail', '')}
+Quellen: {sources_text or '(keine angegeben)'}
+
+Beantworte folgende fünf Punkte kompakt und direkt, ohne Einleitung:
+
+**Was ändert sich konkret?**
+(Die operative Konsequenz, nicht die politische Ankündigung)
+
+**Wen betrifft es wirklich?**
+(Alle Praxen? Bestimmte Größen, Rechtsformen, Fachrichtungen?)
+
+**Welcher Handlungsspielraum besteht?**
+(Ausnahmen, Übergangsfristen, Alternativen)
+
+**Was passiert bei Nichtstun?**
+(Konkrete Konsequenz, nicht abstrakt)
+
+**Hintergrund in einem Satz**
+(Warum wurde das beschlossen, was war der Auslöser?)
+
+Schreibe klar, direkt und ohne Fachjargon. Maximal 300 Wörter gesamt."""
+
+    try:
+        message = client.messages.create(
+            model="claude-haiku-5-5",
+            max_tokens=600,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        text = message.content[0].text
+
+        # Cache in signal JSON
+        for s in signals:
+            if s["id"] == sig_id:
+                s["detail_extended"] = text
+                break
+        save_signals(signals)
+
+        return jsonify({"ok": True, "text": text, "cached": False})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
 @app.route("/signal/<sig_id>/entity-toggle-hidden", methods=["POST"])
 @role_required("admin", "superadmin")
 def signal_entity_toggle_hidden(sig_id):
