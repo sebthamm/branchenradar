@@ -187,8 +187,6 @@
   .src-chip-arrow { font-size: 9px; opacity: .7; }
 
   .card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
-  .card-source { display: none; font-size: 11px; color: var(--faint); }
-  .card.open .card-source { display: block; }
   .card-foot-right { display: flex; align-items: center; gap: 8px; }
 
   /* Welcome-Banner */
@@ -447,7 +445,7 @@
       {% endif %}
 
       <div class="card-foot">
-        <span class="card-source">{{ s.get('sources', [{}])[0].get('name', '') }}</span>
+
         <div class="card-foot-right">
           {% if session.get('role') in ('admin', 'superadmin') %}
           {% if session.get('role') == 'superadmin' %}
