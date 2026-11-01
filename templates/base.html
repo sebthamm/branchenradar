@@ -454,6 +454,9 @@ function syncMobIframe(f) {
 {% endif %}
 {% endif %}
 
+{# Bei mob=1 in der Impersonierungsansicht: nur Banner + iframe, kein normaler Seiteninhalt #}
+{% set _mob_active = session.get('view_as_entity_id') and request.args.get('mob') == '1' and not request.args.get('mob_inner') %}
+{% if not _mob_active %}
 <header class="header">
   <div class="header-inner">
     <div>
@@ -617,6 +620,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
 
 {% block content %}{% endblock %}
 {% if session.get('role') == 'superadmin' and not session.get('view_as_entity_id') %}</div>{% endif %}
+{% endif %}{# end: not _mob_active #}
 
 {% if session.get('role') in ('admin', 'superadmin') %}
 <style>
