@@ -325,7 +325,7 @@
       {% set initials = (session.name or 'SA')[:2].upper() %}
       <button class="initials-btn" onclick="toggleImpersonate()" title="Als Nutzer anzeigen">{{ initials }}</button>
       <div class="impersonate-panel" id="impersonate-panel">
-        <form method="post" action="{{ url_for('view_as') }}">
+        <form method="post" action="{{ url_for('view_as') }}" target="_blank">
           <label>Praxis</label>
           <select id="imp-entity" onchange="filterImpUsers(this.value)">
             <option value="">— alle —</option>
