@@ -286,7 +286,7 @@
         <a href="{{ url_for('sa_default_setup') }}">Default Entity Setup</a>
       </div>
     </div>
-    <a href="#" class="sa-nav-item" onclick="event.preventDefault();toggleImpersonate()">User-Ansicht</a>
+    <a href="#" class="sa-nav-item" onclick="event.preventDefault();event.stopPropagation();toggleImpersonate()">User-Ansicht</a>
     <div class="sa-nav-sep"></div>
     <a href="{{ url_for('sources') }}" class="sa-nav-item">Quellen</a>
     <div>
