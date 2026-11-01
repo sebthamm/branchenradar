@@ -417,7 +417,15 @@
     <a href="{{ url_for('view_as_exit') }}">← Superadmin</a>
   </div>
 </div>
-{% if _mob %}<style>.header-inner,.dashboard-grid,.signal-grid,.card-grid,main,[role="main"]{max-width:390px!important;}</style>{% endif %}
+{% if _mob %}<script>
+(function(){
+  var m = document.createElement('meta');
+  m.name='viewport'; m.content='width=390,initial-scale=1';
+  var existing = document.querySelector('meta[name="viewport"]');
+  if(existing) existing.replaceWith(m); else document.head.appendChild(m);
+  document.body.classList.add('mob-preview');
+})();
+</script>{% endif %}
 {% endif %}
 
 <header class="header">
