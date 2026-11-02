@@ -1118,6 +1118,15 @@
             </div>
           </div>
         </div>
+        <div class="nils-props-toggle" onclick="toggleAgentPerf('fred')" style="border-top:1px solid var(--border)">
+          <span>Fred Performance Review</span>
+          <span class="nils-props-arrow" id="fred-perf-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="fred-perf-panel">
+          <div id="fred-perf-body" style="padding:20px 24px">
+            <div style="color:var(--faint);font-size:13px;font-style:italic">Wird geladen&#x2026;</div>
+          </div>
+        </div>
         <div class="nils-props-toggle" onclick="toggleFredSched()">
           <span>Dann arbeitet Fred <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
           <span class="nils-props-arrow" id="fred-sched-arrow">&#9658;</span>
@@ -1404,6 +1413,15 @@
             </div>
           </div>
         </div>
+        <div class="nils-props-toggle" onclick="toggleAgentPerf('finn')" style="border-top:1px solid var(--border)">
+          <span>Finn Performance Review</span>
+          <span class="nils-props-arrow" id="finn-perf-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="finn-perf-panel">
+          <div id="finn-perf-body" style="padding:20px 24px">
+            <div style="color:var(--faint);font-size:13px;font-style:italic">Wird geladen&#x2026;</div>
+          </div>
+        </div>
         <div class="nils-props-toggle" onclick="toggleFinnSched()">
           <span>Dann arbeitet Finn <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
           <span class="nils-props-arrow" id="finn-sched-arrow">&#9658;</span>
@@ -1523,6 +1541,15 @@
               <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt f&#252;r alle Such-Agenten</span></div>
               <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten (Finn) konfiguriert.</div>
             </div>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleAgentPerf('mats')" style="border-top:1px solid var(--border)">
+          <span>Mats Performance Review</span>
+          <span class="nils-props-arrow" id="mats-perf-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="mats-perf-panel">
+          <div id="mats-perf-body" style="padding:20px 24px">
+            <div style="color:var(--faint);font-size:13px;font-style:italic">Wird geladen&#x2026;</div>
           </div>
         </div>
         <div class="nils-props-toggle" onclick="toggleMatsSched()">
@@ -1650,6 +1677,15 @@
               <div class="section-label"><span style="font-weight:400;font-size:10px;color:var(--faint)">gilt f&#252;r alle Such-Agenten</span></div>
               <div class="section-text placeholder">&#8594; Ausgabeformat wird beim Scrape-Agenten (Finn) konfiguriert.</div>
             </div>
+          </div>
+        </div>
+        <div class="nils-props-toggle" onclick="toggleAgentPerf('lena')" style="border-top:1px solid var(--border)">
+          <span>Lena Performance Review</span>
+          <span class="nils-props-arrow" id="lena-perf-arrow">&#9658;</span>
+        </div>
+        <div class="nils-props-panel" id="lena-perf-panel">
+          <div id="lena-perf-body" style="padding:20px 24px">
+            <div style="color:var(--faint);font-size:13px;font-style:italic">Wird geladen&#x2026;</div>
           </div>
         </div>
         <div class="nils-props-toggle" onclick="toggleLenaSched()">
@@ -1802,6 +1838,15 @@
           {{ section('group', 'output_format', 'Ausgabeformat', theo_ag.get('output_format', ''), 'border-right:none') }}
         </div>
       </div>
+      <div class="nils-props-toggle" onclick="toggleAgentPerf('theo')" style="border-top:1px solid var(--border)">
+        <span>Theo Performance Review</span>
+        <span class="nils-props-arrow" id="theo-perf-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="theo-perf-panel">
+        <div id="theo-perf-body" style="padding:20px 24px">
+          <div style="color:var(--faint);font-size:13px;font-style:italic">Wird geladen&#x2026;</div>
+        </div>
+      </div>
       <div class="nils-props-toggle" onclick="toggleTheoSched()">
         <span>Dann arbeitet Theo <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
         <span class="nils-props-arrow" id="theo-sched-arrow">&#9658;</span>
@@ -1916,6 +1961,15 @@
           {{ section('bewertung', 'method',  'Methode',           ida_ag.method) }}
           {{ section('bewertung', 'hint',    'Globale Hinweise',  ida_ag.hint, 'border-right:none') }}
           {{ section('bewertung', 'output_format', 'Ausgabeformat', ida_ag.get('output_format', ''), 'border-right:none') }}
+        </div>
+      </div>
+      <div class="nils-props-toggle" onclick="toggleAgentPerf('ida')" style="border-top:1px solid var(--border)">
+        <span>Ida Performance Review</span>
+        <span class="nils-props-arrow" id="ida-perf-arrow">&#9658;</span>
+      </div>
+      <div class="nils-props-panel" id="ida-perf-panel">
+        <div id="ida-perf-body" style="padding:20px 24px">
+          <div style="color:var(--faint);font-size:13px;font-style:italic">Wird geladen&#x2026;</div>
         </div>
       </div>
       <div class="nils-props-toggle" onclick="toggleIdaSched()">
@@ -3535,6 +3589,113 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAgentSched('mats','pdf');
     loadAgentSched('lena','search');
 });
+
+// ── Generic Performance Review ──────────────────────────────────────────────
+const _perfLoaded = {};
+
+function toggleAgentPerf(name) {
+  const panel = document.getElementById(name + '-perf-panel');
+  const arrow = document.getElementById(name + '-perf-arrow');
+  if (!panel) return;
+  const open = panel.classList.toggle('open');
+  arrow && arrow.classList.toggle('open', open);
+  if (open && !_perfLoaded[name]) {
+    _perfLoaded[name] = true;
+    _loadAgentPerf(name);
+  }
+}
+
+async function _loadAgentPerf(name) {
+  const body = document.getElementById(name + '-perf-body');
+  if (!body) return;
+  try {
+    const r = await fetch('/admin/' + name + '/report');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    const hist = d.history || [];
+    const last = d.last_run || {};
+
+    // Determine columns based on agent type
+    const isFetcher = ['frank','fletcher','fred','finn'].includes(name);
+    const isTheo    = name === 'theo';
+    const isIda     = name === 'ida';
+
+    let html = '';
+
+    // Last run summary
+    if (last.run_at) {
+      html += `<div style="font-size:12px;color:var(--muted);margin-bottom:16px">Letzter Lauf: <strong>${last.run_at}</strong></div>`;
+    }
+
+    // KPI tiles
+    let tiles = [];
+    if (isFetcher) {
+      tiles = [
+        ['Geprüfte Quellen', last.sources_checked ?? '—'],
+        ['Neue Einträge', last.new_entries_total ?? '—'],
+        ['Fehler', last.sources_error ?? '—'],
+      ];
+    } else if (isTheo) {
+      const ms = d.match_state || {};
+      tiles = [
+        ['Gruppen', ms.groups_total ?? '—'],
+        ['Einzelsignale', ms.singles_total ?? '—'],
+        ['Ø Gruppengröße', ms.avg_group_size ?? '—'],
+      ];
+    } else if (isIda) {
+      const ss = d.signal_state || {};
+      const p = ss.priority || {};
+      tiles = [
+        ['Signale gesamt', ss.total ?? '—'],
+        ['MUSS', p['MUSS'] ?? '—'],
+        ['NEU / UPDATE', (ss.rep_status?.NEU ?? 0) + ' / ' + (ss.rep_status?.UPDATE ?? 0)],
+      ];
+    } else {
+      tiles = [
+        ['Neue Einträge', last.new_entries_total ?? '—'],
+        ['Quellen OK', last.sources_ok ?? '—'],
+        ['Fehler', last.sources_error ?? '—'],
+      ];
+    }
+    if (tiles.length) {
+      html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:20px">`;
+      for (const [label, val] of tiles) {
+        html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${label}</div>
+          <div style="font-size:20px;font-weight:700;color:var(--text)">${val}</div>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+
+    // History table
+    if (hist.length) {
+      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Letzte Läufe</div>`;
+      html += `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--surface2);text-align:left">
+          <th style="padding:6px 10px;border-bottom:1px solid var(--border)">Datum</th>
+          <th style="padding:6px 10px;border-bottom:1px solid var(--border);text-align:right">Neue Einträge</th>
+          <th style="padding:6px 10px;border-bottom:1px solid var(--border);text-align:right">Geprüft</th>
+          <th style="padding:6px 10px;border-bottom:1px solid var(--border);text-align:right">Fehler</th>
+        </tr></thead><tbody>`;
+      for (const row of hist) {
+        html += `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:5px 10px">${row.run_at || '—'}</td>
+          <td style="padding:5px 10px;text-align:right">${row.new_entries_total ?? '—'}</td>
+          <td style="padding:5px 10px;text-align:right">${row.sources_checked ?? row.pdfs_checked ?? '—'}</td>
+          <td style="padding:5px 10px;text-align:right">${row.sources_error ?? '—'}</td>
+        </tr>`;
+      }
+      html += `</tbody></table></div>`;
+    } else {
+      html += `<div style="color:var(--faint);font-size:12px;font-style:italic">Noch keine Lauf-Historie vorhanden.</div>`;
+    }
+
+    body.innerHTML = html;
+  } catch(e) {
+    body.innerHTML = `<div style="color:var(--error,#e55);font-size:12px">Fehler beim Laden: ${e.message}</div>`;
+  }
+}
 
 </script>
 

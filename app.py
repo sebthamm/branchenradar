@@ -2144,6 +2144,10 @@ NILS_HISTORY_FILE    = os.path.join(DATA_DIR, "nils_history.json")
 SOL_HISTORY_FILE      = os.path.join(DATA_DIR, "sol_history.json")
 FLETCHER_HISTORY_FILE = os.path.join(DATA_DIR, "fletcher_history.json")
 FRANK_HISTORY_FILE    = os.path.join(DATA_DIR, "frank_history.json")
+FRED_HISTORY_FILE     = os.path.join(DATA_DIR, "fred_history.json")
+FINN_HISTORY_FILE     = os.path.join(DATA_DIR, "finn_history.json")
+MATS_HISTORY_FILE     = os.path.join(DATA_DIR, "mats_history.json")
+LENA_HISTORY_FILE     = os.path.join(DATA_DIR, "lena_history.json")
 
 def _load_history(path, limit=50):
     if not os.path.exists(path):
@@ -2165,6 +2169,26 @@ def fletcher_history():
 @role_required("superadmin")
 def frank_history():
     return jsonify(_load_history(FRANK_HISTORY_FILE))
+
+@app.route("/admin/fred/history")
+@role_required("superadmin")
+def fred_history():
+    return jsonify(_load_history(FRED_HISTORY_FILE))
+
+@app.route("/admin/finn/history")
+@role_required("superadmin")
+def finn_history():
+    return jsonify(_load_history(FINN_HISTORY_FILE))
+
+@app.route("/admin/mats/history")
+@role_required("superadmin")
+def mats_history():
+    return jsonify(_load_history(MATS_HISTORY_FILE))
+
+@app.route("/admin/lena/history")
+@role_required("superadmin")
+def lena_history():
+    return jsonify(_load_history(LENA_HISTORY_FILE))
 
 @app.route("/admin/sol/insights", methods=["POST"])
 @role_required("superadmin")
@@ -2632,6 +2656,19 @@ def _fred_scheduled_job():
             fetcher_feed.run_ai_analysis(cfg.get("agents", {}).get("feed", {}), api_key)
     _run_ai_agent(_run, "Fred")
     import logging; log = logging.getLogger("Fred")
+    try:
+        _status_data = {}
+        if os.path.exists(FETCHER_FEED_OUTPUT):
+            _status_data = json.load(open(FETCHER_FEED_OUTPUT, encoding="utf-8"))
+        _append_agent_history(FRED_HISTORY_FILE, {
+            "run_at": _status_data.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+            "new_entries_total": _status_data.get("new_entries_total", 0),
+            "sources_checked": _status_data.get("sources_checked", 0),
+            "sources_ok": _status_data.get("sources_ok", 0),
+            "sources_error": _status_data.get("sources_error", 0),
+        })
+    except Exception as _he:
+        log.error("Fred history write failed: %s", _he)
     _mark_done('fred')
     try:
         cfg2 = load_agent_configs()
@@ -2667,6 +2704,19 @@ def _finn_scheduled_job():
     _run_ai_agent(_run, "Finn")
     # After Finn: trigger Theo (after_finn or after_fred_and_finn join)
     import logging; log2 = logging.getLogger("Finn")
+    try:
+        _status_data = {}
+        if os.path.exists(FETCHER_SCRAPE_OUTPUT):
+            _status_data = json.load(open(FETCHER_SCRAPE_OUTPUT, encoding="utf-8"))
+        _append_agent_history(FINN_HISTORY_FILE, {
+            "run_at": _status_data.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+            "new_entries_total": _status_data.get("new_entries_total", 0),
+            "sources_checked": _status_data.get("sources_checked", 0),
+            "sources_ok": _status_data.get("sources_ok", 0),
+            "sources_error": _status_data.get("sources_error", 0),
+        })
+    except Exception as _he:
+        log2.error("Finn history write failed: %s", _he)
     _mark_done('finn')
     try:
         cfg2 = load_agent_configs()
@@ -2812,6 +2862,20 @@ def _mats_scheduled_job():
                 log.error("Mats scheduled run failed: %s", e)
         _run_ai_agent(_run, "Mats")
         import logging; log_m = logging.getLogger("Mats")
+        try:
+            _mats_status = {}
+            _mats_pdf_file = os.path.join(DATA_DIR, "pdf_runner_latest.json")
+            if os.path.exists(_mats_pdf_file):
+                _mats_status = json.load(open(_mats_pdf_file, encoding="utf-8"))
+            _append_agent_history(MATS_HISTORY_FILE, {
+                "run_at": _mats_status.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+                "pdfs_checked": _mats_status.get("pdfs_checked", 0),
+                "new_entries_total": _mats_status.get("new_entries_total", 0),
+                "sources_ok": _mats_status.get("sources_ok", 0),
+                "sources_error": _mats_status.get("sources_error", 0),
+            })
+        except Exception as _he:
+            log_m.error("Mats history write failed: %s", _he)
         _mark_done('mats')
         try:
             cfg2 = load_agent_configs()
@@ -2874,6 +2938,20 @@ def _lena_scheduled_job():
                 log.error("Lena scheduled run failed: %s", e)
         _run_ai_agent(_run, "Lena")
         import logging; log_l = logging.getLogger("Lena")
+        try:
+            _lena_status = {}
+            _lena_search_file = os.path.join(DATA_DIR, "search_runner_latest.json")
+            if os.path.exists(_lena_search_file):
+                _lena_status = json.load(open(_lena_search_file, encoding="utf-8"))
+            _append_agent_history(LENA_HISTORY_FILE, {
+                "run_at": _lena_status.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+                "new_entries_total": _lena_status.get("new_entries_total", 0),
+                "sources_checked": _lena_status.get("sources_checked", 0),
+                "sources_ok": _lena_status.get("sources_ok", 0),
+                "sources_error": _lena_status.get("sources_error", 0),
+            })
+        except Exception as _he:
+            log_l.error("Lena history write failed: %s", _he)
         _mark_done('lena')
         try:
             cfg2 = load_agent_configs()
@@ -3523,6 +3601,48 @@ def ida_report():
         "last_run": status,
         "history":  ida_history,
     })
+
+@app.route("/admin/fred/report")
+@role_required("superadmin")
+def fred_report():
+    history = _load_history(FRED_HISTORY_FILE)
+    last_run = {}
+    if os.path.exists(FETCHER_FEED_OUTPUT):
+        with open(FETCHER_FEED_OUTPUT, encoding="utf-8") as f:
+            last_run = json.load(f)
+    return jsonify({"last_run": last_run, "history": history[:10]})
+
+@app.route("/admin/finn/report")
+@role_required("superadmin")
+def finn_report():
+    history = _load_history(FINN_HISTORY_FILE)
+    last_run = {}
+    if os.path.exists(FETCHER_SCRAPE_OUTPUT):
+        with open(FETCHER_SCRAPE_OUTPUT, encoding="utf-8") as f:
+            last_run = json.load(f)
+    return jsonify({"last_run": last_run, "history": history[:10]})
+
+@app.route("/admin/mats/report")
+@role_required("superadmin")
+def mats_report():
+    history = _load_history(MATS_HISTORY_FILE)
+    last_run = {}
+    mats_file = os.path.join(DATA_DIR, "pdf_runner_latest.json")
+    if os.path.exists(mats_file):
+        with open(mats_file, encoding="utf-8") as f:
+            last_run = json.load(f)
+    return jsonify({"last_run": last_run, "history": history[:10]})
+
+@app.route("/admin/lena/report")
+@role_required("superadmin")
+def lena_report():
+    history = _load_history(LENA_HISTORY_FILE)
+    last_run = {}
+    lena_file = os.path.join(DATA_DIR, "search_runner_latest.json")
+    if os.path.exists(lena_file):
+        with open(lena_file, encoding="utf-8") as f:
+            last_run = json.load(f)
+    return jsonify({"last_run": last_run, "history": history[:10]})
 
 # ── Theo (group/match agent) ──────────────────────────────────────────────────
 
