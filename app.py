@@ -2315,6 +2315,23 @@ from apscheduler.triggers.cron import CronTrigger
 _scheduler = BackgroundScheduler(timezone="Europe/Berlin")
 _scheduler.start()
 
+import fcntl as _fcntl
+import contextlib as _contextlib
+
+@_contextlib.contextmanager
+def _job_lock(name):
+    """File-based lock so only one gunicorn worker runs a given scheduled job."""
+    lock_path = os.path.join(DATA_DIR, f".lock_{name}")
+    with open(lock_path, "w") as _lf:
+        try:
+            _fcntl.flock(_lf, _fcntl.LOCK_EX | _fcntl.LOCK_NB)
+        except OSError:
+            return  # another worker already holds the lock — skip silently
+        try:
+            yield
+        finally:
+            _fcntl.flock(_lf, _fcntl.LOCK_UN)
+
 def _sol_scheduled_job():
     """Called by APScheduler or triggered after Nils/Maja — runs selector_finder."""
     import importlib.util, logging, sys
@@ -2419,6 +2436,10 @@ def _nils_scheduled_job():
     """Called by APScheduler — runs nils_runner.py for automated source research."""
     import importlib.util, logging, sys
     log = logging.getLogger("nils_runner")
+    with _job_lock("nils"):
+        _nils_scheduled_job_inner(log)
+
+def _nils_scheduled_job_inner(log):
     runner_path = os.path.join(os.path.dirname(__file__), "nils_runner.py")
     if not os.path.exists(runner_path):
         log.error("nils_runner.py not found at %s", runner_path)
@@ -2677,24 +2698,25 @@ def _finn_scheduled_job():
 def _fletcher_scheduled_job():
     import logging, importlib
     log = logging.getLogger("Fletcher")
-    try:
-        import fetcher_feed
-        importlib.reload(fetcher_feed)
-        fetcher_feed.run()
-        log.info("Fletcher scheduled run completed")
-    except Exception as e:
-        log.error("Fletcher scheduled run failed: %s", e)
-        return
-    # Trigger Fred if configured after_fletcher
-    try:
-        cfg2 = load_agent_configs()
-        fred = cfg2.get("agents", {}).get("feed", {})
-        if fred.get("schedule_enabled") and fred.get("trigger_mode") == "after_fletcher":
-            t = _sched_threading.Thread(target=_fred_scheduled_job, daemon=True)
-            t.start()
-            log.info("Fred triggered after Fletcher")
-    except Exception as e:
-        log.error("Failed to trigger Fred after Fletcher: %s", e)
+    with _job_lock("fletcher"):
+        try:
+            import fetcher_feed
+            importlib.reload(fetcher_feed)
+            fetcher_feed.run()
+            log.info("Fletcher scheduled run completed")
+        except Exception as e:
+            log.error("Fletcher scheduled run failed: %s", e)
+            return
+        # Trigger Fred if configured after_fletcher
+        try:
+            cfg2 = load_agent_configs()
+            fred = cfg2.get("agents", {}).get("feed", {})
+            if fred.get("schedule_enabled") and fred.get("trigger_mode") == "after_fletcher":
+                t = _sched_threading.Thread(target=_fred_scheduled_job, daemon=True)
+                t.start()
+                log.info("Fred triggered after Fletcher")
+        except Exception as e:
+            log.error("Failed to trigger Fred after Fletcher: %s", e)
 
 def _apply_fletcher_schedule(cfg):
     fl = cfg.get("agents", {}).get("fletcher_feed", {})
@@ -2725,24 +2747,25 @@ def _apply_fletcher_schedule(cfg):
 def _frank_scheduled_job():
     import logging, importlib
     log = logging.getLogger("Frank")
-    try:
-        import fetcher_scrape
-        importlib.reload(fetcher_scrape)
-        fetcher_scrape.run()
-        log.info("Frank scheduled run completed")
-    except Exception as e:
-        log.error("Frank scheduled run failed: %s", e)
-        return
-    # Trigger Finn if configured after_frank
-    try:
-        cfg2 = load_agent_configs()
-        finn = cfg2.get("agents", {}).get("scrape", {})
-        if finn.get("schedule_enabled") and finn.get("trigger_mode") == "after_frank":
-            t = _sched_threading.Thread(target=_finn_scheduled_job, daemon=True)
-            t.start()
-            log.info("Finn triggered after Frank")
-    except Exception as e:
-        log.error("Failed to trigger Finn after Frank: %s", e)
+    with _job_lock("frank"):
+        try:
+            import fetcher_scrape
+            importlib.reload(fetcher_scrape)
+            fetcher_scrape.run()
+            log.info("Frank scheduled run completed")
+        except Exception as e:
+            log.error("Frank scheduled run failed: %s", e)
+            return
+        # Trigger Finn if configured after_frank
+        try:
+            cfg2 = load_agent_configs()
+            finn = cfg2.get("agents", {}).get("scrape", {})
+            if finn.get("schedule_enabled") and finn.get("trigger_mode") == "after_frank":
+                t = _sched_threading.Thread(target=_finn_scheduled_job, daemon=True)
+                t.start()
+                log.info("Finn triggered after Frank")
+        except Exception as e:
+            log.error("Failed to trigger Finn after Frank: %s", e)
 
 def _apply_frank_schedule(cfg):
     fr = cfg.get("agents", {}).get("frank_scrape", {})
@@ -2771,37 +2794,38 @@ def _apply_frank_schedule(cfg):
 
 # ── Mats (PDF-AI) ────────────────────────────────────────────────────────────
 def _mats_scheduled_job():
-    def _run():
-        import pdf_runner, importlib, logging
-        log = logging.getLogger("Mats")
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if not api_key:
-            log.warning("ANTHROPIC_API_KEY not set — skipping Mats")
-            return
+    with _job_lock("mats"):
+        def _run():
+            import pdf_runner, importlib, logging
+            log = logging.getLogger("Mats")
+            api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+            if not api_key:
+                log.warning("ANTHROPIC_API_KEY not set — skipping Mats")
+                return
+            try:
+                importlib.reload(pdf_runner)
+                pdf_runner.run()
+                log.info("Mats scheduled run completed")
+            except ImportError:
+                log.warning("pdf_runner.py not found — skipping")
+            except Exception as e:
+                log.error("Mats scheduled run failed: %s", e)
+        _run_ai_agent(_run, "Mats")
+        import logging; log_m = logging.getLogger("Mats")
+        _mark_done('mats')
         try:
-            importlib.reload(pdf_runner)
-            pdf_runner.run()
-            log.info("Mats scheduled run completed")
-        except ImportError:
-            log.warning("pdf_runner.py not found — skipping")
+            cfg2 = load_agent_configs()
+            theo = cfg2.get("agents", {}).get("group", {})
+            if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_fred_finn_mats_lena":
+                if _all_done('fred', 'finn', 'mats', 'lena'):
+                    for _k in ('fred', 'finn', 'mats', 'lena'):
+                        _completion_flags.pop(_k, None)
+                    _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                    log_m.info("Theo triggered — Fred+Finn+Mats+Lena all done")
+                else:
+                    log_m.info("Mats done, waiting for remaining agents before triggering Theo")
         except Exception as e:
-            log.error("Mats scheduled run failed: %s", e)
-    _run_ai_agent(_run, "Mats")
-    import logging; log_m = logging.getLogger("Mats")
-    _mark_done('mats')
-    try:
-        cfg2 = load_agent_configs()
-        theo = cfg2.get("agents", {}).get("group", {})
-        if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_fred_finn_mats_lena":
-            if _all_done('fred', 'finn', 'mats', 'lena'):
-                for _k in ('fred', 'finn', 'mats', 'lena'):
-                    _completion_flags.pop(_k, None)
-                _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
-                log_m.info("Theo triggered — Fred+Finn+Mats+Lena all done")
-            else:
-                log_m.info("Mats done, waiting for remaining agents before triggering Theo")
-    except Exception as e:
-        log_m.error("Join-check after Mats failed: %s", e)
+            log_m.error("Join-check after Mats failed: %s", e)
 
 def _apply_pdf_schedule(cfg):
     pdf = cfg.get("agents", {}).get("pdf", {})
@@ -2832,37 +2856,38 @@ def _apply_pdf_schedule(cfg):
 
 # ── Lena (Search-AI) ─────────────────────────────────────────────────────────
 def _lena_scheduled_job():
-    def _run():
-        import search_runner, importlib, logging
-        log = logging.getLogger("Lena")
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if not api_key:
-            log.warning("ANTHROPIC_API_KEY not set — skipping Lena")
-            return
+    with _job_lock("lena"):
+        def _run():
+            import search_runner, importlib, logging
+            log = logging.getLogger("Lena")
+            api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+            if not api_key:
+                log.warning("ANTHROPIC_API_KEY not set — skipping Lena")
+                return
+            try:
+                importlib.reload(search_runner)
+                search_runner.run()
+                log.info("Lena scheduled run completed")
+            except ImportError:
+                log.warning("search_runner.py not found — skipping")
+            except Exception as e:
+                log.error("Lena scheduled run failed: %s", e)
+        _run_ai_agent(_run, "Lena")
+        import logging; log_l = logging.getLogger("Lena")
+        _mark_done('lena')
         try:
-            importlib.reload(search_runner)
-            search_runner.run()
-            log.info("Lena scheduled run completed")
-        except ImportError:
-            log.warning("search_runner.py not found — skipping")
+            cfg2 = load_agent_configs()
+            theo = cfg2.get("agents", {}).get("group", {})
+            if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_fred_finn_mats_lena":
+                if _all_done('fred', 'finn', 'mats', 'lena'):
+                    for _k in ('fred', 'finn', 'mats', 'lena'):
+                        _completion_flags.pop(_k, None)
+                    _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
+                    log_l.info("Theo triggered — Fred+Finn+Mats+Lena all done")
+                else:
+                    log_l.info("Lena done, waiting for remaining agents before triggering Theo")
         except Exception as e:
-            log.error("Lena scheduled run failed: %s", e)
-    _run_ai_agent(_run, "Lena")
-    import logging; log_l = logging.getLogger("Lena")
-    _mark_done('lena')
-    try:
-        cfg2 = load_agent_configs()
-        theo = cfg2.get("agents", {}).get("group", {})
-        if theo.get("schedule_enabled") and theo.get("trigger_mode") == "after_fred_finn_mats_lena":
-            if _all_done('fred', 'finn', 'mats', 'lena'):
-                for _k in ('fred', 'finn', 'mats', 'lena'):
-                    _completion_flags.pop(_k, None)
-                _sched_threading.Thread(target=_theo_scheduled_job, daemon=True).start()
-                log_l.info("Theo triggered — Fred+Finn+Mats+Lena all done")
-            else:
-                log_l.info("Lena done, waiting for remaining agents before triggering Theo")
-    except Exception as e:
-        log_l.error("Join-check after Lena failed: %s", e)
+            log_l.error("Join-check after Lena failed: %s", e)
 
 def _apply_search_schedule(cfg):
     search = cfg.get("agents", {}).get("search", {})
