@@ -154,7 +154,7 @@ def run(timeout=8, min_links=3, max_per_run=30):
         "endpoints_checked": len(todo),
         "updated":       updated,
         "failed":        failed,
-        "skipped_total": len([s for src in sources for e in src.get("endpoints", [])
+        "skipped_total": len([e for src in sources for e in src.get("endpoints", [])
                                if e.get("agent") == "scrape" and e.get("selector")]),
         "remaining":     max(0, sum(
             1 for src in sources for e in src.get("endpoints", [])

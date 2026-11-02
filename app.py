@@ -2495,7 +2495,7 @@ def _apply_nils_schedule(cfg):
     _scheduler.remove_job(job_id) if _scheduler.get_job(job_id) else None
     if not nils.get("schedule_enabled"):
         return
-    interval_days = int(nils.get("interval_days") or 7)
+    interval_days = int(nils.get("interval_days") or 30)
     s_time  = nils.get("schedule_time", "08:00")
     try:
         hour, minute = s_time.split(":")
