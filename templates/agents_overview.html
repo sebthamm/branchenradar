@@ -10,17 +10,15 @@
     </div>
   </div>
 
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-    <div style="flex:1;min-width:200px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Gesamtlauf starten</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5">
-        Startet <strong>Fletcher, Frank, Mats und Lena</strong> gleichzeitig. Danach werden die Folge-Agenten automatisch ausgelöst: Fred (nach Fletcher), Finn (nach Frank) und Theo + Ida (sobald alle vier fertig sind).
-        <span style="display:inline-block;margin-top:4px;color:var(--faint)">Maja, Nils und Sol sind nicht betroffen und laufen nach eigenem Zeitplan.</span>
-      </div>
-    </div>
-    <button id="full-run-btn" onclick="startFullRun()" style="padding:10px 22px;font-size:13px;font-weight:600;background:var(--primary,#2563EB);color:#fff;border:2px solid var(--primary,#2563EB);border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:200px">
-      ▶&nbsp;&nbsp;Gesamtlauf starten
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
+    <button id="full-run-btn" onclick="startFullRun()" style="padding:9px 20px;font-size:13px;font-weight:600;background:var(--primary,#2563EB);color:#fff;border:none;border-radius:8px;cursor:pointer;white-space:nowrap">
+      ▶&nbsp; Gesamtlauf starten
     </button>
+    <button onclick="toggleFullRunInfo()" title="Was passiert beim Gesamtlauf?" style="width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0">i</button>
+    <div id="full-run-info" style="display:none;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;line-height:1.6;max-width:500px">
+      Startet <strong>Fletcher, Frank, Mats und Lena</strong> gleichzeitig inkl. Folge-Agenten: Fred (nach Fletcher), Finn (nach Frank), Theo + Ida (wenn alle vier fertig sind).<br>
+      <span style="color:var(--faint)">Maja, Nils und Sol laufen nach eigenem Zeitplan und sind nicht betroffen.</span>
+    </div>
   </div>
 
   <div style="display:flex;gap:20px;margin-bottom:28px;flex-wrap:wrap">
@@ -41,6 +39,11 @@
 </div>
 
 <style>
+.admin-wrap { max-width: 1200px; margin: 0 auto; padding: 28px 32px 60px; }
+.admin-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
+.admin-title { font-size: 22px; font-weight: 700; color: var(--text); margin: 0 0 4px; }
+.admin-subtitle { font-size: 13px; color: var(--muted); margin: 0; }
+
 .ov-chain {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -404,6 +407,11 @@
 
   document.addEventListener('DOMContentLoaded', load);
 })();
+
+function toggleFullRunInfo() {
+  const el = document.getElementById('full-run-info');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
 
 async function startFullRun() {
   const btn = document.getElementById('full-run-btn');
