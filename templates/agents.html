@@ -3051,19 +3051,24 @@ async function loadNilsPerfInline() {
   try {
     const ins = await fetch('/admin/nils/insights').then(r => r.json());
     const container = document.getElementById('nils-perf-body');
-    if (ins && ins.length) {
-      const statusColor = {'neu':'var(--primary)','in Bearbeitung':'#e8a000','erledigt':'var(--faint)'};
+    const visible = (ins || []).filter(i => i.status !== 'archiviert');
+    if (visible.length) {
+      const btnFor = i => {
+        if (i.status === 'neu')
+          return '<button onclick="updateNilsInsight(\'' + i.id + '\',\'geprüft\')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--text);cursor:pointer;flex-shrink:0;white-space:nowrap">✓ Geprüft</button>';
+        if (i.status === 'geprüft')
+          return '<button onclick="updateNilsInsight(\'' + i.id + '\',\'archiviert\')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--muted);cursor:pointer;flex-shrink:0;white-space:nowrap">Archiv</button>';
+        return '';
+      };
       const insHtml = '<div style="margin-top:24px">' +
         '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Recherche-Insights</div>' +
-        ins.map(i => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start">' +
+        visible.map(i => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start">' +
           '<div style="flex:1">' +
-          '<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px">' + (i.category||'') + ' &middot; ' + (i.run_at||'') + '</div>' +
+          '<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px">' + (i.category||'') + ' &middot; ' + (i.run_at||'') + (i.status==='geprüft'?' &middot; <span style="color:var(--s-active)">Geprüft</span>':'') + '</div>' +
           '<div style="font-size:13px;font-weight:700;margin-bottom:4px">' + (i.title||'') + '</div>' +
           '<div style="font-size:12px;color:var(--muted);line-height:1.5">' + (i.description||'') + '</div>' +
           '</div>' +
-          '<select onchange="updateNilsInsight(\'' + i.id + '\',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);flex-shrink:0">' +
-          ['neu','in Bearbeitung','erledigt'].map(s => '<option value="' + s + '"' + (i.status===s?' selected':'') + '>' + s + '</option>').join('') +
-          '</select>' +
+          btnFor(i) +
           '</div>'
         ).join('') +
         '</div>';
@@ -3073,6 +3078,7 @@ async function loadNilsPerfInline() {
 }
 async function updateNilsInsight(id, status) {
   await fetch('/admin/nils/insights/' + id, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status})});
+  await loadNilsPerformance();
 }
 
 async function loadNilsCostChips() {
@@ -3327,6 +3333,7 @@ async function loadSolPerf() {
     }
     html += renderInsightsSection('sol');
     body.innerHTML = html;
+    _loadInsightsList('sol');
   } catch(e) {
     body.innerHTML = '<div style="color:var(--faint);font-size:13px">Fehler beim Laden.</div>';
   }
@@ -3391,6 +3398,7 @@ async function loadFletcherPerf() {
     }
     html += renderInsightsSection('fletcher');
     body.innerHTML = html;
+    _loadInsightsList('fletcher');
   } catch(e) {
     body.innerHTML = '<div style="color:var(--faint);font-size:13px">Fehler beim Laden.</div>';
   }
@@ -3455,6 +3463,7 @@ async function loadFrankPerf() {
     }
     html += renderInsightsSection('frank');
     body.innerHTML = html;
+    _loadInsightsList('frank');
   } catch(e) {
     body.innerHTML = '<div style="color:var(--faint);font-size:13px">Fehler beim Laden.</div>';
   }
@@ -3462,14 +3471,43 @@ async function loadFrankPerf() {
 
 
 function renderInsightsSection(agent) {
-  const labels = {'sol': 'Sol', 'fletcher': 'Fletcher', 'frank': 'Frank'};
   return '<div style="margin-top:20px" id="' + agent + '-insights-wrap">' +
     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
     '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Insights</div>' +
     '<button onclick="generateInsights(\'' + agent + '\')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--text);cursor:pointer" id="' + agent + '-insights-btn">&#128202; Jetzt analysieren</button>' +
     '</div>' +
-    '<div id="' + agent + '-insights-result" style="font-size:12px;color:var(--faint)">Noch keine Analyse &#8212; klicke &#8222;Jetzt analysieren&#8220;.</div>' +
+    '<div id="' + agent + '-insights-result"></div>' +
     '</div>';
+}
+
+async function _loadInsightsList(agent) {
+  const result = document.getElementById(agent + '-insights-result');
+  if (!result) return;
+  try {
+    const ins = await fetch('/admin/' + agent + '/insights').then(r => r.json());
+    const visible = (ins || []).filter(i => i.status !== 'archiviert');
+    if (!visible.length) {
+      result.innerHTML = '<div style="font-size:12px;color:var(--faint)">Keine offenen Insights.</div>';
+      return;
+    }
+    result.innerHTML = visible.map(i =>
+      '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start">' +
+      '<div style="flex:1">' +
+      '<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px">' + (i.category||'') + ' &middot; ' + (i.run_at||'') + '</div>' +
+      '<div style="font-size:13px;font-weight:700;margin-bottom:4px">' + (i.title||'') + '</div>' +
+      '<div style="font-size:12px;color:var(--muted);line-height:1.5">' + (i.description||'') + '</div>' +
+      '</div>' +
+      '<button onclick="archiveInsight(\'' + agent + '\',\'' + i.id + '\')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--muted);cursor:pointer;flex-shrink:0;white-space:nowrap">Archiv</button>' +
+      '</div>'
+    ).join('');
+  } catch(e) {
+    result.innerHTML = '<div style="font-size:12px;color:var(--faint)">Fehler beim Laden.</div>';
+  }
+}
+
+async function archiveInsight(agent, id) {
+  await fetch('/admin/' + agent + '/insights/' + id, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'archiviert'})});
+  await _loadInsightsList(agent);
 }
 
 async function generateInsights(agent) {
@@ -3477,25 +3515,18 @@ async function generateInsights(agent) {
   const result = document.getElementById(agent + '-insights-result');
   btn.disabled = true;
   btn.textContent = 'Analysiere…';
-  result.innerHTML = '<div style="color:var(--faint)">Claude analysiert die Laufdaten…</div>';
+  result.innerHTML = '<div style="font-size:12px;color:var(--faint)">Claude analysiert die Laufdaten…</div>';
   try {
-    const d = await fetch('/admin/' + agent + '/insights', {method: 'POST'}).then(r => r.json());
-    if (!d.ok || !d.insights || !d.insights.length) {
-      result.innerHTML = '<div style="color:var(--faint)">Keine auffälligen Muster gefunden.</div>';
-    } else {
-      result.innerHTML = d.insights.map(i =>
-        '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px">' +
-        '<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px">' + (i.category||'') + '</div>' +
-        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">' + (i.title||'') + '</div>' +
-        '<div style="font-size:12px;color:var(--muted);line-height:1.5">' + (i.description||'') + '</div>' +
-        '</div>'
-      ).join('');
+    const d = await fetch('/admin/' + agent + '/insights/generate', {method: 'POST'}).then(r => r.json());
+    if (!d.ok) {
+      result.innerHTML = '<div style="font-size:12px;color:var(--faint)">Keine auffälligen Muster gefunden.</div>';
     }
   } catch(e) {
-    result.innerHTML = '<div style="color:red">Fehler: ' + e.message + '</div>';
+    result.innerHTML = '<div style="font-size:12px;color:red">Fehler: ' + e.message + '</div>';
   }
   btn.disabled = false;
   btn.textContent = '&#128202; Erneut analysieren';
+  await _loadInsightsList(agent);
 }
 
 loadNilsCostChips();

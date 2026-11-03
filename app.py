@@ -2190,7 +2190,39 @@ def mats_history():
 def lena_history():
     return jsonify(_load_history(LENA_HISTORY_FILE))
 
-@app.route("/admin/sol/insights", methods=["POST"])
+SOL_INSIGHTS_FILE      = os.path.join(DATA_DIR, "sol_insights.json")
+FLETCHER_INSIGHTS_FILE = os.path.join(DATA_DIR, "fletcher_insights.json")
+FRANK_INSIGHTS_FILE    = os.path.join(DATA_DIR, "frank_insights.json")
+
+def _load_tool_insights(path):
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+def _save_tool_insights(path, insights):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(insights, f, ensure_ascii=False, indent=2)
+
+@app.route("/admin/sol/insights", methods=["GET"])
+@role_required("superadmin")
+def sol_insights_list():
+    return jsonify(_load_tool_insights(SOL_INSIGHTS_FILE))
+
+@app.route("/admin/sol/insights/<insight_id>", methods=["POST"])
+@role_required("superadmin")
+def sol_insights_update(insight_id):
+    insights = _load_tool_insights(SOL_INSIGHTS_FILE)
+    data = request.get_json(silent=True) or {}
+    for item in insights:
+        if item.get("id") == insight_id:
+            if "status" in data:
+                item["status"] = data["status"]
+            break
+    _save_tool_insights(SOL_INSIGHTS_FILE, insights)
+    return jsonify({"ok": True})
+
+@app.route("/admin/sol/insights/generate", methods=["POST"])
 @role_required("superadmin")
 def sol_insights_generate():
     hist = _load_history(SOL_HISTORY_FILE, 20)
@@ -2199,15 +2231,33 @@ def sol_insights_generate():
     if os.path.exists(sf):
         with open(sf, encoding="utf-8") as fh:
             status = json.load(fh)
-    return _generate_tool_insights(
-        "Sol", "Selektor-Finder", hist, status,
+    return _generate_tool_insights_persist(
+        "Sol", "Selektor-Finder", hist, status, SOL_INSIGHTS_FILE,
         extra_hint=(
             "Sol findet CSS-Selektoren. Achte auf: Domains die wiederholt fehlschlagen, "
             "Laeufe mit vielen 'failed' ohne 'updated', auffaellige Muster."
         ),
     )
 
-@app.route("/admin/fletcher/insights", methods=["POST"])
+@app.route("/admin/fletcher/insights", methods=["GET"])
+@role_required("superadmin")
+def fletcher_insights_list():
+    return jsonify(_load_tool_insights(FLETCHER_INSIGHTS_FILE))
+
+@app.route("/admin/fletcher/insights/<insight_id>", methods=["POST"])
+@role_required("superadmin")
+def fletcher_insights_update(insight_id):
+    insights = _load_tool_insights(FLETCHER_INSIGHTS_FILE)
+    data = request.get_json(silent=True) or {}
+    for item in insights:
+        if item.get("id") == insight_id:
+            if "status" in data:
+                item["status"] = data["status"]
+            break
+    _save_tool_insights(FLETCHER_INSIGHTS_FILE, insights)
+    return jsonify({"ok": True})
+
+@app.route("/admin/fletcher/insights/generate", methods=["POST"])
 @role_required("superadmin")
 def fletcher_insights_generate():
     hist = _load_history(FLETCHER_HISTORY_FILE, 20)
@@ -2216,15 +2266,33 @@ def fletcher_insights_generate():
     if os.path.exists(lf):
         with open(lf, encoding="utf-8") as fh:
             latest = json.load(fh)
-    return _generate_tool_insights(
-        "Fletcher", "Feed-Fetcher", hist, latest,
+    return _generate_tool_insights_persist(
+        "Fletcher", "Feed-Fetcher", hist, latest, FLETCHER_INSIGHTS_FILE,
         extra_hint=(
             "Fletcher crawlt RSS/Atom-Feeds. Achte auf: Quellen mit dauerhaft 0 neuen "
             "Eintraegen (Feed tot?), sinkende Gesamtzahlen, wachsende Fehlerquoten."
         ),
     )
 
-@app.route("/admin/frank/insights", methods=["POST"])
+@app.route("/admin/frank/insights", methods=["GET"])
+@role_required("superadmin")
+def frank_insights_list():
+    return jsonify(_load_tool_insights(FRANK_INSIGHTS_FILE))
+
+@app.route("/admin/frank/insights/<insight_id>", methods=["POST"])
+@role_required("superadmin")
+def frank_insights_update(insight_id):
+    insights = _load_tool_insights(FRANK_INSIGHTS_FILE)
+    data = request.get_json(silent=True) or {}
+    for item in insights:
+        if item.get("id") == insight_id:
+            if "status" in data:
+                item["status"] = data["status"]
+            break
+    _save_tool_insights(FRANK_INSIGHTS_FILE, insights)
+    return jsonify({"ok": True})
+
+@app.route("/admin/frank/insights/generate", methods=["POST"])
 @role_required("superadmin")
 def frank_insights_generate():
     hist = _load_history(FRANK_HISTORY_FILE, 20)
@@ -2233,13 +2301,35 @@ def frank_insights_generate():
     if os.path.exists(lf):
         with open(lf, encoding="utf-8") as fh:
             latest = json.load(fh)
-    return _generate_tool_insights(
-        "Frank", "Scrape-Fetcher", hist, latest,
+    return _generate_tool_insights_persist(
+        "Frank", "Scrape-Fetcher", hist, latest, FRANK_INSIGHTS_FILE,
         extra_hint=(
             "Frank scrapet HTML-Endpunkte mit CSS-Selektoren. Achte auf: Endpunkte mit 0 "
             "neuen Links (Selektor veraltet?), steigende Fehlerrate, strukturelle Muster."
         ),
     )
+
+def _generate_tool_insights_persist(agent_name, agent_role, history, latest_run, insights_file, extra_hint=""):
+    result = _generate_tool_insights(agent_name, agent_role, history, latest_run, extra_hint)
+    resp_data = result.get_json() if hasattr(result, 'get_json') else {}
+    if resp_data.get("ok") and resp_data.get("insights"):
+        existing = _load_tool_insights(insights_file)
+        run_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+        saved = 0
+        for p in resp_data["insights"]:
+            entry = {
+                "id":          str(uuid.uuid4()),
+                "run_at":      run_at,
+                "category":    p.get("category", "Sonstiges"),
+                "title":       p.get("title", "")[:120],
+                "description": p.get("description", ""),
+                "status":      "offen",
+            }
+            existing.insert(0, entry)
+            saved += 1
+        _save_tool_insights(insights_file, existing[:50])
+        return jsonify({"ok": True, "saved": saved})
+    return result
 
 def _generate_tool_insights(agent_name, agent_role, history, latest_run, extra_hint=""):
     import anthropic as _ant
@@ -3707,6 +3797,50 @@ _AGENT_MODEL_PRICES = {
 def _agent_cost(model, in_tok, out_tok):
     p_in, p_out = _AGENT_MODEL_PRICES.get(model, (3.0, 15.0))
     return round((in_tok * p_in + out_tok * p_out) / 1_000_000, 4)
+
+_full_run_lock = _sched_threading.Lock()
+_full_run_active = False
+
+@app.route("/admin/full-run", methods=["POST"])
+@role_required("superadmin")
+def full_run_start():
+    global _full_run_active
+    if _full_run_active:
+        return jsonify({"ok": False, "error": "Lauf läuft bereits"}), 409
+
+    def _do_full_run():
+        global _full_run_active
+        import logging
+        log = logging.getLogger("full-run")
+        log.info("Gesamtlauf gestartet: Fletcher, Frank, Mats, Lena parallel")
+        # Reset join-flags so Theo triggers correctly
+        for k in ('fred', 'finn', 'mats', 'lena'):
+            _completion_flags.pop(k, None)
+        threads = [
+            _sched_threading.Thread(target=_fletcher_scheduled_job, daemon=True),
+            _sched_threading.Thread(target=_frank_scheduled_job,    daemon=True),
+            _sched_threading.Thread(target=_mats_scheduled_job,     daemon=True),
+            _sched_threading.Thread(target=_lena_scheduled_job,     daemon=True),
+        ]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        log.info("Gesamtlauf abgeschlossen (Fletcher, Frank, Mats, Lena fertig)")
+        _full_run_active = False
+
+    with _full_run_lock:
+        if _full_run_active:
+            return jsonify({"ok": False, "error": "Lauf läuft bereits"}), 409
+        _full_run_active = True
+
+    _sched_threading.Thread(target=_do_full_run, daemon=True).start()
+    return jsonify({"ok": True})
+
+@app.route("/admin/full-run/status", methods=["GET"])
+@role_required("superadmin")
+def full_run_status():
+    return jsonify({"running": _full_run_active})
 
 @app.route("/admin/theo/run", methods=["POST"])
 @role_required("superadmin")
