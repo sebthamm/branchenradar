@@ -2756,7 +2756,24 @@ def _fletcher_scheduled_job():
             log.info("Fletcher scheduled run completed")
         except Exception as e:
             log.error("Fletcher scheduled run failed: %s", e)
+            _append_agent_history(FLETCHER_HISTORY_FILE, {
+                "run_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "error": str(e),
+            })
             return
+        try:
+            _status_data = {}
+            if os.path.exists(FETCHER_FEED_OUTPUT):
+                _status_data = json.load(open(FETCHER_FEED_OUTPUT, encoding="utf-8"))
+            _append_agent_history(FLETCHER_HISTORY_FILE, {
+                "run_at": _status_data.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+                "new_entries_total": _status_data.get("new_entries_total", 0),
+                "sources_checked":   _status_data.get("sources_checked", 0),
+                "sources_ok":        _status_data.get("sources_ok", 0),
+                "sources_error":     _status_data.get("sources_error", 0),
+            })
+        except Exception as e2:
+            log.error("Fletcher history write failed: %s", e2)
         # Trigger Fred if configured after_fletcher
         try:
             cfg2 = load_agent_configs()
@@ -2805,7 +2822,24 @@ def _frank_scheduled_job():
             log.info("Frank scheduled run completed")
         except Exception as e:
             log.error("Frank scheduled run failed: %s", e)
+            _append_agent_history(FRANK_HISTORY_FILE, {
+                "run_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "error": str(e),
+            })
             return
+        try:
+            _status_data = {}
+            if os.path.exists(FETCHER_SCRAPE_OUTPUT):
+                _status_data = json.load(open(FETCHER_SCRAPE_OUTPUT, encoding="utf-8"))
+            _append_agent_history(FRANK_HISTORY_FILE, {
+                "run_at": _status_data.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+                "new_entries_total": _status_data.get("new_entries_total", 0),
+                "sources_checked":   _status_data.get("sources_checked", 0),
+                "sources_ok":        _status_data.get("sources_ok", 0),
+                "sources_error":     _status_data.get("sources_error", 0),
+            })
+        except Exception as e2:
+            log.error("Frank history write failed: %s", e2)
         # Trigger Finn if configured after_frank
         try:
             cfg2 = load_agent_configs()
