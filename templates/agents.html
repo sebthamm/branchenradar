@@ -447,6 +447,7 @@
       </div>
       <div class="nils-props-toggle" onclick="toggleNilsLimits()" style="border-top:1px solid var(--border)">
         <span>Nils&#8217; Grenzen</span>
+        <span id="nils-limits-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
         <span class="nils-props-arrow" id="nils-limits-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="nils-limits-panel">
@@ -701,6 +702,7 @@
 
       <div class="nils-props-toggle" onclick="toggleMayaLimits()" style="border-top:1px solid var(--border)">
         <span>Mayas Grenzen</span>
+        <span id="maya-limits-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
         <span class="nils-props-arrow" id="maya-limits-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="maya-limits-panel">
@@ -2394,7 +2396,9 @@ async function loadMayaSched() {
     if (document.getElementById('maya-interval-days')) document.getElementById('maya-interval-days').value = d.interval_days || 30;
     if (document.getElementById('maya-sched-time')) document.getElementById('maya-sched-time').value = d.schedule_time || '08:00';
     if (document.getElementById('maya-next-run-date')) document.getElementById('maya-next-run-date').value = d.next_run_date || '';
-    // cost limits loaded separately in Mayas Grenzen
+    if (document.getElementById('maya-cost-abs')) document.getElementById('maya-cost-abs').value = d.cost_limit_usd > 0 ? d.cost_limit_usd : '';
+    if (document.getElementById('maya-cost-rel')) document.getElementById('maya-cost-rel').value = d.cost_limit_rel > 0 ? d.cost_limit_rel : '';
+    _renderLimitsSummary('maya-limits-summary', d.cost_limit_usd || 0, d.cost_limit_rel || 0);
     if (document.getElementById('maya-model-select')) document.getElementById('maya-model-select').value = d.maja_model || 'claude-haiku-4-5-20251001';
     const statusEl = document.getElementById('maya-sched-status');
     if (statusEl) {
@@ -2492,8 +2496,9 @@ function toggleMayaLimits() {
 }
 async function loadMayaLimits() {
   const d = await fetch('/admin/maja/schedule').then(r => r.json());
-  if (document.getElementById('maya-cost-abs')) document.getElementById('maya-cost-abs').value = d.cost_limit_usd || '';
-  if (document.getElementById('maya-cost-rel')) document.getElementById('maya-cost-rel').value = d.cost_limit_rel || '';
+  if (document.getElementById('maya-cost-abs')) document.getElementById('maya-cost-abs').value = d.cost_limit_usd > 0 ? d.cost_limit_usd : '';
+  if (document.getElementById('maya-cost-rel')) document.getElementById('maya-cost-rel').value = d.cost_limit_rel > 0 ? d.cost_limit_rel : '';
+  _renderLimitsSummary('maya-limits-summary', d.cost_limit_usd || 0, d.cost_limit_rel || 0);
 }
 async function saveMayaLimits() {
   const cfg = await fetch('/admin/maja/schedule').then(r => r.json());
@@ -2504,7 +2509,11 @@ async function saveMayaLimits() {
     body: JSON.stringify(cfg)
   });
   const msg = document.getElementById('maya-limits-save-msg');
-  if (resp.ok) { msg.textContent = '✓ Gespeichert'; msg.style.color = 'var(--primary)'; setTimeout(() => { msg.textContent = ''; }, 2500); }
+  if (resp.ok) {
+    msg.textContent = '✓ Gespeichert'; msg.style.color = 'var(--primary)';
+    setTimeout(() => { msg.textContent = ''; }, 2500);
+    _renderLimitsSummary('maya-limits-summary', cfg.cost_limit_usd, cfg.cost_limit_rel);
+  }
 }
 function majaScheduleToggle() {
   // Ensure interval fields reflect current radio state on first open
@@ -2888,8 +2897,9 @@ async function loadNilsSched() {
     document.getElementById('nils-sched-enabled').checked = !!d.schedule_enabled;
     document.getElementById('nils-interval-days').value  = d.interval_days || 7;
     document.getElementById('nils-sched-time').value     = d.schedule_time || '08:00';
-    if (document.getElementById('nils-cost-abs')) document.getElementById('nils-cost-abs').value = d.cost_limit_usd || '';
-    if (document.getElementById('nils-cost-rel')) document.getElementById('nils-cost-rel').value = d.cost_limit_rel || '';
+    if (document.getElementById('nils-cost-abs')) document.getElementById('nils-cost-abs').value = d.cost_limit_usd > 0 ? d.cost_limit_usd : '';
+    if (document.getElementById('nils-cost-rel')) document.getElementById('nils-cost-rel').value = d.cost_limit_rel > 0 ? d.cost_limit_rel : '';
+    _renderLimitsSummary('nils-limits-summary', d.cost_limit_usd || 0, d.cost_limit_rel || 0);
     if (document.getElementById('nils-next-run-date')) document.getElementById('nils-next-run-date').value = d.next_run_date || '';
     if (document.getElementById('nils-model-select')) document.getElementById('nils-model-select').value = d.nils_model || 'claude-opus-4-8';
     const status = document.getElementById('nils-sched-status');
@@ -3156,6 +3166,16 @@ async function loadMayaCostChips() {
 }
 
 
+function _renderLimitsSummary(elId, costUsd, costRel) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const parts = [];
+  if (costUsd > 0) parts.push('max. $' + Number(costUsd).toFixed(2));
+  else parts.push('kein $-Limit');
+  if (costRel > 0) parts.push('max. ' + costRel + '% über ⌀');
+  else parts.push('kein %-Limit');
+  el.textContent = '(' + parts.join(', ') + ')';
+}
 function toggleNilsLimits() {
   document.getElementById('nils-limits-panel').classList.toggle('open');
   document.getElementById('nils-limits-arrow').classList.toggle('open');
@@ -3163,8 +3183,9 @@ function toggleNilsLimits() {
 }
 async function loadNilsLimits() {
   const d = await fetch('/admin/nils/schedule').then(r => r.json());
-  if (document.getElementById('nils-cost-abs')) document.getElementById('nils-cost-abs').value = d.cost_limit_usd || '';
-  if (document.getElementById('nils-cost-rel')) document.getElementById('nils-cost-rel').value = d.cost_limit_rel || '';
+  if (document.getElementById('nils-cost-abs')) document.getElementById('nils-cost-abs').value = d.cost_limit_usd > 0 ? d.cost_limit_usd : '';
+  if (document.getElementById('nils-cost-rel')) document.getElementById('nils-cost-rel').value = d.cost_limit_rel > 0 ? d.cost_limit_rel : '';
+  _renderLimitsSummary('nils-limits-summary', d.cost_limit_usd || 0, d.cost_limit_rel || 0);
 }
 async function saveNilsLimits() {
   const cfg = await fetch('/admin/nils/schedule').then(r => r.json());
@@ -3175,7 +3196,11 @@ async function saveNilsLimits() {
     body: JSON.stringify(cfg)
   });
   const msg = document.getElementById('nils-limits-save-msg');
-  if (resp.ok) { msg.textContent = '✓ Gespeichert'; msg.style.color = 'var(--primary)'; setTimeout(() => { msg.textContent = ''; }, 2500); }
+  if (resp.ok) {
+    msg.textContent = '✓ Gespeichert'; msg.style.color = 'var(--primary)';
+    setTimeout(() => { msg.textContent = ''; }, 2500);
+    _renderLimitsSummary('nils-limits-summary', cfg.cost_limit_usd, cfg.cost_limit_rel);
+  }
 }
 function toggleNilsManual() {
   document.getElementById('nils-manual-panel').classList.toggle('open');
@@ -3586,8 +3611,11 @@ document.addEventListener('DOMContentLoaded', function() {
   loadAgentSched('theo','group');
   loadAgentSched('ida','bewertung');
   loadAgentSched('sol','sol_selector');
-    loadAgentSched('mats','pdf');
-    loadAgentSched('lena','search');
+  loadAgentSched('mats','pdf');
+  loadAgentSched('lena','search');
+  // Limits-Summary für Nils und Maja direkt beim Laden setzen
+  loadNilsLimits();
+  loadMayaLimits();
 });
 
 // ── Generic Performance Review ──────────────────────────────────────────────
