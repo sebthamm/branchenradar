@@ -418,7 +418,7 @@ async function startFullRun() {
   btn.disabled = true;
   btn.textContent = '⏳ Läuft…';
   try {
-    const d = await fetch('/admin/full-run', {method: 'POST'}).then(r => r.json());
+    const d = await fetch('/admin/full-run', {method: 'POST', headers: {'Content-Type': 'application/json'}}).then(r => r.json());
     if (!d.ok) {
       alert(d.error || 'Fehler beim Starten');
       btn.disabled = false;
