@@ -3798,7 +3798,8 @@ def _agent_cost(model, in_tok, out_tok):
     p_in, p_out = _AGENT_MODEL_PRICES.get(model, (3.0, 15.0))
     return round((in_tok * p_in + out_tok * p_out) / 1_000_000, 4)
 
-_full_run_lock = _sched_threading.Lock()
+import threading as _full_run_threading
+_full_run_lock = _full_run_threading.Lock()
 _full_run_active = False
 
 @app.route("/admin/full-run", methods=["POST"])
@@ -3817,10 +3818,10 @@ def full_run_start():
         for k in ('fred', 'finn', 'mats', 'lena'):
             _completion_flags.pop(k, None)
         threads = [
-            _sched_threading.Thread(target=_fletcher_scheduled_job, daemon=True),
-            _sched_threading.Thread(target=_frank_scheduled_job,    daemon=True),
-            _sched_threading.Thread(target=_mats_scheduled_job,     daemon=True),
-            _sched_threading.Thread(target=_lena_scheduled_job,     daemon=True),
+            _full_run_threading.Thread(target=_fletcher_scheduled_job, daemon=True),
+            _full_run_threading.Thread(target=_frank_scheduled_job,    daemon=True),
+            _full_run_threading.Thread(target=_mats_scheduled_job,     daemon=True),
+            _full_run_threading.Thread(target=_lena_scheduled_job,     daemon=True),
         ]
         for t in threads:
             t.start()
@@ -3834,7 +3835,7 @@ def full_run_start():
             return jsonify({"ok": False, "error": "Lauf läuft bereits"}), 409
         _full_run_active = True
 
-    _sched_threading.Thread(target=_do_full_run, daemon=True).start()
+    _full_run_threading.Thread(target=_do_full_run, daemon=True).start()
     return jsonify({"ok": True})
 
 @app.route("/admin/full-run/status", methods=["GET"])
