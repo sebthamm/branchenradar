@@ -3803,7 +3803,7 @@ _full_run_lock = _full_run_threading.Lock()
 _full_run_active = False
 
 @app.route("/admin/full-run", methods=["POST"])
-@role_required("superadmin")
+@role_required("superadmin", "admin")
 def full_run_start():
     global _full_run_active
     if _full_run_active:
@@ -3839,7 +3839,7 @@ def full_run_start():
     return jsonify({"ok": True})
 
 @app.route("/admin/full-run/status", methods=["GET"])
-@role_required("superadmin")
+@role_required("superadmin", "admin")
 def full_run_status():
     return jsonify({"running": _full_run_active})
 
