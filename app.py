@@ -4533,8 +4533,12 @@ def _parse_sources_tsv(raw_text):
                     agent_key, url = ep_str.split(":", 1)
                 else:
                     agent_key, url = "", ep_str
+                _VALID_EP_TYPES = {"scrape", "pdf", "feed", "search"}
                 if url.strip():
-                    ep = {"url": url.strip(), "agent": agent_key.strip(), "label": label}
+                    ep_agent = agent_key.strip()
+                    if ep_agent not in _VALID_EP_TYPES:
+                        ep_agent = "scrape"
+                    ep = {"url": url.strip(), "agent": ep_agent, "label": label}
                     if selector:
                         ep["selector"] = selector
                     endpoints.append(ep)
