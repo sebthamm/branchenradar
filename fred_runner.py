@@ -70,11 +70,15 @@ def _source_context(kuerzel, sources_by_kuerzel):
 
 
 def _parse_signals(text):
-    match = re.search(r"\[.*\]", text, re.DOTALL)
-    if not match:
+    # Markdown-Codeblock entfernen damit keine Erklärungstexte nach dem JSON stören
+    text = re.sub(r"```(?:json)?\s*", "", text)
+    # Alles ab erstem [ bis letztem ] (greedy, damit verschachtelte Arrays erhalten bleiben)
+    start = text.find("[")
+    end   = text.rfind("]")
+    if start == -1 or end == -1 or end <= start:
         return []
     try:
-        raw = json.loads(match.group(0))
+        raw = json.loads(text[start:end+1])
     except Exception:
         return []
     today = date.today().isoformat()

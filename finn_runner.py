@@ -76,11 +76,13 @@ def _source_context(src):
 
 
 def _parse_signals(text, default_source):
-    match = re.search(r"\[.*\]", text, re.DOTALL)
-    if not match:
+    text = re.sub(r"```(?:json)?\s*", "", text)
+    start = text.find("[")
+    end   = text.rfind("]")
+    if start == -1 or end == -1 or end <= start:
         return []
     try:
-        raw = json.loads(match.group(0))
+        raw = json.loads(text[start:end+1])
     except Exception:
         return []
     today = date.today().isoformat()
