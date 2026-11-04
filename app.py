@@ -2161,11 +2161,21 @@ FINN_HISTORY_FILE     = os.path.join(DATA_DIR, "finn_history.json")
 MATS_HISTORY_FILE     = os.path.join(DATA_DIR, "mats_history.json")
 LENA_HISTORY_FILE     = os.path.join(DATA_DIR, "lena_history.json")
 
-def _load_history(path, limit=50):
+def _load_history(path, limit=50, dedup=False):
     if not os.path.exists(path):
         return []
     with open(path, encoding="utf-8") as fh:
-        return json.load(fh)[:limit]
+        data = json.load(fh)
+    if dedup:
+        seen = set()
+        result = []
+        for entry in data:
+            key = (entry.get("run_at") or "")[:16]
+            if key and key not in seen:
+                seen.add(key)
+                result.append(entry)
+        return result[:limit]
+    return data[:limit]
 
 @app.route("/admin/sol/history")
 @role_required("superadmin")
@@ -3829,7 +3839,7 @@ def theo_report():
     if os.path.exists(THEO_STATUS_FILE):
         with open(THEO_STATUS_FILE, encoding="utf-8") as f:
             status = json.load(f)
-    theo_history = _load(THEO_HISTORY_FILE) if os.path.exists(THEO_HISTORY_FILE) else []
+    theo_history = _load_history(THEO_HISTORY_FILE, dedup=True)
     return jsonify({
         "match_state": {
             "groups_total":   len(groups),
@@ -3900,7 +3910,7 @@ def finn_report():
 @app.route("/admin/mats/report")
 @role_required("superadmin")
 def mats_report():
-    history = _load_history(MATS_HISTORY_FILE)
+    history = _load_history(MATS_HISTORY_FILE, dedup=True)
     last_run = {}
     mats_file = os.path.join(DATA_DIR, "pdf_runner_latest.json")
     if os.path.exists(mats_file):
@@ -3911,7 +3921,7 @@ def mats_report():
 @app.route("/admin/lena/report")
 @role_required("superadmin")
 def lena_report():
-    history = _load_history(LENA_HISTORY_FILE)
+    history = _load_history(LENA_HISTORY_FILE, dedup=True)
     last_run = {}
     lena_file = os.path.join(DATA_DIR, "search_runner_latest.json")
     if os.path.exists(lena_file):

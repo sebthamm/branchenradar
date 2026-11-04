@@ -3851,6 +3851,8 @@ document.addEventListener('DOMContentLoaded', function() {
   loadAgentSched('sol','sol_selector');
   loadAgentSched('mats','pdf');
   loadAgentSched('lena','search');
+  // Ø-Kosten-Pille vorab laden (auch ohne Aufklappen sichtbar)
+  ['lena','theo','mats','ida','fred','finn','fletcher','frank'].forEach(n => _loadAgentPerf(n));
   // Limits- und Zeitplan-Summary für Nils und Maja direkt beim Laden setzen
   loadNilsLimits();
   loadMayaLimits();
@@ -3874,6 +3876,7 @@ function toggleAgentPerf(name) {
 }
 
 async function _loadAgentPerf(name) {
+  _perfLoaded[name] = true;
   const body = document.getElementById(name + '-perf-body');
   if (!body) return;
   try {
@@ -3887,12 +3890,11 @@ async function _loadAgentPerf(name) {
     const isFetcher = ['frank','fletcher','fred','finn'].includes(name);
     const isTheo    = name === 'theo';
     const isIda     = name === 'ida';
+    const fmtDur = s => { const sec = Math.round(s||0); return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0'); };
 
     let html = '';
 
     // Last run summary
-    if (last.run_at && !isFetcher) {
-      html += `<div style="font-size:12px;color:var(--muted);margin-bottom:16px">Letzter Lauf: <strong>${last.run_at}</strong></div>`;
     }
 
     // KPI tiles
@@ -3982,8 +3984,6 @@ async function _loadAgentPerf(name) {
       if (costs.length) {
         const avg = costs.reduce((a, b) => a + b, 0) / costs.length;
         perfSummaryEl.innerHTML = _pill('⌀ Kosten: ' + avg.toFixed(2).replace('.',',') + ' $');
-        const formatted = parts[0] + ',' + dec;
-        perfSummaryEl.innerHTML = _pill('⌀ Kosten: ' + formatted + ' $');
       }
     }
   } catch(e) {
