@@ -3851,9 +3851,6 @@ document.addEventListener('DOMContentLoaded', function() {
   loadAgentSched('sol','sol_selector');
   loadAgentSched('mats','pdf');
   loadAgentSched('lena','search');
-  // Ø-Kosten-Pille bei Page Load für alle Agenten sichtbar machen
-  // maja = Majas endpoint-Name; nils hat eigenen report-endpoint
-  ['nils','maja','lena','theo','mats','ida','fred','finn'].forEach(n => _loadPillOnly(n));
   // Limits- und Zeitplan-Summary für Nils und Maja direkt beim Laden setzen
   loadNilsLimits();
   loadMayaLimits();
@@ -4064,6 +4061,14 @@ function _progressHide(id, label, isError) {
     delete t._guardWasOpen;
   }, false);
 })();
+</script>
+
+<script>
+window.addEventListener('load', function() {
+  ['nils','maja','lena','theo','mats','ida','fred','finn'].forEach(function(n) {
+    _loadPillOnly(n);
+  });
+});
 </script>
 
 {% endblock %}
