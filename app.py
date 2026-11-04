@@ -4101,8 +4101,14 @@ def theo_run():
             in_tok  = msg.usage.input_tokens  if msg.usage else 0
             out_tok = msg.usage.output_tokens if msg.usage else 0
             raw_text = msg.content[0].text if msg.content else "[]"
-            match = _re.search(r"\[.*\]", raw_text, _re.DOTALL)
-            groups = json.loads(match.group(0)) if match else []
+            # Robuster Parse: Markdown-Codeblöcke entfernen, dann Array extrahieren
+            raw_text = _re.sub(r"```(?:json)?\s*", "", raw_text)
+            _start = raw_text.find("[")
+            _end   = raw_text.rfind("]")
+            try:
+                groups = json.loads(raw_text[_start:_end+1]) if _start != -1 and _end > _start else []
+            except Exception:
+                groups = []
 
             existing = load_signal_matches()
             existing_ids = {tuple(sorted([m.get("sig1","")] + [p.get("id","") for p in m.get("pairs",[])])) for m in existing}
