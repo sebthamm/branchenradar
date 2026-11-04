@@ -600,11 +600,11 @@
         <div style="padding:20px 24px">
 
           <!-- Status-Zeile -->
-          <div id="maja-status-text" style="font-size:12px;color:var(--muted);margin-bottom:18px">Wird geladen&#x2026;</div>
+          <div id="maja-status-text" style="display:none"></div>
 
           <!-- Qualitäts-KPIs -->
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Quellen-Qualit&#228;t</div>
-          <div id="maya-pr-quality" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:20px">
+          <div id="maya-pr-quality" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:20px">
             <div style="color:var(--faint);font-size:12px">Wird geladen&#x2026;</div>
           </div>
 
@@ -619,8 +619,8 @@
                   <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:center">Bereich</th>
                   <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Quellen</th>
                   <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">EP erg&#228;nzt</th>
-                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Dauer</th>
-                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Token</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Dauer (MM:SS)</th>
+                  <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Token (Tsd.)</th>
                   <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Kosten</th>
                   <th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border);text-align:center">Err.</th>
                 </tr>
@@ -935,7 +935,7 @@
     <div class="ingestion-block">
       <div class="ingestion-block-header">
         <div class="ingestion-block-title">Feed</div>
-        <div class="ingestion-block-desc">Quellen, die RSS- oder Atom-Feeds bereitstellen, liefern neue Inhalte als maschinenlesbare Liste — mit URL, Titel und Datum. Fletcher ruft jeden Feed deterministisch ab, erkennt neue Einträge anhand gespeicherter IDs und stellt sie Lars als strukturierten Export bereit. Kein KI-Ermessen beim Sammeln — vollständige Abdeckung, auditierbar pro Quelle.</div>
+        <div class="ingestion-block-desc">Quellen, die RSS- oder Atom-Feeds bereitstellen, liefern neue Inhalte als maschinenlesbare Liste — mit URL, Titel und Datum. Fletcher ruft jeden Feed deterministisch ab, erkennt neue Einträge anhand gespeicherter IDs und stellt sie Fred als strukturierten Export bereit. Kein KI-Ermessen beim Sammeln — vollständige Abdeckung, auditierbar pro Quelle.</div>
       </div>
       {# Fletcher-Card #}
       <div class="agent-card" id="card-fletcher_feed" style="border-radius:0;border-top:none;border-bottom:none">
@@ -951,7 +951,7 @@
           <div class="agent-card-actions">
             <button class="btn btn-primary btn-sm" id="fletcher-run-btn" onclick="runFletcher()">&#9654; Starten</button>
             <button id="fletcher-cancel-btn" class="btn btn-sm" onclick="cancelFetcher('fletcher')" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">&#10005; Abbrechen</button>
-            <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Lars</a>
+            <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Fred</a>
           </div>
           <div style="padding:0 0 8px"><div id="progress-fletcher" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
         </div>
@@ -985,7 +985,7 @@
 
               <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
                 <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">&#128196; Strukturierter Export</div>
-                <div style="font-size:12px;color:var(--muted);line-height:1.5">Stellt alle neuen Eintr&#228;ge als strukturierten Export f&#252;r Lars bereit &#8212; mit URL, Titel, Datum und Quell-Kuerzel.</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Stellt alle neuen Eintr&#228;ge als strukturierten Export f&#252;r Fred bereit &#8212; mit URL, Titel, Datum und Quell-Kuerzel.</div>
               </div>
 
               <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
@@ -1067,7 +1067,7 @@
             <div class="manual-group" style="display:inline-flex;align-items:center;gap:10px">
               <span class="manual-group-label">Manuell via externe KI</span>
               <div class="manual-group-buttons">
-                <button class="btn btn-secondary btn-sm" onclick="openPrompt('feed','search')">Prompt Lars</button>
+                <button class="btn btn-secondary btn-sm" onclick="openPrompt('feed','search')">Prompt Fred</button>
               </div>
             </div>
           </div>
@@ -2392,7 +2392,7 @@ async function loadMayaPerfReview() {
       tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;text-align:center;color:var(--faint)">Noch keine Läufe</td></tr>';
     } else {
       const ms = m => (m || '').replace('claude-','').replace(/-\d{8}$/,'');
-      const dur = s => s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
+      const dur = s => { const sec = Math.round(s||0); return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0'); };
       tbody.innerHTML = history.map((r, i) => {
         const bg = i % 2 === 1 ? 'background:var(--surface2)' : '';
         const err = (r.errors && r.errors.length)
@@ -2405,8 +2405,8 @@ async function loadMayaPerfReview() {
           <td style="padding:6px 12px;text-align:right">${r.sources_total??'—'}</td>
           <td style="padding:6px 12px;text-align:right;font-weight:600">${r.endpoints_added??'—'}</td>
           <td style="padding:6px 12px;text-align:right;color:var(--muted)">${r.duration_s!=null?dur(r.duration_s):'—'}</td>
-          <td style="padding:6px 12px;text-align:right;color:var(--muted)">${((r.input_tokens||0)+(r.output_tokens||0)).toLocaleString('de')}</td>
-          <td style="padding:6px 12px;text-align:right">$${(r.cost_usd||0).toFixed(4)}</td>
+          <td style="padding:6px 12px;text-align:right;color:var(--muted)">${(((r.input_tokens||0)+(r.output_tokens||0))/1000).toFixed(1).replace('.',',') + ' Tsd.'}</td>
+          <td style="padding:6px 12px;text-align:right">${(r.cost_usd||0).toFixed(2).replace('.',',')} $</td>
           <td style="padding:6px 12px;text-align:center">${err}</td>
         </tr>`;
       }).join('');
@@ -2445,9 +2445,7 @@ async function loadMayaPerfReview() {
       const costs = history.slice(0, 10).map(r => parseFloat(r.cost_usd || 0)).filter(c => c > 0);
       if (costs.length) {
         const avg = costs.reduce((a, b) => a + b, 0) / costs.length;
-        const parts = avg.toFixed(4).split('.');
-        const dec = parts[1].replace(/0+$/, '').padEnd(2, '0');
-        mayaPerfSum.innerHTML = _pill('⌀ Kosten: ' + parts[0] + ',' + dec + ' $');
+        mayaPerfSum.innerHTML = _pill('⌀ Kosten: ' + avg.toFixed(2).replace('.',',') + ' $');
       }
     }
   } catch(e) {
@@ -3901,7 +3899,7 @@ async function _loadAgentPerf(name) {
     let html = '';
 
     // Last run summary
-    if (last.run_at) {
+    if (last.run_at && !isFetcher) {
       html += `<div style="font-size:12px;color:var(--muted);margin-bottom:16px">Letzter Lauf: <strong>${last.run_at}</strong></div>`;
     }
 
@@ -3935,7 +3933,7 @@ async function _loadAgentPerf(name) {
         ['Fehler', last.sources_error ?? '—'],
       ];
     }
-    if (tiles.length) {
+    if (tiles.length && !isFetcher) {
       html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:20px">`;
       for (const [label, val] of tiles) {
         html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
@@ -3955,6 +3953,9 @@ async function _loadAgentPerf(name) {
           <th style="padding:6px 10px;border-bottom:1px solid var(--border);text-align:right">Neue Einträge</th>
           <th style="padding:6px 10px;border-bottom:1px solid var(--border);text-align:right">Geprüft</th>
           <th style="padding:6px 10px;border-bottom:1px solid var(--border);text-align:right">Fehler</th>
+          <th style="padding:6px 10px;border-bottom:1px solid var(--border);text-align:right">Dauer (MM:SS)</th>
+          <th style="padding:6px 10px;border-bottom:1px solid var(--border);text-align:right">Token (Tsd.)</th>
+          <th style="padding:6px 10px;border-bottom:1px solid var(--border);text-align:right">Kosten</th>
         </tr></thead><tbody>`;
       for (const row of hist) {
         html += `<tr style="border-bottom:1px solid var(--border)">
@@ -3962,6 +3963,9 @@ async function _loadAgentPerf(name) {
           <td style="padding:5px 10px;text-align:right">${row.new_entries_total ?? '—'}</td>
           <td style="padding:5px 10px;text-align:right">${row.sources_checked ?? row.pdfs_checked ?? '—'}</td>
           <td style="padding:5px 10px;text-align:right">${row.sources_error ?? '—'}</td>
+          <td style="padding:5px 10px;text-align:right;font-variant-numeric:tabular-nums">${row.duration_s!=null?fmtDur(row.duration_s):'—'}</td>
+          <td style="padding:5px 10px;text-align:right;color:var(--muted)">${row.input_tokens!=null?(((row.input_tokens||0)+(row.output_tokens||0))/1000).toFixed(1).replace('.',','):'—'}</td>
+          <td style="padding:5px 10px;text-align:right">${row.cost_usd!=null?(row.cost_usd||0).toFixed(2).replace('.',',')+' $':'—'}</td>
         </tr>`;
       }
       html += `</tbody></table></div>`;
@@ -3985,10 +3989,7 @@ async function _loadAgentPerf(name) {
       const costs = hist.slice(0, 10).map(r => parseFloat(r.cost_usd || 0)).filter(c => c > 0);
       if (costs.length) {
         const avg = costs.reduce((a, b) => a + b, 0) / costs.length;
-        const avgStr = avg.toFixed(4).replace('.', ',').replace(/,?0+$/, '') || '0';
-        // Format: trim trailing zeros but keep at least 2 decimal places
-        const parts = avg.toFixed(4).split('.');
-        const dec = parts[1].replace(/0+$/, '').padEnd(2, '0');
+        perfSummaryEl.innerHTML = _pill('⌀ Kosten: ' + avg.toFixed(2).replace('.',',') + ' $');
         const formatted = parts[0] + ',' + dec;
         perfSummaryEl.innerHTML = _pill('⌀ Kosten: ' + formatted + ' $');
       }
