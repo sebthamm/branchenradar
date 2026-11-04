@@ -2879,25 +2879,18 @@ def _run_ai_agent(runner_fn, label=""):
 # ── Fred (feed AI) ────────────────────────────────────────────────────────────
 def _fred_scheduled_job():
     def _run():
-        import fetcher_feed
-        cfg = load_agent_configs()
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if not api_key:
-            return
-        if hasattr(fetcher_feed, 'run_ai_analysis'):
-            fetcher_feed.run_ai_analysis(cfg.get("agents", {}).get("feed", {}), api_key)
+        import fred_runner
+        fred_runner.run()
     _run_ai_agent(_run, "Fred")
     import logging; log = logging.getLogger("Fred")
     try:
-        _status_data = {}
-        if os.path.exists(FETCHER_FEED_OUTPUT):
-            _status_data = json.load(open(FETCHER_FEED_OUTPUT, encoding="utf-8"))
+        fred_status_path = os.path.join(DATA_DIR, "fred_status.json")
+        _status_data = json.load(open(fred_status_path, encoding="utf-8")) if os.path.exists(fred_status_path) else {}
         _append_agent_history(FRED_HISTORY_FILE, {
-            "run_at": _status_data.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
-            "new_entries_total": _status_data.get("new_entries_total", 0),
-            "sources_checked": _status_data.get("sources_checked", 0),
-            "sources_ok": _status_data.get("sources_ok", 0),
-            "sources_error": _status_data.get("sources_error", 0),
+            "run_at":          _status_data.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+            "candidates_in":   _status_data.get("candidates_in", 0),
+            "signals_new":     _status_data.get("signals_new", 0),
+            "cost_usd":        _status_data.get("cost_usd", 0),
         })
     except Exception as _he:
         log.error("Fred history write failed: %s", _he)
@@ -2926,26 +2919,20 @@ def _fred_scheduled_job():
 # ── Finn (scrape AI) ──────────────────────────────────────────────────────────
 def _finn_scheduled_job():
     def _run():
-        import fetcher_scrape
-        cfg = load_agent_configs()
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if not api_key:
-            return
-        if hasattr(fetcher_scrape, 'run_ai_analysis'):
-            fetcher_scrape.run_ai_analysis(cfg.get("agents", {}).get("scrape", {}), api_key)
+        import finn_runner
+        finn_runner.run()
     _run_ai_agent(_run, "Finn")
     # After Finn: trigger Theo (after_finn or after_fred_and_finn join)
     import logging; log2 = logging.getLogger("Finn")
     try:
-        _status_data = {}
-        if os.path.exists(FETCHER_SCRAPE_OUTPUT):
-            _status_data = json.load(open(FETCHER_SCRAPE_OUTPUT, encoding="utf-8"))
+        finn_status_path = os.path.join(DATA_DIR, "finn_status.json")
+        _status_data = json.load(open(finn_status_path, encoding="utf-8")) if os.path.exists(finn_status_path) else {}
         _append_agent_history(FINN_HISTORY_FILE, {
-            "run_at": _status_data.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
-            "new_entries_total": _status_data.get("new_entries_total", 0),
+            "run_at":          _status_data.get("run_at", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+            "candidates_in":   _status_data.get("candidates_in", 0),
             "sources_checked": _status_data.get("sources_checked", 0),
-            "sources_ok": _status_data.get("sources_ok", 0),
-            "sources_error": _status_data.get("sources_error", 0),
+            "signals_new":     _status_data.get("signals_new", 0),
+            "cost_usd":        _status_data.get("cost_usd", 0),
         })
     except Exception as _he:
         log2.error("Finn history write failed: %s", _he)
