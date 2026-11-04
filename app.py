@@ -922,6 +922,11 @@ def role_required(*roles):
                 return redirect(url_for("login", next=request.path))
             if session.get("role") not in roles:
                 abort(403)
+            # Superadmin navigates to a superadmin-only route → exit any active user view
+            if roles == ("superadmin",) and session.get("view_as_entity_id"):
+                session.pop("view_as_entity_id", None)
+                session.pop("view_as_role",      None)
+                session.pop("view_as_user_id",   None)
             return f(*args, **kwargs)
         return decorated
     return decorator
