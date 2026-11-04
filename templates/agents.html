@@ -408,7 +408,8 @@
 
       <div class="nils-props-toggle" onclick="toggleNilsPerf()" style="border-top:1px solid var(--border)">
         <span>Nils Performance Review</span>
-        <span class="nils-props-arrow" id="nils-perf-arrow">&#9658;</span>
+          <span id="nils-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
+          <span class="nils-props-arrow" id="nils-perf-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="nils-perf-panel">
         <div id="nils-perf-body" style="padding:20px 24px">
@@ -592,6 +593,7 @@
       {# ── Maya Performance Review ── #}
       <div class="nils-props-toggle" onclick="toggleMayaReport()" style="border-top:1px solid var(--border)">
         <span>Maya Performance Review</span>
+        <span id="maya-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
         <span class="nils-props-arrow" id="maya-report-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="maya-report-panel">
@@ -905,7 +907,8 @@
 
       <div class="nils-props-toggle" onclick="toggleSolPerf()">
         <span>Performance Review</span>
-        <span class="nils-props-arrow" id="sol-perf-arrow">&#9658;</span>
+          <span id="sol-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
+          <span class="nils-props-arrow" id="sol-perf-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="sol-perf-panel">
         <div style="padding:20px 24px" id="sol-perf-body">
@@ -1072,6 +1075,7 @@
 
         <div class="nils-props-toggle" onclick="toggleFletcherPerf()">
           <span>Performance Review</span>
+          <span id="fletcher-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="fletcher-perf-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="fletcher-perf-panel">
@@ -1137,6 +1141,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleAgentPerf('fred')" style="border-top:1px solid var(--border)">
           <span>Fred Performance Review</span>
+          <span id="fred-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="fred-perf-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="fred-perf-panel">
@@ -1352,6 +1357,7 @@
 
         <div class="nils-props-toggle" onclick="toggleFrankPerf()">
           <span>Performance Review</span>
+          <span id="frank-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="frank-perf-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="frank-perf-panel">
@@ -1433,6 +1439,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleAgentPerf('finn')" style="border-top:1px solid var(--border)">
           <span>Finn Performance Review</span>
+          <span id="finn-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="finn-perf-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="finn-perf-panel">
@@ -1564,6 +1571,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleAgentPerf('mats')" style="border-top:1px solid var(--border)">
           <span>Mats Performance Review</span>
+          <span id="mats-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="mats-perf-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="mats-perf-panel">
@@ -1701,6 +1709,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleAgentPerf('lena')" style="border-top:1px solid var(--border)">
           <span>Lena Performance Review</span>
+          <span id="lena-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="lena-perf-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="lena-perf-panel">
@@ -1863,7 +1872,8 @@
       </div>
       <div class="nils-props-toggle" onclick="toggleAgentPerf('theo')" style="border-top:1px solid var(--border)">
         <span>Theo Performance Review</span>
-        <span class="nils-props-arrow" id="theo-perf-arrow">&#9658;</span>
+          <span id="theo-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
+          <span class="nils-props-arrow" id="theo-perf-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="theo-perf-panel">
         <div id="theo-perf-body" style="padding:20px 24px">
@@ -1991,7 +2001,8 @@
       </div>
       <div class="nils-props-toggle" onclick="toggleAgentPerf('ida')" style="border-top:1px solid var(--border)">
         <span>Ida Performance Review</span>
-        <span class="nils-props-arrow" id="ida-perf-arrow">&#9658;</span>
+          <span id="ida-perf-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
+          <span class="nils-props-arrow" id="ida-perf-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="ida-perf-panel">
         <div id="ida-perf-body" style="padding:20px 24px">
@@ -2425,6 +2436,17 @@ async function loadMayaPerfReview() {
           </div>
           <button onclick="archiveMayaInsight('${it.id}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--muted);cursor:pointer;flex-shrink:0;white-space:nowrap">Archivieren</button>
         </div>`).join('');
+    }
+    // Ø-Kosten-Pille
+    const mayaPerfSum = document.getElementById('maya-perf-summary');
+    if (mayaPerfSum) {
+      const costs = history.slice(0, 10).map(r => parseFloat(r.cost_usd || 0)).filter(c => c > 0);
+      if (costs.length) {
+        const avg = costs.reduce((a, b) => a + b, 0) / costs.length;
+        const parts = avg.toFixed(4).split('.');
+        const dec = parts[1].replace(/0+$/, '').padEnd(2, '0');
+        mayaPerfSum.innerHTML = _pill('⌀ Kosten: ' + parts[0] + ',' + dec + ' $');
+      }
     }
   } catch(e) {
     document.getElementById('maya-pr-quality').innerHTML = '<div style="color:var(--faint);font-size:12px">Fehler beim Laden</div>';
@@ -3952,6 +3974,21 @@ async function _loadAgentPerf(name) {
     body.innerHTML = html;
     if (['fred','finn','mats','lena'].includes(name)) {
       _loadInsightsList(name);
+    }
+
+    // Ø-Kosten-Pille befüllen
+    const perfSummaryEl = document.getElementById(name + '-perf-summary');
+    if (perfSummaryEl) {
+      const costs = hist.slice(0, 10).map(r => parseFloat(r.cost_usd || 0)).filter(c => c > 0);
+      if (costs.length) {
+        const avg = costs.reduce((a, b) => a + b, 0) / costs.length;
+        const avgStr = avg.toFixed(4).replace('.', ',').replace(/,?0+$/, '') || '0';
+        // Format: trim trailing zeros but keep at least 2 decimal places
+        const parts = avg.toFixed(4).split('.');
+        const dec = parts[1].replace(/0+$/, '').padEnd(2, '0');
+        const formatted = parts[0] + ',' + dec;
+        perfSummaryEl.innerHTML = _pill('⌀ Kosten: ' + formatted + ' $');
+      }
     }
   } catch(e) {
     body.innerHTML = `<div style="color:var(--error,#e55);font-size:12px">Fehler beim Laden: ${e.message}</div>`;
