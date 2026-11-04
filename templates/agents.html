@@ -418,6 +418,7 @@
 
       <div class="nils-props-toggle" onclick="toggleNilsSched()" style="border-top:1px solid var(--border)">
         <span>Dann arbeitet Nils</span>
+        <span id="nils-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
         <span class="nils-props-arrow" id="nils-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="nils-sched-panel">
@@ -644,6 +645,7 @@
       {% if session.get('role') == 'superadmin' %}
       <div class="nils-props-toggle" onclick="toggleMayaSched()" style="border-top:1px solid var(--border)">
         <span>Dann arbeitet Maya</span>
+        <span id="maya-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
         <span class="nils-props-arrow" id="maya-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="maya-sched-panel">
@@ -859,6 +861,7 @@
 
       <div class="nils-props-toggle" onclick="toggleSolSched()">
         <span>Dann arbeitet Sol <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+        <span id="sol-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
         <span class="nils-props-arrow" id="sol-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="sol-sched-panel">
@@ -1003,6 +1006,7 @@
 
         <div class="nils-props-toggle" onclick="toggleFletcherSched()">
           <span>Dann arbeitet Fletcher <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span id="fletcher-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
           <span class="nils-props-arrow" id="fletcher-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="fletcher-sched-panel">
@@ -1141,6 +1145,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleFredSched()">
           <span>Dann arbeitet Fred <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span id="fred-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
           <span class="nils-props-arrow" id="fred-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="fred-sched-panel">
@@ -1280,6 +1285,7 @@
 
         <div class="nils-props-toggle" onclick="toggleFrankSched()">
           <span>Dann arbeitet Frank <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span id="frank-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
           <span class="nils-props-arrow" id="frank-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="frank-sched-panel">
@@ -1434,6 +1440,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleFinnSched()">
           <span>Dann arbeitet Finn <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span id="finn-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
           <span class="nils-props-arrow" id="finn-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="finn-sched-panel">
@@ -1564,6 +1571,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleMatsSched()">
           <span>Dann arbeitet Mats <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span id="mats-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
           <span class="nils-props-arrow" id="mats-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="mats-sched-panel">
@@ -1700,6 +1708,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleLenaSched()">
           <span>Dann arbeitet Lena <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+          <span id="lena-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
           <span class="nils-props-arrow" id="lena-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="lena-sched-panel">
@@ -1860,6 +1869,7 @@
       </div>
       <div class="nils-props-toggle" onclick="toggleTheoSched()">
         <span>Dann arbeitet Theo <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+        <span id="theo-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
         <span class="nils-props-arrow" id="theo-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="theo-sched-panel"><div id="theo-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
@@ -1986,6 +1996,7 @@
       </div>
       <div class="nils-props-toggle" onclick="toggleIdaSched()">
         <span>Dann arbeitet Ida <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
+        <span id="ida-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
         <span class="nils-props-arrow" id="ida-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="ida-sched-panel">
@@ -2431,6 +2442,7 @@ async function loadMayaSched() {
         statusEl.innerHTML = '<span style="color:var(--faint)">○ Inaktiv</span> · kein automatischer Lauf geplant';
       }
     }
+    _renderSchedSummary('maya-sched-summary', d);
   } catch(e) { console.error('loadMayaSched', e); }
 }
 function toggleMayaTriggerMode() {
@@ -2955,6 +2967,7 @@ async function loadNilsSched() {
     } else {
       status.innerHTML = '<span style="color:var(--faint)">○ Inaktiv</span> &mdash; kein automatischer Lauf geplant';
     }
+    _renderSchedSummary('nils-sched-summary', d);
   } catch(e) { console.error(e); }
 }
 async function saveNilsSched() {
@@ -3215,6 +3228,23 @@ async function loadMayaCostChips() {
 }
 
 
+function _renderSchedSummary(elId, d) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!d || !d.schedule_enabled) { el.textContent = '○ Inaktiv'; el.style.color = 'var(--faint)'; return; }
+  el.style.color = 'var(--muted)';
+  const mode = d.trigger_mode || 'standalone';
+  if (mode !== 'standalone') { el.textContent = '● nach Vorgänger'; return; }
+  const days = d.interval_days || 7;
+  const nr = d.next_run || null;
+  let dateStr = '';
+  if (nr) {
+    const parts = nr.split(' ');
+    const dp = (parts[0]||'').split('-');
+    dateStr = ' · ' + (dp[2]||'') + '.' + (dp[1]||'') + '. ' + (parts[1]||'');
+  }
+  el.textContent = '● ' + days + ' T.' + dateStr;
+}
 function _renderLimitsSummary(elId, costUsd, costRel) {
   const el = document.getElementById(elId);
   if (!el) return;
@@ -3616,6 +3646,7 @@ function loadAgentSched(key, cfgKey) {
           status.innerHTML = '<span style="color:var(--muted)">&#9679; Inaktiv</span>';
         }
       }
+      _renderSchedSummary(key + '-sched-summary', ag);
       if (info) {
         if (ag.schedule_enabled) {
           const nr = ag.next_run;
