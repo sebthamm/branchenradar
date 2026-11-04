@@ -3851,14 +3851,30 @@ document.addEventListener('DOMContentLoaded', function() {
   loadAgentSched('sol','sol_selector');
   loadAgentSched('mats','pdf');
   loadAgentSched('lena','search');
-  // Ø-Kosten-Pille vorab laden (auch ohne Aufklappen sichtbar)
-  ['lena','theo','mats','ida','fred','finn','fletcher','frank'].forEach(n => _loadAgentPerf(n));
+  // Ø-Kosten-Pille bei Page Load für alle Agenten sichtbar machen
+  // maja = Majas endpoint-Name; nils hat eigenen report-endpoint
+  ['nils','maja','lena','theo','mats','ida','fred','finn'].forEach(n => _loadPillOnly(n));
   // Limits- und Zeitplan-Summary für Nils und Maja direkt beim Laden setzen
   loadNilsLimits();
   loadMayaLimits();
   loadNilsSched();
   loadMayaSched();
 });
+
+// Lädt nur die Ø-Kosten-Pille ohne den Panel-Body zu berühren
+async function _loadPillOnly(name, reportUrl) {
+  try {
+    const r = await fetch(reportUrl || '/admin/' + name + '/report');
+    if (!r.ok) return;
+    const d = await r.json();
+    const hist = d.history || [];
+    const costs = hist.slice(0,10).map(x => parseFloat(x.cost_usd||0)).filter(c=>c>0);
+    if (!costs.length) return;
+    const avg = costs.reduce((a,b)=>a+b,0)/costs.length;
+    const el = document.getElementById(name + '-perf-summary');
+    if (el) el.innerHTML = _pill('\u2300\u00a0Kosten: ' + avg.toFixed(2).replace('.',',') + '\u00a0$');
+  } catch(e) {}
+}
 
 // ── Generic Performance Review ──────────────────────────────────────────────
 const _perfLoaded = {};
@@ -3876,7 +3892,6 @@ function toggleAgentPerf(name) {
 }
 
 async function _loadAgentPerf(name) {
-  _perfLoaded[name] = true;
   const body = document.getElementById(name + '-perf-body');
   if (!body) return;
   try {
