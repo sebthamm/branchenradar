@@ -3633,20 +3633,6 @@ async function loadFrankPerf() {
       fetch('/admin/frank/history').then(r => r.json()).catch(() => [])
     ]);
     if (!d || !d.run_at) { body.innerHTML = '<div style="color:var(--faint);font-size:13px">Noch kein Lauf aufgezeichnet.</div>'; return; }
-    const tiles = [
-      {label:'Letzter Lauf', val: (d.run_at||'').slice(0,16).replace('T',' ')},
-      {label:'Endpunkte geprüft', val: d.sources_checked ?? '—'},
-      {label:'Neue Einträge', val: d.new_entries_total ?? '—'},
-      {label:'Endpunkte OK', val: d.sources_ok ?? '—'},
-      {label:'Endpunkte Fehler', val: d.sources_error ?? '—'},
-    ];
-    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px">';
-    tiles.forEach(t => {
-      html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">' +
-        '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">' + t.label + '</div>' +
-        '<div style="font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">' + t.val + '</div></div>';
-    });
-    html += '</div>';
     if (hist.length > 0) {
       html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Alle Läufe</div>';
       html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
@@ -3939,7 +3925,7 @@ async function _loadAgentPerf(name) {
         ['Fehler', last.sources_error ?? '—'],
       ];
     }
-    if (tiles.length && !isFetcher) {
+    if (tiles.length && (isTheo || isIda)) {
       html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:20px">`;
       for (const [label, val] of tiles) {
         html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
@@ -3965,7 +3951,7 @@ async function _loadAgentPerf(name) {
         </tr></thead><tbody>`;
       for (const row of hist) {
         html += `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:5px 10px">${row.run_at || '—'}</td>
+          <td style="padding:5px 10px">${(row.run_at||'').slice(0,16) || '—'}</td>
           <td style="padding:5px 10px;text-align:right">${row.new_entries_total ?? '—'}</td>
           <td style="padding:5px 10px;text-align:right">${row.sources_checked ?? row.pdfs_checked ?? '—'}</td>
           <td style="padding:5px 10px;text-align:right">${row.sources_error ?? '—'}</td>
