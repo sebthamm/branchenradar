@@ -59,12 +59,21 @@ def _append_history(entry):
     hist.insert(0, entry)
     _save(THEO_HISTORY_FILE, hist[:10])
 
-def run(theo_cfg: dict, api_key: str) -> dict:
+def run(theo_cfg: dict, api_key: str, status_callback=None) -> dict:
     """
     Führt einen Theo-Lauf durch.
     theo_cfg: Inhalt von agent_configs["agents"]["group"]
+    status_callback: optionale Funktion(step_str) für Fortschrittsmeldungen
     Gibt ein status-Dict zurück (wird auch in theo_status.json und theo_history.json geschrieben).
     """
+    def _step(msg):
+        log.info(msg)
+        if status_callback:
+            try:
+                status_callback(msg)
+            except Exception:
+                pass
+
     model = theo_cfg.get("model", "claude-haiku-4-5-20251001")
     date_from = theo_cfg.get("date_from", "")
     date_to   = theo_cfg.get("date_to", "")
@@ -72,6 +81,7 @@ def run(theo_cfg: dict, api_key: str) -> dict:
     import anthropic
     client = anthropic.Anthropic(api_key=api_key)
 
+    _step("Signale werden geladen…")
     signals = _load(SIGNALS_FILE, [])
     if date_from:
         signals = [s for s in signals if s.get("date", "") >= date_from]
@@ -79,6 +89,7 @@ def run(theo_cfg: dict, api_key: str) -> dict:
         signals = [s for s in signals if s.get("date", "") <= date_to]
 
     log.info("Starte Theo-Lauf: %d Signale, Modell %s", len(signals), model)
+    _step(f"{len(signals)} Signale geladen — Claude-API wird aufgerufen…")
 
     sig_list = "\n".join(
         f'- ID: {s["id"]} | Titel: {s.get("title","")} | Kategorie: {s.get("category","")} | Datum: {s.get("date","")}'
@@ -105,6 +116,7 @@ def run(theo_cfg: dict, api_key: str) -> dict:
     out_tok = msg.usage.output_tokens if msg.usage else 0
     raw_text = msg.content[0].text if msg.content else "[]"
 
+    _step("Antwort verarbeiten — Gruppen werden geschrieben…")
     match = re.search(r"\[.*\]", raw_text, re.DOTALL)
     groups = json.loads(match.group(0)) if match else []
 

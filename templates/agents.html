@@ -1795,6 +1795,7 @@
         </div>
         <div class="agent-card-actions">
           <button id="theo-run-btn" class="btn btn-primary btn-sm" onclick="runTheo()">&#9654; Theo starten</button>
+          <button id="theo-cancel-btn" class="btn btn-sm" onclick="cancelTheo()" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">&#10005; Abbrechen</button>
         </div>
         <div style="padding:0 24px 8px"><div id="progress-theo" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
       </div>
@@ -2844,29 +2845,51 @@ function saveDates() {
 }
 
 async function runTheo() {
-  const btn = document.getElementById('theo-run-btn');
-  btn.disabled = true; btn.textContent = '⏳ Läuft…';
-  _progressShow('theo', 'Theo gruppiert Signale…');
+  const btn    = document.getElementById('theo-run-btn');
+  const cancel = document.getElementById('theo-cancel-btn');
+  btn.disabled = true; btn.style.display = 'none';
+  if (cancel) cancel.style.display = '';
+  _progressShow('theo', 'Theo wird gestartet…');
   try {
     const r = await fetch('/admin/theo/run', {method:'POST', headers:{'Content-Type':'application/json'}});
     const d = await r.json();
     if (!d.ok) {
       _progressHide('theo', 'Fehler: ' + d.error, true);
-      btn.disabled = false; btn.textContent = '▶ Theo starten'; return;
+      btn.disabled = false; btn.style.display = '';
+      if (cancel) cancel.style.display = 'none';
+      return;
     }
     _pollTheo();
   } catch(e) {
     _progressHide('theo', 'Netzwerkfehler', true);
-    btn.disabled = false; btn.textContent = '▶ Theo starten';
+    btn.disabled = false; btn.style.display = '';
+    if (cancel) cancel.style.display = 'none';
   }
+}
+
+async function cancelTheo() {
+  const cancel = document.getElementById('theo-cancel-btn');
+  if (cancel) { cancel.disabled = true; cancel.textContent = 'Abbruch…'; }
+  _progressShow('theo', 'Abbruch angefordert…');
+  try {
+    await fetch('/admin/theo/cancel', {method:'POST', headers:{'Content-Type':'application/json'}});
+  } catch(e) {}
 }
 
 function _pollTheo() {
   fetch('/admin/theo/status').then(r=>r.json()).then(d => {
-    if (d.running) { _progressShow('theo', 'Theo gruppiert Signale…'); setTimeout(_pollTheo, 3000); return; }
-    const btn = document.getElementById('theo-run-btn');
-    btn.disabled = false; btn.textContent = '▶ Theo starten';
-    if (d.error) {
+    if (d.running) {
+      _progressShow('theo', d.step || 'Theo läuft…');
+      setTimeout(_pollTheo, 2000);
+      return;
+    }
+    const btn    = document.getElementById('theo-run-btn');
+    const cancel = document.getElementById('theo-cancel-btn');
+    btn.disabled = false; btn.style.display = '';
+    if (cancel) { cancel.style.display = 'none'; cancel.disabled = false; cancel.textContent = '✕ Abbrechen'; }
+    if (d.cancelled) {
+      _progressHide('theo', 'Abgebrochen', true);
+    } else if (d.error) {
       _progressHide('theo', 'Fehler: ' + d.error, true);
     } else if (d.exists) {
       const msg = `${d.groups_added||0} neue Gruppen aus ${d.signals_processed||0} Signalen`;
@@ -3839,7 +3862,15 @@ async function _loadAgentPerf(name) {
       html += `<div style="color:var(--faint);font-size:12px;font-style:italic">Noch keine Lauf-Historie vorhanden.</div>`;
     }
 
+    // Lerneffekte für Fred/Finn/Mats/Lena
+    if (['fred','finn','mats','lena'].includes(name)) {
+      html += renderInsightsSection(name);
+    }
+
     body.innerHTML = html;
+    if (['fred','finn','mats','lena'].includes(name)) {
+      _loadInsightsList(name);
+    }
   } catch(e) {
     body.innerHTML = `<div style="color:var(--error,#e55);font-size:12px">Fehler beim Laden: ${e.message}</div>`;
   }

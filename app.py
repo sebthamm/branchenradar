@@ -2200,6 +2200,10 @@ def lena_history():
 SOL_INSIGHTS_FILE      = os.path.join(DATA_DIR, "sol_insights.json")
 FLETCHER_INSIGHTS_FILE = os.path.join(DATA_DIR, "fletcher_insights.json")
 FRANK_INSIGHTS_FILE    = os.path.join(DATA_DIR, "frank_insights.json")
+FRED_INSIGHTS_FILE     = os.path.join(DATA_DIR, "fred_insights.json")
+FINN_INSIGHTS_FILE     = os.path.join(DATA_DIR, "finn_insights.json")
+MATS_INSIGHTS_FILE     = os.path.join(DATA_DIR, "mats_insights.json")
+LENA_INSIGHTS_FILE     = os.path.join(DATA_DIR, "lena_insights.json")
 
 def _load_tool_insights(path):
     if not os.path.exists(path):
@@ -2313,6 +2317,137 @@ def frank_insights_generate():
         extra_hint=(
             "Frank scrapet HTML-Endpunkte mit CSS-Selektoren. Achte auf: Endpunkte mit 0 "
             "neuen Links (Selektor veraltet?), steigende Fehlerrate, strukturelle Muster."
+        ),
+    )
+
+@app.route("/admin/fred/insights", methods=["GET"])
+@role_required("superadmin")
+def fred_insights_list():
+    return jsonify(_load_tool_insights(FRED_INSIGHTS_FILE))
+
+@app.route("/admin/fred/insights/<insight_id>", methods=["POST"])
+@role_required("superadmin")
+def fred_insights_update(insight_id):
+    insights = _load_tool_insights(FRED_INSIGHTS_FILE)
+    data = request.get_json(silent=True) or {}
+    for item in insights:
+        if item.get("id") == insight_id:
+            if "status" in data:
+                item["status"] = data["status"]
+            break
+    _save_tool_insights(FRED_INSIGHTS_FILE, insights)
+    return jsonify({"ok": True})
+
+@app.route("/admin/fred/insights/generate", methods=["POST"])
+@role_required("superadmin")
+def fred_insights_generate():
+    hist = _load_history(FRED_HISTORY_FILE, 20)
+    return _generate_tool_insights_persist(
+        "Fred", "Feed-KI-Analyst", hist, hist[0] if hist else {}, FRED_INSIGHTS_FILE,
+        extra_hint=(
+            "Fred wertet Feed-Eintraege aus. Achte auf: sinkende Trefferquoten (Feeds liefern "
+            "weniger Relevantes), auffaellige Fehlermuster die auf kaputte Endpoints hinweisen "
+            "(Maja pflegt die Feed-Endpoints — konkrete Quellen nennen!), Trends in den Kategorien "
+            "der gefundenen Eintraege. Wenn bestimmte Quellen dauerhaft 0 Eintraege liefern: "
+            "benennen, da sie Majas Endpoint-Pflege benoetigen."
+        ),
+    )
+
+@app.route("/admin/finn/insights", methods=["GET"])
+@role_required("superadmin")
+def finn_insights_list():
+    return jsonify(_load_tool_insights(FINN_INSIGHTS_FILE))
+
+@app.route("/admin/finn/insights/<insight_id>", methods=["POST"])
+@role_required("superadmin")
+def finn_insights_update(insight_id):
+    insights = _load_tool_insights(FINN_INSIGHTS_FILE)
+    data = request.get_json(silent=True) or {}
+    for item in insights:
+        if item.get("id") == insight_id:
+            if "status" in data:
+                item["status"] = data["status"]
+            break
+    _save_tool_insights(FINN_INSIGHTS_FILE, insights)
+    return jsonify({"ok": True})
+
+@app.route("/admin/finn/insights/generate", methods=["POST"])
+@role_required("superadmin")
+def finn_insights_generate():
+    hist = _load_history(FINN_HISTORY_FILE, 20)
+    return _generate_tool_insights_persist(
+        "Finn", "Scrape-KI-Analyst", hist, hist[0] if hist else {}, FINN_INSIGHTS_FILE,
+        extra_hint=(
+            "Finn analysiert gescrapte HTML-Inhalte. Achte auf: Endpunkte mit dauerhaft 0 neuen "
+            "Links (Selektor veraltet, Frank oder Sol benoetigen Anpassung), steigende Fehlerrate "
+            "bei bestimmten Quellen (Maja pflegt Scraping-Endpoints — konkrete Quellen nennen!), "
+            "Muster in den gefundenen Link-Typen oder Kategorien."
+        ),
+    )
+
+@app.route("/admin/mats/insights", methods=["GET"])
+@role_required("superadmin")
+def mats_insights_list():
+    return jsonify(_load_tool_insights(MATS_INSIGHTS_FILE))
+
+@app.route("/admin/mats/insights/<insight_id>", methods=["POST"])
+@role_required("superadmin")
+def mats_insights_update(insight_id):
+    insights = _load_tool_insights(MATS_INSIGHTS_FILE)
+    data = request.get_json(silent=True) or {}
+    for item in insights:
+        if item.get("id") == insight_id:
+            if "status" in data:
+                item["status"] = data["status"]
+            break
+    _save_tool_insights(MATS_INSIGHTS_FILE, insights)
+    return jsonify({"ok": True})
+
+@app.route("/admin/mats/insights/generate", methods=["POST"])
+@role_required("superadmin")
+def mats_insights_generate():
+    hist = _load_history(MATS_HISTORY_FILE, 20)
+    return _generate_tool_insights_persist(
+        "Mats", "PDF-Verarbeitungs-Agent", hist, hist[0] if hist else {}, MATS_INSIGHTS_FILE,
+        extra_hint=(
+            "Mats verarbeitet PDF-Quellen, deren Endpoints von Maja gepflegt werden. "
+            "Wenn bestimmte Quellen dauerhaft Fehler liefern oder 0 PDFs finden: diese Quellen "
+            "explizit benennen — Maja muss die Endpoints korrigieren. Achte auf: "
+            "Quellen mit wachsender Fehlerquote ueber mehrere Laeufe, PDF-Quellen die "
+            "konsistent nichts liefern (tote Endpoints?), auffaellige Abweichungen im "
+            "Seitenvolumen (z.B. ploeztlich viel mehr oder weniger PDFs als sonst)."
+        ),
+    )
+
+@app.route("/admin/lena/insights", methods=["GET"])
+@role_required("superadmin")
+def lena_insights_list():
+    return jsonify(_load_tool_insights(LENA_INSIGHTS_FILE))
+
+@app.route("/admin/lena/insights/<insight_id>", methods=["POST"])
+@role_required("superadmin")
+def lena_insights_update(insight_id):
+    insights = _load_tool_insights(LENA_INSIGHTS_FILE)
+    data = request.get_json(silent=True) or {}
+    for item in insights:
+        if item.get("id") == insight_id:
+            if "status" in data:
+                item["status"] = data["status"]
+            break
+    _save_tool_insights(LENA_INSIGHTS_FILE, insights)
+    return jsonify({"ok": True})
+
+@app.route("/admin/lena/insights/generate", methods=["POST"])
+@role_required("superadmin")
+def lena_insights_generate():
+    hist = _load_history(LENA_HISTORY_FILE, 20)
+    return _generate_tool_insights_persist(
+        "Lena", "Such-Agent", hist, hist[0] if hist else {}, LENA_INSIGHTS_FILE,
+        extra_hint=(
+            "Lena durchsucht Webseiten nach neuen Inhalten. Achte auf: Quellen die "
+            "konsistent wenig oder nichts liefern (Suchstrategie veraltet? Endpoint "
+            "von Maja zu korrigieren?), Muster in den Suchergebnissen, auffaellige "
+            "Abweichungen zwischen Laeufen. Konkrete Quellen-Kuerzel benennen."
         ),
     )
 
@@ -3778,6 +3913,7 @@ def lena_report():
 # ── Theo (group/match agent) ──────────────────────────────────────────────────
 
 _theo_running = False
+_theo_cancel  = False
 
 THEO_STATUS_FILE = os.path.join(DATA_DIR, "theo_status.json")
 
@@ -3853,7 +3989,7 @@ def full_run_status():
 @app.route("/admin/theo/run", methods=["POST"])
 @role_required("superadmin")
 def theo_run():
-    global _theo_running
+    global _theo_running, _theo_cancel
     if _theo_running:
         return jsonify({"ok": False, "error": "Theo läuft bereits."})
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -3862,16 +3998,24 @@ def theo_run():
     cfg      = load_agent_configs()
     theo_cfg = cfg.get("agents", {}).get("group", {})
     model    = theo_cfg.get("model", "claude-haiku-4-5-20251001")
+    _theo_cancel = False
 
     import threading
 
+    def _write_step(step):
+        try:
+            _save(THEO_STATUS_FILE, {"step": step, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+        except Exception:
+            pass
+
     def _run():
-        global _theo_running
+        global _theo_running, _theo_cancel
         _theo_running = True
         try:
             import anthropic, re as _re
             from datetime import datetime as _dt
-            client   = anthropic.Anthropic(api_key=api_key)
+
+            _write_step("Signale werden geladen…")
             signals  = load_signals()
             date_from = theo_cfg.get("date_from", "")
             date_to   = theo_cfg.get("date_to", "")
@@ -3880,6 +4024,12 @@ def theo_run():
             if date_to:
                 signals = [s for s in signals if s.get("date", "") <= date_to]
 
+            if _theo_cancel:
+                _save(THEO_STATUS_FILE, {"run_at": _dt.now().strftime("%Y-%m-%d %H:%M:%S"), "cancelled": True})
+                return
+
+            _write_step(f"{len(signals)} Signale geladen — Claude-API wird aufgerufen…")
+            client   = anthropic.Anthropic(api_key=api_key)
             sig_list = "\n".join(
                 f'- ID: {s["id"]} | Titel: {s.get("title","")} | Kategorie: {s.get("category","")} | Datum: {s.get("date","")}'
                 for s in signals
@@ -3900,6 +4050,12 @@ def theo_run():
                 model=model, max_tokens=4096,
                 messages=[{"role": "user", "content": prompt}]
             )
+
+            if _theo_cancel:
+                _save(THEO_STATUS_FILE, {"run_at": _dt.now().strftime("%Y-%m-%d %H:%M:%S"), "cancelled": True})
+                return
+
+            _write_step("Antwort verarbeiten — Gruppen werden geschrieben…")
             in_tok  = msg.usage.input_tokens  if msg.usage else 0
             out_tok = msg.usage.output_tokens if msg.usage else 0
             raw_text = msg.content[0].text if msg.content else "[]"
@@ -3955,12 +4111,26 @@ def theo_run():
 @role_required("superadmin")
 def theo_status():
     if _theo_running:
-        return jsonify({"running": True})
+        step = ""
+        if os.path.exists(THEO_STATUS_FILE):
+            try:
+                with open(THEO_STATUS_FILE, encoding="utf-8") as f:
+                    step = json.load(f).get("step", "")
+            except Exception:
+                pass
+        return jsonify({"running": True, "step": step})
     if not os.path.exists(THEO_STATUS_FILE):
         return jsonify({"running": False, "exists": False})
     with open(THEO_STATUS_FILE, encoding="utf-8") as f:
         data = json.load(f)
     return jsonify({"running": False, "exists": True, **data})
+
+@app.route("/admin/theo/cancel", methods=["POST"])
+@role_required("superadmin")
+def theo_cancel():
+    global _theo_cancel
+    _theo_cancel = True
+    return jsonify({"ok": True})
 
 # ── Ida (bewertung/final agent) ────────────────────────────────────────────────
 
