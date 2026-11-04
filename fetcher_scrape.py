@@ -36,6 +36,26 @@ def _save_state(state):
         json.dump(state, f, ensure_ascii=False, indent=2)
 
 
+_SKIP_TITLES = {
+    "impressum", "datenschutz", "datenschutzerklärung", "login", "anmelden",
+    "registrieren", "agb", "nutzungsbedingungen", "kontakt", "contact",
+    "newsletter", "newsletter abonnieren", "abonnieren", "suche", "search",
+    "sitemap", "cookie", "cookies", "cookie-einstellungen", "barrierefreiheit",
+    "über uns", "about", "about us", "karriere", "jobs", "presse", "medien",
+    "werbung", "advertise", "mediadaten", "hilfe", "help", "faq",
+    "startseite", "home", "zurück", "weiter", "mehr", "alle artikel",
+}
+
+def _is_junk_candidate(title):
+    """True wenn der Titel offensichtlich kein Artikel ist."""
+    t = title.strip()
+    if len(t) < 8:
+        return True
+    if t.lower() in _SKIP_TITLES:
+        return True
+    return False
+
+
 def _is_article_link(href, base_url):
     """Heuristic: internal link with path depth >= 2 and no file extension noise."""
     try:
@@ -138,6 +158,8 @@ def run():
                 })
 
                 for l in new_links:
+                    if _is_junk_candidate(l["title"]):
+                        continue
                     candidates.append({
                         "kuerzel":     source.get("kuerzel", ""),
                         "source_name": source.get("name", ""),
