@@ -724,7 +724,9 @@ def load_agent_configs():
                       "timeout", "min_links", "max_per_run",
                       "schedule_type", "schedule_day", "schedule_weekday",
                       "schedule_time", "schedule_enabled", "maja_model",
-                      "trigger_mode", "interval_days", "schedule_start_date"):
+                      "trigger_mode", "interval_days", "schedule_start_date",
+                      "cost_limit_usd", "cost_limit_rel",
+                      "nils_model", "next_run_date"):
             if field in saved:
                 cfg["agents"][key][field] = saved[field]
     return cfg
