@@ -3171,30 +3171,21 @@ async function loadNilsPerfInline() {
       body.innerHTML = '<div style="color:var(--faint);font-size:13px;font-style:italic">Noch keine Laufdaten erfasst.</div>';
       return;
     }
-    const last = hist[0];
     const ms = m => (m||'').replace('claude-','').replace(/-\d{8}$/,'');
-    const dur = s => s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
-    const totalNew = hist.reduce((a,r) => a + (r.new_sources||0), 0);
-    const totalCost = hist.reduce((a,r) => a + (r.cost_usd||0), 0);
+    const dur = s => { const sec = Math.round(s||0); return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0'); };
+    const fmtCost = c => (c||0).toFixed(2).replace('.',',') + '\u00a0$';
+    const costs10 = hist.slice(0,10).map(r=>parseFloat(r.cost_usd||0)).filter(c=>c>0);
+    if (costs10.length) {
+      const avg = costs10.reduce((a,b)=>a+b,0)/costs10.length;
+      const nilsPerfSum = document.getElementById('nils-perf-summary');
+      if (nilsPerfSum) nilsPerfSum.innerHTML = _pill('\u2300\u00a0Kosten: ' + avg.toFixed(2).replace('.',',') + '\u00a0$');
+    }
     body.innerHTML =
-      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px">' +
-      [
-        ['Quellen gesamt', total, '#000'],
-        ['Neue Quellen (gesamt)', '+' + totalNew, 'var(--primary)'],
-        ['Letzter Lauf', last.run_at || '—', 'var(--text)'],
-        ['Kosten gesamt', '$' + totalCost.toFixed(4), 'var(--text)'],
-      ].map(([label, val, col]) =>
-        '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px">' +
-        '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">' + label + '</div>' +
-        '<div style="font-size:17px;font-weight:700;color:' + col + ';font-variant-numeric:tabular-nums">' + val + '</div>' +
-        '</div>'
-      ).join('') +
-      '</div>' +
       '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Alle Läufe</div>' +
       '<div style="overflow-x:auto">' +
       '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
       '<thead><tr style="background:var(--surface2);text-align:left">' +
-      ['Datum','Modell','Quellen vorher','Neue','Dauer','Input-Token','Output-Token','Kosten'].map((h,i) =>
+      ['Datum','Modell','Quellen vorher','Neue','Dauer (MM:SS)','Input-Token','Output-Token','Kosten'].map((h,i) =>
         '<th style="padding:7px 12px;font-weight:600;border-bottom:1px solid var(--border)' + (i>=2?';text-align:right':'') + '">' + h + '</th>'
       ).join('') +
       '</tr></thead>' +
@@ -3207,10 +3198,10 @@ async function loadNilsPerfInline() {
           '<td style="padding:6px 12px;color:var(--muted)">' + ms(r.model) + '</td>' +
           '<td style="padding:6px 12px;text-align:right">' + (r.sources_before!=null?r.sources_before:'—') + '</td>' +
           '<td style="padding:6px 12px;text-align:right;' + newCol + '">+' + (r.new_sources||0) + '</td>' +
-          '<td style="padding:6px 12px;text-align:right;color:var(--muted)">' + (r.duration_s!=null?dur(r.duration_s):'—') + '</td>' +
+          '<td style="padding:6px 12px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums">' + (r.duration_s!=null?dur(r.duration_s):'—') + '</td>' +
           '<td style="padding:6px 12px;text-align:right;color:var(--muted)">' + (r.input_tokens||0).toLocaleString('de') + '</td>' +
           '<td style="padding:6px 12px;text-align:right;color:var(--muted)">' + (r.output_tokens||0).toLocaleString('de') + '</td>' +
-          '<td style="padding:6px 12px;text-align:right">$' + (r.cost_usd||0).toFixed(4) + '</td>' +
+          '<td style="padding:6px 12px;text-align:right">' + fmtCost(r.cost_usd) + '</td>' +
           '</tr>';
       }).join('') +
       '</tbody></table></div>';
