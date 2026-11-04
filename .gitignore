@@ -13,5 +13,6 @@ data/users.json
 data/entities.json
 data/todos.json
 data/settings.json
-# sources.json wird vom Server verwaltet (Maja befüllt Endpoints)
+# Laufzeit-Daten die vom Server verwaltet werden (überleben Deploys)
 data/sources.json
+data/agent_configs.json

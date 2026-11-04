@@ -1,5 +1,4 @@
 {
-  "output_format": "## Ausgabeformat\nFür jedes gefundene Signal erstelle einen Eintrag mit folgenden Feldern:\n\n**Titel:** [Sprechender Action-Titel im Stil eines Managementpräsentations-Titels – prägnant, aktiv, handlungsorientiert, 8–12 Wörter]\n**Zusammenfassung:** [500–1000 Zeichen. Was passiert konkret, was bedeutet das für Gesundheitseinrichtungen?]\n**Veröffentlicht am:** [TT.MM.JJJJ – Datum der Veröffentlichung durch die Quelle; immer befüllen wenn bekannt]\n**Beschlossen am:** [TT.MM.JJJJ – Datum des Beschlusses/der Entscheidung, z.B. G-BA-Beschlussdatum; leer lassen wenn nicht zutreffend]\n**Im Bundesanzeiger:** [TT.MM.JJJJ – Datum der amtlichen Bekanntmachung im Bundesanzeiger oder EU-Amtsblatt; nur für Gesetze/Verordnungen]\n**Gilt ab:** [TT.MM.JJJJ – Datum des Inkrafttretens oder der Wirksamkeit; z.B. 01.10.2026 für zukünftige Regelungen]\n**Frist bis:** [TT.MM.JJJJ – Handlungsfrist oder Stellungnahmefrist; z.B. bei AWMF-Konsultationen oder Übergangszeiträumen]\n**Entwicklungsstand:** [Genau eines von: Beobachtung | Entwurf | Konsultation | Beschlossen | Verkündet / Veröffentlicht | In Kraft ab [Datum] | In Kraft | Aufgehoben / Abgelöst]\n  → Beobachtung: früher Hinweis, noch nicht formalisiert\n  → Entwurf: Referentenentwurf oder Beschlussentwurf veröffentlicht\n  → Konsultation: formale Konsultationsphase mit Frist (z.B. AWMF, EU)\n  → Beschlossen: formal beschlossen (G-BA, Bundestag), noch nicht im Bundesanzeiger\n  → Verkündet / Veröffentlicht: im Bundesanzeiger / Amtsblatt, noch nicht wirksam oder Sicherheitsinformation\n  → In Kraft ab [Datum]: verkündet, zukünftiges Inkrafttreten bekannt\n  → In Kraft: unmittelbar rechtlich wirksam\n  → Aufgehoben / Abgelöst: widerrufen oder durch neue Regelung ersetzt\n**Handlungszeitpunkt:** [Genau eines von: Sofort | Kurzfristig (< 3 Monate) | Mittelfristig (3–12 Monate) | Langfristig (> 12 Monate) | Beobachten]\n**Quelle 1:** [Name der Quelle, z.B. G-BA, BMG, gematik, BZÄK]\n**Quellenlink 1:** [Direkte URL zum Originaldokument oder zur Meldung]\n**Agent:** [Exakter Name dieses Agenten: scrape | feed | pdf | search]\n**Region:** [Geltungsbereich: Bundesweit | Bayern | Nordrhein-Westfalen | … | EU / International]\n\nAlle anderen Felder (Priorität, Kategorie, Fachbereich, Betroffene Rollen, Aufwand, Nächster Schritt) werden von den Such-Agenten nicht befüllt und bleiben leer.\n\n**Granularität — Wann aufteilen, wann zusammenfassen:**\nErstelle **ein Signal pro eigenständiger Maßnahme**. Trenne immer dann, wenn sich mindestens eines dieser Merkmale unterscheidet:\n– Empfänger (z.B. nur Zahnärzte vs. nur Hausärzte)\n– Handlung (z.B. Abrechnungsänderung vs. Gerätepflicht vs. Dokumentationspflicht)\n– Frist oder Inkrafttreten (z.B. sofort vs. ab 01.01.2027)\n– Rechtlicher Rahmen (z.B. Gesetz vs. G-BA-Richtlinie vs. Sicherheitsmitteilung)\n\n**Beispiel Spargesetz:** Ein Artikel beschreibt Arzneimittelausschlüsse, Cannabis-Neuregelungen und Wegfall von Hygienezuschlägen. Das sind drei separate Signale mit unterschiedlichen Empfängern und Fristen — nicht ein Signal 'Spargesetz'.\n\n**Beispiel G-BA-Beschlüsse:** Eine Übersichtsseite listet sieben Arzneimittelbewertungen. Jede Bewertung ist ein eigenständiges Signal — auch wenn du die Zielgruppenrelevanz niedrig einschätzt. **Deine Aufgabe ist sammeln, nicht filtern.** Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent.\n\n**Zusammenfassen** nur wenn: dieselbe Maßnahme, dieselben Empfänger, dasselbe Inkrafttreten — aber von mehreren Quellen berichtet. In diesem Fall eine Quelle als Primärquelle, weitere als Quelle 2 / Quelle 3.\n\n---\n\n## Crawl-Report\nNach allen Signalen: Erstelle eine separate Tabelle im TSV-Format (Tab-getrennt) mit genau diesen 5 Spalten:\nQuelle\tAnzahl Signale\tHinweise/Probleme\tTimestamp\tAgent\n\nFühre **jede geprüfte Quelle** auf – auch solche ohne neue Signale oder mit technischen Problemen.\n– Anzahl Signale: Anzahl der in diesem Lauf für diese Quelle erstellten Signale (0 wenn keine)\n– Hinweise/Probleme: z.B. 'Seite nicht erreichbar', 'Login erforderlich', 'Kein neuer Inhalt', leer wenn ok\n– Timestamp: aktuelles Datum/Uhrzeit im Format JJMMDDhhmm (z.B. 2608061430)\n– Agent: exakter Name dieses Agenten (scrape | feed | pdf | search)",
   "agents": {
     "source_maintenance": {
       "label": "Quellen-Pflege-Agent",
@@ -12,8 +11,7 @@
       "maja_model": "claude-haiku-4-5-20251001",
       "trigger_mode": "after_nils",
       "interval_days": 30,
-      "schedule_start_date": "2026-11-25",
-      "next_run_date": "2026-11-25"
+      "cost_limit_usd": 1.0
     },
     "source_research": {
       "label": "Quellen-Recherche-Agent",
@@ -23,8 +21,7 @@
       "output_format": "## Ausgabeformat\nLiefere eine vollständige gesamthafte Quellenliste (Bestand + neue Quellen) als TSV (Tab-getrennt) mit genau dieser Kopfzeile:\n\nKürzel\tName\tURL\tRegion\tEndpoints\tPrimärkategorie\tRelevante Rollen\tAgenten\tPriorität\tZugang\tAktualisierung\tStatus\tHinweise\tAgenten-Hinweis (scrape)\tAgenten-Hinweis (feed)\tAgenten-Hinweis (pdf)\tAgenten-Hinweis (search)\tDatum Hinzugefügt\tDatum Letzte Änderung\tKommentar\n\nRegeln:\n- 'URL': direkter Einstiegspunkt (Unterseite/Feed/Dokumentverzeichnis), nicht die Homepage\n- 'Feed-URL': RSS/Atom-URL falls vorhanden, sonst leer\n- 'Agenten': kommagetrennt aus scrape | feed | pdf | search\n- 'Relevante Rollen': kommagetrennt\n- 'Agenten-Hinweis (X)': nur für den/die zugewiesenen Agenten befüllen, konkret, max. 2 Sätze\n- 'Datum Hinzugefügt': leer lassen wenn Quelle bereits bestand — nur bei neuen Quellen heutiges Datum JJJJ-MM-TT\n- 'Datum Letzte Änderung': heutiges Datum JJJJ-MM-TT wenn du Felder angepasst hast, sonst leer\n- 'Kommentar': kurze Beschreibung was du geändert/hinzugefügt hast, z.B. 'Feed-URL ergänzt', 'Neu hinzugefügt'\nLiefere eine vollständige Liste aller Quellen (bestehende + neue/geänderte) als einzige TSV-Tabelle mit Kopfzeile.\n\nZusatz für neue Quellen:\n- 'Kürzel': maximal 8 Zeichen, Großbuchstaben, eindeutig (z.B. BZÄK, KBVNL, GKVSV)\n- 'Datum Hinzugefügt': heutiges Datum JJJJ-MM-TT\n- 'Kommentar': 'Neu hinzugefügt'\nBestehende Quellen aus der Bestandsliste vollständig übernehmen (keine Felder löschen).",
       "schedule_time": "03:00",
       "schedule_enabled": true,
-      "schedule_start_date": "2026-11-25",
-      "next_run_date": "2026-11-25"
+      "cost_limit_usd": 1.0
     },
     "scrape": {
       "label": "Scrape-Agent",
@@ -43,8 +40,7 @@
       "schedule_time": "06:00",
       "schedule_enabled": true,
       "trigger_mode": "standalone",
-      "interval_days": 7,
-      "schedule_start_date": "2026-11-02"
+      "interval_days": 7
     },
     "frank_scrape": {
       "label": "Scrape-Fetcher",
@@ -53,8 +49,7 @@
       "schedule_time": "06:00",
       "schedule_enabled": true,
       "trigger_mode": "standalone",
-      "interval_days": 7,
-      "schedule_start_date": "2026-11-02"
+      "interval_days": 7
     },
     "sol_selector": {
       "label": "Selektor-Finder",
@@ -65,8 +60,7 @@
       "schedule_enabled": true,
       "trigger_mode": "after_nils",
       "interval_days": 7,
-      "schedule_time": "06:00",
-      "schedule_start_date": ""
+      "schedule_time": "06:00"
     },
     "feed": {
       "label": "Feed-Agent (Lars)",
@@ -87,7 +81,7 @@
       "trigger_mode": "standalone",
       "interval_days": 7,
       "schedule_time": "07:00",
-      "schedule_start_date": "2026-11-03"
+      "cost_limit_usd": 1.0
     },
     "search": {
       "label": "Search-Agent",
@@ -98,7 +92,7 @@
       "trigger_mode": "standalone",
       "interval_days": 7,
       "schedule_time": "07:30",
-      "schedule_start_date": "2026-11-03"
+      "cost_limit_usd": 1.0
     },
     "group": {
       "label": "Gruppierungs-Agent",
@@ -113,7 +107,8 @@
       "schedule_time": "06:00",
       "schedule_enabled": true,
       "trigger_mode": "after_fred_finn_mats_lena",
-      "interval_days": 7
+      "interval_days": 7,
+      "cost_limit_usd": 1.0
     },
     "bewertung": {
       "label": "Bewertungs-Agent",
@@ -124,12 +119,15 @@
       "schedule_time": "06:00",
       "schedule_enabled": true,
       "trigger_mode": "after_theo",
-      "interval_days": 7
+      "interval_days": 7,
+      "cost_limit_usd": 1.0
     },
     "kuration": {
       "label": "Kurations-Agent (Kurt)",
       "beschreibung": "Kurt ist noch nicht aktiv. Geplant: alle Signale einmalig mit einem relevant_for-Tag versehen (Fachrichtung, Zulassungsstatus, Praxisstruktur, Bundesland, Schwerpunkte). Einmalig pro Signal.",
-      "konfiguration": "Status: STUB - noch nicht implementiert. Einrichten wenn: (1) 2+ Profildimensionen aktiv genutzt, (2) echte Nutzer mit verschiedenen Profilen vorhanden, (3) Idas Fachrichtungs-Tag nicht ausreicht. Architektur: Separater Agent nach Ida, schreibt relevant_for in signal_final.json. Haiku-Call pro Signal."
+      "konfiguration": "Status: STUB - noch nicht implementiert. Einrichten wenn: (1) 2+ Profildimensionen aktiv genutzt, (2) echte Nutzer mit verschiedenen Profilen vorhanden, (3) Idas Fachrichtungs-Tag nicht ausreicht. Architektur: Separater Agent nach Ida, schreibt relevant_for in signal_final.json. Haiku-Call pro Signal.",
+      "cost_limit_usd": 1.0
     }
-  }
+  },
+  "output_format": "## Ausgabeformat\nFür jedes gefundene Signal erstelle einen Eintrag mit folgenden Feldern:\n\n**Titel:** [Sprechender Action-Titel im Stil eines Managementpräsentations-Titels – prägnant, aktiv, handlungsorientiert, 8–12 Wörter]\n**Zusammenfassung:** [500–1000 Zeichen. Was passiert konkret, was bedeutet das für Gesundheitseinrichtungen?]\n**Veröffentlicht am:** [TT.MM.JJJJ – Datum der Veröffentlichung durch die Quelle; immer befüllen wenn bekannt]\n**Beschlossen am:** [TT.MM.JJJJ – Datum des Beschlusses/der Entscheidung, z.B. G-BA-Beschlussdatum; leer lassen wenn nicht zutreffend]\n**Im Bundesanzeiger:** [TT.MM.JJJJ – Datum der amtlichen Bekanntmachung im Bundesanzeiger oder EU-Amtsblatt; nur für Gesetze/Verordnungen]\n**Gilt ab:** [TT.MM.JJJJ – Datum des Inkrafttretens oder der Wirksamkeit; z.B. 01.10.2026 für zukünftige Regelungen]\n**Frist bis:** [TT.MM.JJJJ – Handlungsfrist oder Stellungnahmefrist; z.B. bei AWMF-Konsultationen oder Übergangszeiträumen]\n**Entwicklungsstand:** [Genau eines von: Beobachtung | Entwurf | Konsultation | Beschlossen | Verkündet / Veröffentlicht | In Kraft ab [Datum] | In Kraft | Aufgehoben / Abgelöst]\n  → Beobachtung: früher Hinweis, noch nicht formalisiert\n  → Entwurf: Referentenentwurf oder Beschlussentwurf veröffentlicht\n  → Konsultation: formale Konsultationsphase mit Frist (z.B. AWMF, EU)\n  → Beschlossen: formal beschlossen (G-BA, Bundestag), noch nicht im Bundesanzeiger\n  → Verkündet / Veröffentlicht: im Bundesanzeiger / Amtsblatt, noch nicht wirksam oder Sicherheitsinformation\n  → In Kraft ab [Datum]: verkündet, zukünftiges Inkrafttreten bekannt\n  → In Kraft: unmittelbar rechtlich wirksam\n  → Aufgehoben / Abgelöst: widerrufen oder durch neue Regelung ersetzt\n**Handlungszeitpunkt:** [Genau eines von: Sofort | Kurzfristig (< 3 Monate) | Mittelfristig (3–12 Monate) | Langfristig (> 12 Monate) | Beobachten]\n**Quelle 1:** [Name der Quelle, z.B. G-BA, BMG, gematik, BZÄK]\n**Quellenlink 1:** [Direkte URL zum Originaldokument oder zur Meldung]\n**Agent:** [Exakter Name dieses Agenten: scrape | feed | pdf | search]\n**Region:** [Geltungsbereich: Bundesweit | Bayern | Nordrhein-Westfalen | … | EU / International]\n\nAlle anderen Felder (Priorität, Kategorie, Fachbereich, Betroffene Rollen, Aufwand, Nächster Schritt) werden von den Such-Agenten nicht befüllt und bleiben leer.\n\n**Granularität — Wann aufteilen, wann zusammenfassen:**\nErstelle **ein Signal pro eigenständiger Maßnahme**. Trenne immer dann, wenn sich mindestens eines dieser Merkmale unterscheidet:\n– Empfänger (z.B. nur Zahnärzte vs. nur Hausärzte)\n– Handlung (z.B. Abrechnungsänderung vs. Gerätepflicht vs. Dokumentationspflicht)\n– Frist oder Inkrafttreten (z.B. sofort vs. ab 01.01.2027)\n– Rechtlicher Rahmen (z.B. Gesetz vs. G-BA-Richtlinie vs. Sicherheitsmitteilung)\n\n**Beispiel Spargesetz:** Ein Artikel beschreibt Arzneimittelausschlüsse, Cannabis-Neuregelungen und Wegfall von Hygienezuschlägen. Das sind drei separate Signale mit unterschiedlichen Empfängern und Fristen — nicht ein Signal 'Spargesetz'.\n\n**Beispiel G-BA-Beschlüsse:** Eine Übersichtsseite listet sieben Arzneimittelbewertungen. Jede Bewertung ist ein eigenständiges Signal — auch wenn du die Zielgruppenrelevanz niedrig einschätzt. **Deine Aufgabe ist sammeln, nicht filtern.** Relevanzentscheidungen trifft der nachgelagerte Bewertungs-Agent.\n\n**Zusammenfassen** nur wenn: dieselbe Maßnahme, dieselben Empfänger, dasselbe Inkrafttreten — aber von mehreren Quellen berichtet. In diesem Fall eine Quelle als Primärquelle, weitere als Quelle 2 / Quelle 3.\n\n---\n\n## Crawl-Report\nNach allen Signalen: Erstelle eine separate Tabelle im TSV-Format (Tab-getrennt) mit genau diesen 5 Spalten:\nQuelle\tAnzahl Signale\tHinweise/Probleme\tTimestamp\tAgent\n\nFühre **jede geprüfte Quelle** auf – auch solche ohne neue Signale oder mit technischen Problemen.\n– Anzahl Signale: Anzahl der in diesem Lauf für diese Quelle erstellten Signale (0 wenn keine)\n– Hinweise/Probleme: z.B. 'Seite nicht erreichbar', 'Login erforderlich', 'Kein neuer Inhalt', leer wenn ok\n– Timestamp: aktuelles Datum/Uhrzeit im Format JJMMDDhhmm (z.B. 2608061430)\n– Agent: exakter Name dieses Agenten (scrape | feed | pdf | search)"
 }

@@ -332,6 +332,7 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to
     method     = agent_cfg.get("method", "")
     hint       = agent_cfg.get("hint", "")
     out_fmt    = agent_cfg.get("output_format", "")
+    cost_limit = float(agent_cfg.get("cost_limit_usd", 0) or 0)
 
     client = anthropic.Anthropic(api_key=api_key)
 
@@ -340,8 +341,16 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to
     errors         = []
     input_tokens   = 0
     output_tokens  = 0
+    limit_hit      = False
 
     for batch_idx, batch in enumerate(batches):
+        in_price, out_price = MODEL_PRICES.get(model, (3.0, 15.0))
+        cost_so_far = (input_tokens * in_price + output_tokens * out_price) / 1_000_000
+        if cost_limit > 0 and cost_so_far >= cost_limit:
+            errors.append(f"Kostenlimit von {cost_limit:.2f} USD erreicht nach Batch {batch_idx} ({cost_so_far:.4f} USD). Abbruch.")
+            limit_hit = True
+            break
+
         prompt = _build_prompt(persona, method, hint, out_fmt, batch)
         try:
             msg = client.messages.create(

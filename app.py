@@ -76,6 +76,11 @@ def _init_data():
             shutil.copy2(seed, SETTINGS_FILE)
         else:
             _save(SETTINGS_FILE, {"default_todo_categories": DEFAULT_TODO_CATEGORIES})
+    # agent_configs: copy from seed if missing (seed = last committed version)
+    if not os.path.exists(AGENT_CONFIGS_FILE):
+        seed = os.path.join(DATA_DIR, "agent_configs.seed.json")
+        if os.path.exists(seed):
+            shutil.copy2(seed, AGENT_CONFIGS_FILE)
 
 _init_data()
 

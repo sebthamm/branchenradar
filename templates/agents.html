@@ -16,6 +16,19 @@
   .fletcher-status-text.ok { color: var(--s-force); }
   .fletcher-status-text.error { color: var(--s-action); }
 
+  /* Einheitlicher Fortschrittsbalken für alle manuellen Agent-Runs */
+  .agent-progress { display:none; margin-top:10px; }
+  .agent-progress.visible { display:block; }
+  .agent-progress-bar-wrap { height:4px; background:var(--border); border-radius:2px; overflow:hidden; margin-bottom:6px; }
+  .agent-progress-bar { height:100%; width:30%; background:var(--primary,#2563EB); border-radius:2px;
+    animation: progress-indeterminate 1.4s ease-in-out infinite; }
+  @keyframes progress-indeterminate {
+    0%   { transform: translateX(-100%); width:40%; }
+    50%  { transform: translateX(130%);  width:60%; }
+    100% { transform: translateX(200%);  width:40%; }
+  }
+  .agent-progress-label { font-size:12px; color:var(--muted); }
+
   /* Ingestion blocks (Feed / Scrape / PDF / Search) */
   .ingestion-block { margin-bottom: 28px; }
   .ingestion-block-header { padding: 14px 20px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px 8px 0 0; border-bottom: none; }
@@ -696,6 +709,7 @@
               <span>&#9654; Jetzt ausf&#252;hren</span>
             </button>
             <span id="maya-manual-run-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
+            <div id="progress-maja" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div>
           </div>
         </div>
       </div>
@@ -764,6 +778,7 @@
           <button class="btn btn-primary btn-sm" id="sol-run-btn" onclick="runSol()">&#9654; Starten</button>
           {% endif %}
         </div>
+        <div style="padding:0 24px 8px"><div id="progress-sol" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
       </div>
       {# Configurable runtime parameters (superadmin only) #}
       <div class="nils-props-toggle" onclick="toggleSolSkills()">
@@ -931,6 +946,7 @@
             <button class="btn btn-primary btn-sm" id="fletcher-run-btn" onclick="runFletcher()">&#9654; Starten</button>
             <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Lars</a>
           </div>
+          <div style="padding:0 0 8px"><div id="progress-fletcher" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
         </div>
         <div class="nils-props-toggle" onclick="toggleFletcherSkills()">
           <span>Fletchers Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
@@ -1207,6 +1223,7 @@
             <button class="btn btn-primary btn-sm" id="frank-run-btn" onclick="runFrank()">&#9654; Starten</button>
             <a href="{{ url_for('fetcher_scrape_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Finn</a>
           </div>
+          <div style="padding:0 0 8px"><div id="progress-frank" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
         </div>
         <div class="nils-props-toggle" onclick="toggleFrankSkills()">
           <span>Franks Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
@@ -1770,6 +1787,7 @@
         <div class="agent-card-actions">
           <button id="theo-run-btn" class="btn btn-primary btn-sm" onclick="runTheo()">&#9654; Theo starten</button>
         </div>
+        <div style="padding:0 24px 8px"><div id="progress-theo" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
       </div>
       <div class="nils-props-toggle" onclick="toggleTheoSkills()">
         <span>Theos Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
@@ -1917,6 +1935,7 @@
         <div class="agent-card-actions">
           <button id="ida-run-btn" class="btn btn-primary btn-sm" onclick="runIda()">&#9654; Ida starten</button>
         </div>
+        <div style="padding:0 24px 8px"><div id="progress-ida" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
       </div>
       <div class="nils-props-toggle" onclick="toggleIdaSkills()">
         <span>Idas Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
@@ -2049,28 +2068,29 @@ function _setFletcherStatus(text, cls) {
 async function runFletcher() {
   const btn = document.getElementById('fletcher-run-btn');
   btn.disabled = true;
-  btn.textContent = '⏳ Fletcher läuft…';
+  btn.textContent = '⏳ Läuft…';
   _setFletcherStatus('Läuft…');
+  _progressShow('fletcher', 'Fletcher ruft Feeds ab…');
   try {
     const resp = await fetch('{{ url_for("fetcher_feed_run") }}', { method: 'POST' });
     const data = await resp.json();
     if (data.ok) {
       const r = data.result;
-      _setFletcherStatus(
-        `Letzter Lauf: ${r.run_at} · ${r.new_entries_total} neue Einträge · ` +
-        `${r.sources_ok} OK · ${r.sources_error} Fehler`,
-        r.sources_error > 0 ? 'error' : 'ok'
-      );
+      const msg = `${r.new_entries_total} neue Einträge · ${r.sources_ok} OK · ${r.sources_error} Fehler`;
+      _setFletcherStatus(`Letzter Lauf: ${r.run_at} · ` + msg, r.sources_error > 0 ? 'error' : 'ok');
+      _progressHide('fletcher', '✓ ' + msg, r.sources_error > 0);
       btn.textContent = '✓ Fertig';
     } else {
       _setFletcherStatus('Fehler: ' + data.error, 'error');
+      _progressHide('fletcher', 'Fehler: ' + data.error, true);
       btn.textContent = '✗ Fehler';
     }
   } catch (e) {
     _setFletcherStatus('Netzwerkfehler', 'error');
+    _progressHide('fletcher', 'Netzwerkfehler', true);
     btn.textContent = '✗ Fehler';
   }
-  setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Fletcher starten'; }, 3000);
+  setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Starten'; }, 3000);
 }
 
 // Status beim Laden der Seite abfragen
@@ -2099,27 +2119,29 @@ function _setFrankStatus(text, cls) {
 async function runFrank() {
   const btn = document.getElementById('frank-run-btn');
   btn.disabled = true;
-  btn.textContent = '⏳ Frank läuft…';
+  btn.textContent = '⏳ Läuft…';
   _setFrankStatus('Läuft…');
+  _progressShow('frank', 'Frank scrapet Quellen…');
   try {
     const resp = await fetch('{{ url_for("fetcher_scrape_run") }}', { method: 'POST' });
     const data = await resp.json();
     if (data.ok) {
       const r = data.result;
-      _setFrankStatus(
-        `Letzter Lauf: ${r.run_at} · ${r.new_entries_total} neue Links · ` +
-        `${r.sources_ok} OK · ${r.sources_error} Fehler`,
-        r.sources_error > 0 ? 'error' : 'ok'
-      );
+      const msg = `${r.new_entries_total} neue Links · ${r.sources_ok} OK · ${r.sources_error} Fehler`;
+      _setFrankStatus(`Letzter Lauf: ${r.run_at} · ` + msg, r.sources_error > 0 ? 'error' : 'ok');
+      _progressHide('frank', '✓ ' + msg, r.sources_error > 0);
       btn.textContent = '✓ Fertig';
     } else {
       _setFrankStatus('Fehler: ' + data.error, 'error');
+      _progressHide('frank', 'Fehler: ' + data.error, true);
       btn.textContent = '✗ Fehler';
     }
   } catch (e) {
     _setFrankStatus('Netzwerkfehler', 'error');
+    _progressHide('frank', 'Netzwerkfehler', true);
     btn.textContent = '✗ Fehler';
   }
+  setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Starten'; }, 3000);
 }
 
 (async () => {
@@ -2169,18 +2191,17 @@ function _pollMajaStatus() {
       const btn = document.getElementById('maja-run-btn');
       if (data.running) {
         _setMajaStatus('Läuft… (wird automatisch aktualisiert)');
+        _progressShow('maja', 'Maja analysiert Quellen-Endpunkte…');
         return;
       }
       if (_majaPoller) { clearInterval(_majaPoller); _majaPoller = null; }
-      if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Starten'; }
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Jetzt ausführen'; }
       if (data.exists) {
         const r = data;
         const errs = r.errors && r.errors.length ? ` · ${r.errors.length} Fehler` : '';
-        _setMajaStatus(
-          `Letzter Lauf: ${r.run_at} · ${r.endpoints_added} Endpunkte ergänzt · ` +
-          `${r.batches} Batches (${r.sources_total} Quellen)${errs}`,
-          r.errors && r.errors.length ? 'error' : 'ok'
-        );
+        const msg = `${r.endpoints_added} Endpunkte · ${r.batches} Batches (${r.sources_total} Quellen)${errs}`;
+        _setMajaStatus(`Letzter Lauf: ${r.run_at} · ` + msg, r.errors && r.errors.length ? 'error' : 'ok');
+        _progressHide('maja', '✓ ' + msg, r.errors && r.errors.length > 0);
       }
     })
     .catch(() => {});
@@ -2188,8 +2209,9 @@ function _pollMajaStatus() {
 
 async function runMaja() {
   const btn = document.getElementById('maja-run-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Maja läuft…'; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Läuft…'; }
   _setMajaStatus('Wird gestartet…');
+  _progressShow('maja', 'Maja wird gestartet…');
   try {
     const fromVal = document.getElementById('maja-from')?.value;
     const toVal   = document.getElementById('maja-to')?.value;
@@ -2204,14 +2226,17 @@ async function runMaja() {
     const data = await resp.json();
     if (data.ok && data.started) {
       _setMajaStatus('Läuft… (wird automatisch aktualisiert)');
+      _progressShow('maja', 'Maja analysiert Quellen-Endpunkte…');
       _majaPoller = setInterval(_pollMajaStatus, 10000);
     } else {
       _setMajaStatus('Fehler: ' + (data.error || 'unbekannt'), 'error');
-      if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Starten'; }
+      _progressHide('maja', 'Fehler: ' + (data.error || 'unbekannt'), true);
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Jetzt ausführen'; }
     }
   } catch (e) {
     _setMajaStatus('Fehler beim Starten', 'error');
-    if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Starten'; }
+    _progressHide('maja', 'Fehler beim Starten', true);
+    if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Jetzt ausführen'; }
   }
 }
 
@@ -2543,25 +2568,26 @@ function majaScheduleToggle() {
 
 async function runSol() {
   const btn = document.getElementById('sol-run-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Sol läuft…'; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Läuft…'; }
   _setSolStatus('Läuft…');
+  _progressShow('sol', 'Sol analysiert Scrape-Endpunkte…');
   try {
     const resp = await fetch('{{ url_for("selector_run") }}', { method: 'POST' });
     const data = await resp.json();
     if (data.ok) {
       const r = data.result;
-      _setSolStatus(
-        `Letzter Lauf: ${r.run_at} · ${r.updated} Selektoren eingetragen · ` +
-        `${r.failed} ohne Treffer · ${r.remaining} noch offen`,
-        r.remaining === 0 ? 'ok' : (r.failed > r.updated ? 'error' : 'ok')
-      );
+      const msg = `${r.updated} Selektoren · ${r.failed} ohne Treffer · ${r.remaining} offen`;
+      _setSolStatus(`Letzter Lauf: ${r.run_at} · ` + msg, r.remaining === 0 ? 'ok' : 'ok');
+      _progressHide('sol', '✓ ' + msg, false);
       if (btn) btn.textContent = '✓ Fertig';
     } else {
       _setSolStatus('Fehler: ' + data.error, 'error');
+      _progressHide('sol', 'Fehler: ' + data.error, true);
       if (btn) btn.textContent = '✗ Fehler';
     }
   } catch (e) {
     _setSolStatus('Netzwerkfehler', 'error');
+    _progressHide('sol', 'Netzwerkfehler', true);
     if (btn) btn.textContent = '✗ Fehler';
   }
   setTimeout(() => { if (btn) { btn.disabled = false; btn.textContent = '▶ Starten'; } }, 3000);
@@ -2802,22 +2828,35 @@ function saveDates() {
 
 async function runTheo() {
   const btn = document.getElementById('theo-run-btn');
-  btn.disabled = true; btn.textContent = 'Läuft…';
+  btn.disabled = true; btn.textContent = '⏳ Läuft…';
+  _progressShow('theo', 'Theo gruppiert Signale…');
   try {
-    const r = await fetch('/admin/theo/run', {method:'POST', headers:{'X-CSRFToken': document.querySelector('input[name=csrf_token]')?.value || ''}});
+    const r = await fetch('/admin/theo/run', {method:'POST', headers:{'Content-Type':'application/json'}});
     const d = await r.json();
-    if (!d.ok) { alert('Fehler: ' + d.error); btn.disabled = false; btn.textContent = 'Theo starten'; return; }
+    if (!d.ok) {
+      _progressHide('theo', 'Fehler: ' + d.error, true);
+      btn.disabled = false; btn.textContent = '▶ Theo starten'; return;
+    }
     _pollTheo();
-  } catch(e) { alert('Netzwerkfehler'); btn.disabled = false; btn.textContent = 'Theo starten'; }
+  } catch(e) {
+    _progressHide('theo', 'Netzwerkfehler', true);
+    btn.disabled = false; btn.textContent = '▶ Theo starten';
+  }
 }
 
 function _pollTheo() {
   fetch('/admin/theo/status').then(r=>r.json()).then(d => {
-    if (d.running) { setTimeout(_pollTheo, 3000); return; }
+    if (d.running) { _progressShow('theo', 'Theo gruppiert Signale…'); setTimeout(_pollTheo, 3000); return; }
     const btn = document.getElementById('theo-run-btn');
-    btn.disabled = false; btn.textContent = 'Theo starten';
-    if (d.error) { alert('Theo Fehler: ' + d.error); }
-    else if (d.exists) { alert('Theo fertig — ' + (d.groups_added||0) + ' neue Gruppen aus ' + (d.signals_processed||0) + ' Signalen.'); }
+    btn.disabled = false; btn.textContent = '▶ Theo starten';
+    if (d.error) {
+      _progressHide('theo', 'Fehler: ' + d.error, true);
+    } else if (d.exists) {
+      const msg = `${d.groups_added||0} neue Gruppen aus ${d.signals_processed||0} Signalen`;
+      _progressHide('theo', '✓ ' + msg, false);
+    } else {
+      _progressHide('theo', null);
+    }
   });
 }
 
@@ -2856,22 +2895,35 @@ function pollVera() {
 
 async function runIda() {
   const btn = document.getElementById('ida-run-btn');
-  btn.disabled = true; btn.textContent = 'Läuft…';
+  btn.disabled = true; btn.textContent = '⏳ Läuft…';
+  _progressShow('ida', 'Ida bewertet und finalisiert Signale…');
   try {
-    const r = await fetch('/admin/ida/run', {method:'POST', headers:{'X-CSRFToken': document.querySelector('input[name=csrf_token]')?.value || ''}});
+    const r = await fetch('/admin/ida/run', {method:'POST', headers:{'Content-Type':'application/json'}});
     const d = await r.json();
-    if (!d.ok) { alert('Fehler: ' + d.error); btn.disabled = false; btn.textContent = 'Ida starten'; return; }
+    if (!d.ok) {
+      _progressHide('ida', 'Fehler: ' + d.error, true);
+      btn.disabled = false; btn.textContent = '▶ Ida starten'; return;
+    }
     _pollIda();
-  } catch(e) { alert('Netzwerkfehler'); btn.disabled = false; btn.textContent = 'Ida starten'; }
+  } catch(e) {
+    _progressHide('ida', 'Netzwerkfehler', true);
+    btn.disabled = false; btn.textContent = '▶ Ida starten';
+  }
 }
 
 function _pollIda() {
   fetch('/admin/ida/status').then(r=>r.json()).then(d => {
-    if (d.running) { setTimeout(_pollIda, 3000); return; }
+    if (d.running) { _progressShow('ida', 'Ida bewertet und finalisiert Signale…'); setTimeout(_pollIda, 3000); return; }
     const btn = document.getElementById('ida-run-btn');
-    btn.disabled = false; btn.textContent = 'Ida starten';
-    if (d.error) { alert('Ida Fehler: ' + d.error); }
-    else if (d.exists) { alert('Ida fertig — ' + (d.finals_written||0) + ' FINAL-Signale geschrieben.'); }
+    btn.disabled = false; btn.textContent = '▶ Ida starten';
+    if (d.error) {
+      _progressHide('ida', 'Fehler: ' + d.error, true);
+    } else if (d.exists) {
+      const msg = `${d.finals_written||0} FINAL-Signale geschrieben`;
+      _progressHide('ida', '✓ ' + msg, false);
+    } else {
+      _progressHide('ida', null);
+    }
   });
 }
 function toggleNilsSched() {
@@ -3744,6 +3796,32 @@ async function _loadAgentPerf(name) {
     body.innerHTML = html;
   } catch(e) {
     body.innerHTML = `<div style="color:var(--error,#e55);font-size:12px">Fehler beim Laden: ${e.message}</div>`;
+  }
+}
+
+// ── Einheitlicher Fortschrittsbalken ─────────────────────────────────────────
+function _progressShow(id, label) {
+  const el = document.getElementById('progress-' + id);
+  if (!el) return;
+  el.querySelector('.agent-progress-label').textContent = label || 'Läuft…';
+  el.classList.add('visible');
+}
+function _progressHide(id, label, isError) {
+  const el = document.getElementById('progress-' + id);
+  if (!el) return;
+  el.classList.remove('visible');
+  // Ergebnis kurz im Label anzeigen, dann ausblenden
+  if (label) {
+    const lbl = el.querySelector('.agent-progress-label');
+    lbl.textContent = label;
+    lbl.style.color = isError ? 'var(--s-action)' : 'var(--s-force)';
+    el.querySelector('.agent-progress-bar-wrap').style.display = 'none';
+    el.classList.add('visible');
+    setTimeout(() => {
+      el.classList.remove('visible');
+      el.querySelector('.agent-progress-bar-wrap').style.display = '';
+      lbl.style.color = '';
+    }, 4000);
   }
 }
 
