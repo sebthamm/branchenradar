@@ -3234,7 +3234,15 @@ function _renderSchedSummary(elId, d) {
   if (!d || !d.schedule_enabled) { el.textContent = '○ Inaktiv'; el.style.color = 'var(--faint)'; return; }
   el.style.color = 'var(--muted)';
   const mode = d.trigger_mode || 'standalone';
-  if (mode !== 'standalone') { el.textContent = '● nach Vorgänger'; return; }
+  if (mode !== 'standalone') {
+    const names = { after_nils:'nach Nils', after_maya:'nach Maya', after_sol:'nach Sol',
+      after_fletcher:'nach Fletcher', after_frank:'nach Frank', after_fred:'nach Fred',
+      after_finn:'nach Finn', after_mats:'nach Mats', after_lena:'nach Lena',
+      after_theo:'nach Theo', after_ida:'nach Ida',
+      after_fred_finn_mats_lena:'nach Fred/Finn/Mats/Lena' };
+    el.textContent = '● ' + (names[mode] || 'nach Vorgänger');
+    return;
+  }
   const days = d.interval_days || 7;
   const nr = d.next_run || null;
   let dateStr = '';
