@@ -3620,6 +3620,7 @@ async function loadFrankPerf() {
       fetch('/admin/frank/history').then(r => r.json()).catch(() => [])
     ]);
     if (!d || !d.run_at) { body.innerHTML = '<div style="color:var(--faint);font-size:13px">Noch kein Lauf aufgezeichnet.</div>'; return; }
+    let html = '';
     if (hist.length > 0) {
       html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Alle Läufe</div>';
       html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
