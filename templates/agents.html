@@ -3357,9 +3357,19 @@ function _renderSchedSummary(elId, d) {
   let nextStr = '';
   if (nr) {
     const parts = nr.split(' ');
-    const dp = (parts[0]||'').split('-');
-    const timeStr = (parts[1]||'').slice(0,5);
-    nextStr = ' Nächstes Mal: ' + (dp[2]||'') + '.' + (dp[1]||'') + '. | ' + timeStr + ' Uhr';
+    const datePart = parts[0] || '';
+    const timeStr  = (parts[1] || '').slice(0, 5);
+    let dayStr = '';
+    if (datePart.includes('-')) {
+      // YYYY-MM-DD
+      const dp = datePart.split('-');
+      dayStr = (dp[2]||'') + '.' + (dp[1]||'') + '.';
+    } else if (datePart.includes('.')) {
+      // DD.MM.YYYY or DD.MM.
+      const dp = datePart.split('.');
+      dayStr = (dp[0]||'') + '.' + (dp[1]||'') + '.';
+    }
+    if (dayStr && timeStr) nextStr = ' Nächstes Mal: ' + dayStr + ' | ' + timeStr + ' Uhr';
   }
   el.innerHTML = _pill('Automatisch. Alle ' + days + ' Tage.' + nextStr);
 }
