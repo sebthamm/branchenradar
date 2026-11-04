@@ -2390,11 +2390,16 @@ async function loadMayaPerfReview() {
             <div style="font-weight:600;font-size:13px;margin-bottom:3px">${it.title||''}</div>
             <div style="font-size:12px;color:var(--muted);line-height:1.5">${it.description||''}</div>
           </div>
+          <button onclick="archiveMayaInsight('${it.id}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--muted);cursor:pointer;flex-shrink:0;white-space:nowrap">Archivieren</button>
         </div>`).join('');
     }
   } catch(e) {
     document.getElementById('maya-pr-quality').innerHTML = '<div style="color:var(--faint);font-size:12px">Fehler beim Laden</div>';
   }
+}
+async function archiveMayaInsight(id) {
+  await fetch(`/admin/maja/insights/${id}`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'abgelehnt'})});
+  loadMayaInsights();
 }
 function toggleMayaSched() {
   const panel = document.getElementById('maya-sched-panel');
