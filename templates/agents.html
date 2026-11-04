@@ -3731,9 +3731,11 @@ document.addEventListener('DOMContentLoaded', function() {
   loadAgentSched('sol','sol_selector');
   loadAgentSched('mats','pdf');
   loadAgentSched('lena','search');
-  // Limits-Summary für Nils und Maja direkt beim Laden setzen
+  // Limits- und Zeitplan-Summary für Nils und Maja direkt beim Laden setzen
   loadNilsLimits();
   loadMayaLimits();
+  loadNilsSched();
+  loadMayaSched();
 });
 
 // ── Generic Performance Review ──────────────────────────────────────────────
