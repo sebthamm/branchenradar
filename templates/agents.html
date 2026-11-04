@@ -947,6 +947,7 @@
           </div>
           <div class="agent-card-actions">
             <button class="btn btn-primary btn-sm" id="fletcher-run-btn" onclick="runFletcher()">&#9654; Starten</button>
+            <button id="fletcher-cancel-btn" class="btn btn-sm" onclick="cancelFetcher('fletcher')" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">&#10005; Abbrechen</button>
             <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Lars</a>
           </div>
           <div style="padding:0 0 8px"><div id="progress-fletcher" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
@@ -1226,6 +1227,7 @@
           </div>
           <div class="agent-card-actions">
             <button class="btn btn-primary btn-sm" id="frank-run-btn" onclick="runFrank()">&#9654; Starten</button>
+            <button id="frank-cancel-btn" class="btn btn-sm" onclick="cancelFetcher('frank')" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">&#10005; Abbrechen</button>
             <a href="{{ url_for('fetcher_scrape_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Finn</a>
           </div>
           <div style="padding:0 0 8px"><div id="progress-frank" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
@@ -1945,6 +1947,7 @@
         </div>
         <div class="agent-card-actions">
           <button id="ida-run-btn" class="btn btn-primary btn-sm" onclick="runIda()">&#9654; Ida starten</button>
+          <button id="ida-cancel-btn" class="btn btn-sm" onclick="cancelIda()" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">&#10005; Abbrechen</button>
         </div>
         <div style="padding:0 24px 8px"><div id="progress-ida" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
       </div>
@@ -2077,32 +2080,58 @@ function _setFletcherStatus(text, cls) {
   el.className = 'fletcher-status-text' + (cls ? ' ' + cls : '');
 }
 
+const _fetcherAbort = {};
+
+function _refreshPerf(name) {
+  _perfLoaded[name] = true;
+  _loadAgentPerf(name);
+}
+
+function _fetcherDone(name, btn, cancel) {
+  btn.disabled = false; btn.style.display = '';
+  if (cancel) { cancel.style.display = 'none'; cancel.disabled = false; cancel.textContent = '✕ Abbrechen'; }
+  _refreshPerf(name);
+}
+
+function cancelFetcher(name) {
+  const c = _fetcherAbort[name];
+  if (c) { c.abort(); delete _fetcherAbort[name]; }
+  const btn    = document.getElementById(name + '-run-btn');
+  const cancel = document.getElementById(name + '-cancel-btn');
+  _progressHide(name, 'Abgebrochen', true);
+  if (btn)    { btn.disabled = false; btn.style.display = ''; }
+  if (cancel) { cancel.style.display = 'none'; }
+}
+
 async function runFletcher() {
-  const btn = document.getElementById('fletcher-run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Läuft…';
+  const btn    = document.getElementById('fletcher-run-btn');
+  const cancel = document.getElementById('fletcher-cancel-btn');
+  btn.disabled = true; btn.style.display = 'none';
+  if (cancel) cancel.style.display = '';
   _setFletcherStatus('Läuft…');
   _progressShow('fletcher', 'Fletcher ruft Feeds ab…');
+  const ctrl = new AbortController();
+  _fetcherAbort['fletcher'] = ctrl;
   try {
-    const resp = await fetch('{{ url_for("fetcher_feed_run") }}', { method: 'POST' });
+    const resp = await fetch('{{ url_for("fetcher_feed_run") }}', { method: 'POST', signal: ctrl.signal });
+    delete _fetcherAbort['fletcher'];
     const data = await resp.json();
     if (data.ok) {
       const r = data.result;
       const msg = `${r.new_entries_total} neue Einträge · ${r.sources_ok} OK · ${r.sources_error} Fehler`;
       _setFletcherStatus(`Letzter Lauf: ${r.run_at} · ` + msg, r.sources_error > 0 ? 'error' : 'ok');
       _progressHide('fletcher', '✓ ' + msg, r.sources_error > 0);
-      btn.textContent = '✓ Fertig';
     } else {
       _setFletcherStatus('Fehler: ' + data.error, 'error');
       _progressHide('fletcher', 'Fehler: ' + data.error, true);
-      btn.textContent = '✗ Fehler';
     }
   } catch (e) {
-    _setFletcherStatus('Netzwerkfehler', 'error');
-    _progressHide('fletcher', 'Netzwerkfehler', true);
-    btn.textContent = '✗ Fehler';
+    if (e.name !== 'AbortError') {
+      _setFletcherStatus('Netzwerkfehler', 'error');
+      _progressHide('fletcher', 'Netzwerkfehler', true);
+    }
   }
-  setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Starten'; }, 3000);
+  _fetcherDone('fletcher', btn, cancel);
 }
 
 // Status beim Laden der Seite abfragen
@@ -2129,31 +2158,34 @@ function _setFrankStatus(text, cls) {
 }
 
 async function runFrank() {
-  const btn = document.getElementById('frank-run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Läuft…';
+  const btn    = document.getElementById('frank-run-btn');
+  const cancel = document.getElementById('frank-cancel-btn');
+  btn.disabled = true; btn.style.display = 'none';
+  if (cancel) cancel.style.display = '';
   _setFrankStatus('Läuft…');
   _progressShow('frank', 'Frank scrapet Quellen…');
+  const ctrl = new AbortController();
+  _fetcherAbort['frank'] = ctrl;
   try {
-    const resp = await fetch('{{ url_for("fetcher_scrape_run") }}', { method: 'POST' });
+    const resp = await fetch('{{ url_for("fetcher_scrape_run") }}', { method: 'POST', signal: ctrl.signal });
+    delete _fetcherAbort['frank'];
     const data = await resp.json();
     if (data.ok) {
       const r = data.result;
       const msg = `${r.new_entries_total} neue Links · ${r.sources_ok} OK · ${r.sources_error} Fehler`;
       _setFrankStatus(`Letzter Lauf: ${r.run_at} · ` + msg, r.sources_error > 0 ? 'error' : 'ok');
       _progressHide('frank', '✓ ' + msg, r.sources_error > 0);
-      btn.textContent = '✓ Fertig';
     } else {
       _setFrankStatus('Fehler: ' + data.error, 'error');
       _progressHide('frank', 'Fehler: ' + data.error, true);
-      btn.textContent = '✗ Fehler';
     }
   } catch (e) {
-    _setFrankStatus('Netzwerkfehler', 'error');
-    _progressHide('frank', 'Netzwerkfehler', true);
-    btn.textContent = '✗ Fehler';
+    if (e.name !== 'AbortError') {
+      _setFrankStatus('Netzwerkfehler', 'error');
+      _progressHide('frank', 'Netzwerkfehler', true);
+    }
   }
-  setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Starten'; }, 3000);
+  _fetcherDone('frank', btn, cancel);
 }
 
 (async () => {
@@ -2897,6 +2929,7 @@ function _pollTheo() {
     } else {
       _progressHide('theo', null);
     }
+    _refreshPerf('theo');
   });
 }
 
@@ -2934,28 +2967,43 @@ function pollVera() {
 }
 
 async function runIda() {
-  const btn = document.getElementById('ida-run-btn');
-  btn.disabled = true; btn.textContent = '⏳ Läuft…';
+  const btn    = document.getElementById('ida-run-btn');
+  const cancel = document.getElementById('ida-cancel-btn');
+  btn.disabled = true; btn.style.display = 'none';
+  if (cancel) cancel.style.display = '';
   _progressShow('ida', 'Ida bewertet und finalisiert Signale…');
   try {
     const r = await fetch('/admin/ida/run', {method:'POST', headers:{'Content-Type':'application/json'}});
     const d = await r.json();
     if (!d.ok) {
       _progressHide('ida', 'Fehler: ' + d.error, true);
-      btn.disabled = false; btn.textContent = '▶ Ida starten'; return;
+      btn.disabled = false; btn.style.display = '';
+      if (cancel) cancel.style.display = 'none';
+      return;
     }
     _pollIda();
   } catch(e) {
     _progressHide('ida', 'Netzwerkfehler', true);
-    btn.disabled = false; btn.textContent = '▶ Ida starten';
+    btn.disabled = false; btn.style.display = '';
+    if (cancel) cancel.style.display = 'none';
   }
+}
+
+function cancelIda() {
+  const btn    = document.getElementById('ida-run-btn');
+  const cancel = document.getElementById('ida-cancel-btn');
+  _progressHide('ida', 'Abgebrochen (Server läuft ggf. weiter)', true);
+  if (btn)    { btn.disabled = false; btn.style.display = ''; }
+  if (cancel) { cancel.style.display = 'none'; }
 }
 
 function _pollIda() {
   fetch('/admin/ida/status').then(r=>r.json()).then(d => {
     if (d.running) { _progressShow('ida', 'Ida bewertet und finalisiert Signale…'); setTimeout(_pollIda, 3000); return; }
-    const btn = document.getElementById('ida-run-btn');
-    btn.disabled = false; btn.textContent = '▶ Ida starten';
+    const btn    = document.getElementById('ida-run-btn');
+    const cancel = document.getElementById('ida-cancel-btn');
+    btn.disabled = false; btn.style.display = '';
+    if (cancel) { cancel.style.display = 'none'; }
     if (d.error) {
       _progressHide('ida', 'Fehler: ' + d.error, true);
     } else if (d.exists) {
@@ -2964,6 +3012,7 @@ function _pollIda() {
     } else {
       _progressHide('ida', null);
     }
+    _refreshPerf('ida');
   });
 }
 function toggleNilsSched() {
