@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}Agenten — Praxis-Radar{% endblock %}
 {% block head %}
 <style>
@@ -418,7 +418,7 @@
 
       <div class="nils-props-toggle" onclick="toggleNilsSched()" style="border-top:1px solid var(--border)">
         <span>Dann arbeitet Nils</span>
-        <span id="nils-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+        <span id="nils-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
         <span class="nils-props-arrow" id="nils-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="nils-sched-panel">
@@ -461,7 +461,7 @@
       </div>
       <div class="nils-props-toggle" onclick="toggleNilsLimits()" style="border-top:1px solid var(--border)">
         <span>Nils&#8217; Grenzen</span>
-        <span id="nils-limits-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+        <span id="nils-limits-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
         <span class="nils-props-arrow" id="nils-limits-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="nils-limits-panel">
@@ -645,7 +645,7 @@
       {% if session.get('role') == 'superadmin' %}
       <div class="nils-props-toggle" onclick="toggleMayaSched()" style="border-top:1px solid var(--border)">
         <span>Dann arbeitet Maya</span>
-        <span id="maya-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+        <span id="maya-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
         <span class="nils-props-arrow" id="maya-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="maya-sched-panel">
@@ -718,7 +718,7 @@
 
       <div class="nils-props-toggle" onclick="toggleMayaLimits()" style="border-top:1px solid var(--border)">
         <span>Mayas Grenzen</span>
-        <span id="maya-limits-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+        <span id="maya-limits-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
         <span class="nils-props-arrow" id="maya-limits-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="maya-limits-panel">
@@ -861,7 +861,7 @@
 
       <div class="nils-props-toggle" onclick="toggleSolSched()">
         <span>Dann arbeitet Sol <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
-        <span id="sol-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+        <span id="sol-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
         <span class="nils-props-arrow" id="sol-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="sol-sched-panel">
@@ -1007,7 +1007,7 @@
 
         <div class="nils-props-toggle" onclick="toggleFletcherSched()">
           <span>Dann arbeitet Fletcher <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
-          <span id="fletcher-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+          <span id="fletcher-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="fletcher-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="fletcher-sched-panel">
@@ -1146,7 +1146,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleFredSched()">
           <span>Dann arbeitet Fred <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
-          <span id="fred-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+          <span id="fred-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="fred-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="fred-sched-panel">
@@ -1287,7 +1287,7 @@
 
         <div class="nils-props-toggle" onclick="toggleFrankSched()">
           <span>Dann arbeitet Frank <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
-          <span id="frank-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+          <span id="frank-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="frank-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="frank-sched-panel">
@@ -1442,7 +1442,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleFinnSched()">
           <span>Dann arbeitet Finn <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
-          <span id="finn-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+          <span id="finn-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="finn-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="finn-sched-panel">
@@ -1573,7 +1573,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleMatsSched()">
           <span>Dann arbeitet Mats <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
-          <span id="mats-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+          <span id="mats-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="mats-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="mats-sched-panel">
@@ -1710,7 +1710,7 @@
         </div>
         <div class="nils-props-toggle" onclick="toggleLenaSched()">
           <span>Dann arbeitet Lena <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
-          <span id="lena-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+          <span id="lena-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
           <span class="nils-props-arrow" id="lena-sched-arrow">&#9658;</span>
         </div>
         <div class="nils-props-panel" id="lena-sched-panel">
@@ -1872,7 +1872,7 @@
       </div>
       <div class="nils-props-toggle" onclick="toggleTheoSched()">
         <span>Dann arbeitet Theo <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
-        <span id="theo-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+        <span id="theo-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
         <span class="nils-props-arrow" id="theo-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="theo-sched-panel"><div id="theo-sched-status" style="padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Wird geladen&#x2026;</div>
@@ -2000,7 +2000,7 @@
       </div>
       <div class="nils-props-toggle" onclick="toggleIdaSched()">
         <span>Dann arbeitet Ida <span style="font-weight:400;color:var(--faint)">(Zeitplan)</span></span>
-        <span id="ida-sched-summary" style="font-size:11px;color:var(--muted);margin-left:8px"></span>
+        <span id="ida-sched-summary" style="flex:1;display:flex;justify-content:flex-end;margin:0 8px"></span>
         <span class="nils-props-arrow" id="ida-sched-arrow">&#9658;</span>
       </div>
       <div class="nils-props-panel" id="ida-sched-panel">
@@ -3309,11 +3309,15 @@ async function loadMayaCostChips() {
 }
 
 
+function _pill(text, inactive) {
+  const bg   = inactive ? 'var(--surface2)' : 'var(--surface2)';
+  const col  = inactive ? 'var(--faint)'    : 'var(--muted)';
+  return `<span style="display:inline-block;padding:3px 10px;border-radius:20px;background:${bg};border:1px solid var(--border);font-size:11px;color:${col};white-space:nowrap;max-width:100%;box-sizing:border-box">${text}</span>`;
+}
 function _renderSchedSummary(elId, d) {
   const el = document.getElementById(elId);
   if (!el) return;
-  if (!d || !d.schedule_enabled) { el.textContent = '○ Inaktiv'; el.style.color = 'var(--faint)'; return; }
-  el.style.color = 'var(--muted)';
+  if (!d || !d.schedule_enabled) { el.innerHTML = _pill('Inaktiv', true); return; }
   const mode = d.trigger_mode || 'standalone';
   if (mode !== 'standalone') {
     const names = { after_nils:'nach Nils', after_maya:'nach Maya', after_sol:'nach Sol',
@@ -3321,28 +3325,29 @@ function _renderSchedSummary(elId, d) {
       after_finn:'nach Finn', after_mats:'nach Mats', after_lena:'nach Lena',
       after_theo:'nach Theo', after_ida:'nach Ida',
       after_fred_finn_mats_lena:'nach Fred/Finn/Mats/Lena' };
-    el.textContent = '● ' + (names[mode] || 'nach Vorgänger');
+    el.innerHTML = _pill('Automatisch. ' + (names[mode] || 'nach Vorgänger'));
     return;
   }
   const days = d.interval_days || 7;
   const nr = d.next_run || null;
-  let dateStr = '';
+  let nextStr = '';
   if (nr) {
     const parts = nr.split(' ');
     const dp = (parts[0]||'').split('-');
-    dateStr = ' · ' + (dp[2]||'') + '.' + (dp[1]||'') + '. ' + (parts[1]||'');
+    const timeStr = (parts[1]||'').slice(0,5);
+    nextStr = ' Nächstes Mal: ' + (dp[2]||'') + '.' + (dp[1]||'') + '. | ' + timeStr + ' Uhr';
   }
-  el.textContent = '● ' + days + ' T.' + dateStr;
+  el.innerHTML = _pill('Automatisch. Alle ' + days + ' Tage.' + nextStr);
 }
 function _renderLimitsSummary(elId, costUsd, costRel) {
   const el = document.getElementById(elId);
   if (!el) return;
   const parts = [];
-  if (costUsd > 0) parts.push('max. $' + Number(costUsd).toFixed(2));
+  if (costUsd > 0) parts.push('Max. ' + Number(costUsd).toFixed(2).replace('.', ',') + ' $');
   else parts.push('kein $-Limit');
-  if (costRel > 0) parts.push('max. ' + costRel + '% über ⌀');
+  if (costRel > 0) parts.push('max. ' + costRel + ' % über ⌀');
   else parts.push('kein %-Limit');
-  el.textContent = '(' + parts.join(', ') + ')';
+  el.innerHTML = _pill(parts.join(', '));
 }
 function toggleNilsLimits() {
   document.getElementById('nils-limits-panel').classList.toggle('open');
