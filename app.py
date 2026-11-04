@@ -3571,6 +3571,23 @@ def maja_insight_update(insight_id):
         json.dump(insights, f, ensure_ascii=False, indent=2)
     return jsonify({"ok": True})
 
+@app.route("/admin/maja/insights/bulk-archive", methods=["POST"])
+@role_required("admin", "superadmin")
+def maja_insights_bulk_archive():
+    if not os.path.exists(MAJA_INSIGHTS_FILE):
+        return jsonify({"ok": True, "archived": 0})
+    with open(MAJA_INSIGHTS_FILE, encoding="utf-8") as f:
+        insights = json.load(f)
+    count = 0
+    for item in insights:
+        if item.get("status") not in ("abgelehnt",):
+            item["status"] = "abgelehnt"
+            item["status_updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+            count += 1
+    with open(MAJA_INSIGHTS_FILE, "w", encoding="utf-8") as f:
+        json.dump(insights, f, ensure_ascii=False, indent=2)
+    return jsonify({"ok": True, "archived": count})
+
 @app.route("/admin/maja/report")
 @role_required("admin", "superadmin")
 def maja_report():

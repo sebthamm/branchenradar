@@ -634,7 +634,7 @@
           <!-- Lerneffekte -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Lerneffekte &amp; Verbesserungsvorschl&#228;ge</div>
-            <span id="maya-pr-insights-count" style="font-size:11px;color:var(--muted)"></span>
+            <div style="display:flex;align-items:center;gap:8px"><span id="maya-pr-insights-count" style="font-size:11px;color:var(--muted)"></span><button onclick="archiveAllMayaInsights()" style="font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--muted);cursor:pointer">Alle archivieren</button></div>
           </div>
           <div id="maya-pr-insights" style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
             <div style="padding:16px;text-align:center;color:var(--faint);font-size:12px">Wird geladen&#x2026;</div>
@@ -2455,6 +2455,12 @@ async function loadMayaPerfReview() {
 async function archiveMayaInsight(id) {
   await fetch(`/admin/maja/insights/${id}`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'abgelehnt'})});
   loadMayaInsights();
+}
+async function archiveAllMayaInsights() {
+  if (!confirm("Alle Verbesserungsvorschläge archivieren?")) return;
+  const r = await fetch("/admin/maja/insights/bulk-archive", {method:"POST"});
+  const d = await r.json();
+  if (d.ok) loadMayaPerfReview();
 }
 function toggleMayaSched() {
   const panel = document.getElementById('maya-sched-panel');
