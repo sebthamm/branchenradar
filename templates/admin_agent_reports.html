@@ -556,9 +556,7 @@ async function loadInsights() {
           <div style="font-size:12px;color:var(--muted);line-height:1.6">${item.description}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
-          ${item.status !== 'geprüft'   ? `<button onclick="setInsightStatus('${item.id}','geprüft')"   style="padding:4px 10px;font-size:11px;border:1px solid var(--s-active);color:var(--s-active);background:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap">✓ Geprüft</button>` : ''}
-          ${item.status !== 'abgelehnt' ? `<button onclick="setInsightStatus('${item.id}','abgelehnt')" style="padding:4px 10px;font-size:11px;border:1px solid var(--faint);color:var(--muted);background:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap">✕ Ablehnen</button>` : ''}
-          ${item.status !== 'neu'       ? `<button onclick="setInsightStatus('${item.id}','neu')"       style="padding:4px 10px;font-size:11px;border:1px solid var(--border);color:var(--muted);background:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap">↩ Neu</button>` : ''}
+          <button onclick="setInsightStatus('${item.id}','abgelehnt')" style="padding:4px 10px;font-size:11px;border:1px solid var(--border);color:var(--muted);background:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap">Archivieren</button>
         </div>
       </div>`;
     }).join('');
