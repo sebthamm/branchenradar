@@ -4038,6 +4038,8 @@ def theo_run():
         except Exception:
             pass
 
+    _THEO_MAX_COST = 1.0  # USD
+
     def _run():
         global _theo_running, _theo_cancel
         _theo_running = True
@@ -4058,12 +4060,22 @@ def theo_run():
                 _save(THEO_STATUS_FILE, {"run_at": _dt.now().strftime("%Y-%m-%d %H:%M:%S"), "cancelled": True})
                 return
 
-            _write_step(f"{len(signals)} Signale geladen — Claude-API wird aufgerufen…")
-            client   = anthropic.Anthropic(api_key=api_key)
+            # Kostenschätzung vor API-Aufruf
             sig_list = "\n".join(
                 f'- ID: {s["id"]} | Titel: {s.get("title","")} | Kategorie: {s.get("category","")} | Datum: {s.get("date","")}'
                 for s in signals
             )
+            est_in_tok = len(sig_list) // 4
+            est_cost   = est_in_tok / 1_000_000 * 1.0 + 4096 / 1_000_000 * 5.0
+            if est_cost > _THEO_MAX_COST:
+                err = {"run_at": _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
+                       "error": f"Kostenlimit: Schätzung ${est_cost:.2f} > ${_THEO_MAX_COST:.2f} — Lauf abgebrochen"}
+                _save(THEO_STATUS_FILE, err)
+                _append_agent_history(THEO_HISTORY_FILE, err)
+                return
+
+            _write_step(f"{len(signals)} Signale geladen — Claude-API wird aufgerufen… (est. ${est_cost:.3f})")
+            client   = anthropic.Anthropic(api_key=api_key)
             _auto_fmt = (
                 "## Ausgabeformat (automatisierter Lauf)\n\n"
                 "Antworte NUR mit einem JSON-Array. Jede Gruppe ist ein Array von Signal-IDs.\n"
@@ -4183,6 +4195,14 @@ def ida_run():
 
     import threading
 
+    _IDA_MAX_COST = 1.0  # USD
+
+    def _write_ida_step(step):
+        try:
+            _save(IDA_STATUS_FILE, {"step": step, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+        except Exception:
+            pass
+
     def _run():
         global _ida_running
         _ida_running = True
@@ -4190,6 +4210,7 @@ def ida_run():
             import anthropic
             from datetime import datetime as _dt
             client  = anthropic.Anthropic(api_key=api_key)
+            _write_ida_step("Signale und Gruppen werden geladen…")
             signals = load_signals()
             sig_map = {s["id"]: s for s in signals}
             matches = load_signal_matches()
@@ -4198,9 +4219,12 @@ def ida_run():
             processed_ids = set()
             total_in_tok  = 0
             total_out_tok = 0
+            cost_so_far   = 0.0
+
+            _write_ida_step(f"0/{len(matches)} Gruppen zusammengeführt…")
 
             # Grouped signals → aggregated FINAL via Claude
-            for m in matches:
+            for idx, m in enumerate(matches):
                 ids = [m.get("sig1","")] + [p.get("id","") for p in m.get("pairs",[])]
                 grp = [sig_map[i] for i in ids if i in sig_map]
                 if not grp:
@@ -4232,12 +4256,20 @@ def ida_run():
                     f'{_auto_fmt}\n\n'
                     f'## Zu aggregierende Signale\n{grp_text}'
                 )
+                if cost_so_far >= _IDA_MAX_COST:
+                    _write_ida_step(f"Kostenlimit ${_IDA_MAX_COST:.2f} erreicht — {idx}/{len(matches)} Gruppen verarbeitet, Rest wird 1:1 übernommen")
+                    break
+
+                _write_ida_step(f"{idx}/{len(matches)} Gruppen zusammengeführt… (${cost_so_far:.3f})")
                 msg = client.messages.create(
                     model=model, max_tokens=2048,
                     messages=[{"role": "user", "content": prompt}]
                 )
-                total_in_tok  += msg.usage.input_tokens  if msg.usage else 0
-                total_out_tok += msg.usage.output_tokens if msg.usage else 0
+                in_tok  = msg.usage.input_tokens  if msg.usage else 0
+                out_tok = msg.usage.output_tokens if msg.usage else 0
+                total_in_tok  += in_tok
+                total_out_tok += out_tok
+                cost_so_far    = _agent_cost(model, total_in_tok, total_out_tok)
                 raw = msg.content[0].text if msg.content else "{}"
                 import re as _re
                 match = _re.search(r"\{.*\}", raw, _re.DOTALL)
@@ -4296,7 +4328,14 @@ def ida_run():
 @role_required("superadmin")
 def ida_status():
     if _ida_running:
-        return jsonify({"running": True})
+        step = ""
+        if os.path.exists(IDA_STATUS_FILE):
+            try:
+                with open(IDA_STATUS_FILE, encoding="utf-8") as f:
+                    step = json.load(f).get("step", "")
+            except Exception:
+                pass
+        return jsonify({"running": True, "step": step})
     if not os.path.exists(IDA_STATUS_FILE):
         return jsonify({"running": False, "exists": False})
     with open(IDA_STATUS_FILE, encoding="utf-8") as f:

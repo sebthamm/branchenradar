@@ -2999,11 +2999,15 @@ function cancelIda() {
 
 function _pollIda() {
   fetch('/admin/ida/status').then(r=>r.json()).then(d => {
-    if (d.running) { _progressShow('ida', 'Ida bewertet und finalisiert Signale…'); setTimeout(_pollIda, 3000); return; }
+    if (d.running) {
+      _progressShow('ida', d.step || 'Ida bewertet und finalisiert Signale…');
+      setTimeout(_pollIda, 3000);
+      return;
+    }
     const btn    = document.getElementById('ida-run-btn');
     const cancel = document.getElementById('ida-cancel-btn');
     btn.disabled = false; btn.style.display = '';
-    if (cancel) { cancel.style.display = 'none'; }
+    if (cancel) { cancel.style.display = 'none'; cancel.disabled = false; cancel.textContent = '✕ Abbrechen'; }
     if (d.error) {
       _progressHide('ida', 'Fehler: ' + d.error, true);
     } else if (d.exists) {
@@ -3791,6 +3795,30 @@ function saveFredSched()     { saveAgentSched('fred','feed',              () => 
 function saveFinnSched()     { saveAgentSched('finn','scrape',            () => loadAgentSched('finn','scrape')); }
 function saveTheoSched()     { saveAgentSched('theo','group',             () => loadAgentSched('theo','group')); }
 function saveIdaSched()      { saveAgentSched('ida','bewertung',          () => loadAgentSched('ida','bewertung')); }
+
+// On page load: resume polling if Theo or Ida is already running
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('/admin/theo/status').then(r=>r.json()).then(d => {
+    if (d.running) {
+      const btn = document.getElementById('theo-run-btn');
+      const cancel = document.getElementById('theo-cancel-btn');
+      if (btn) { btn.disabled = true; btn.style.display = 'none'; }
+      if (cancel) cancel.style.display = '';
+      _progressShow('theo', d.step || 'Theo läuft…');
+      _pollTheo();
+    }
+  }).catch(()=>{});
+  fetch('/admin/ida/status').then(r=>r.json()).then(d => {
+    if (d.running) {
+      const btn = document.getElementById('ida-run-btn');
+      const cancel = document.getElementById('ida-cancel-btn');
+      if (btn) { btn.disabled = true; btn.style.display = 'none'; }
+      if (cancel) cancel.style.display = '';
+      _progressShow('ida', d.step || 'Ida läuft…');
+      _pollIda();
+    }
+  }).catch(()=>{});
+});
 
 // Load all schedule data once on page load
 document.addEventListener('DOMContentLoaded', function() {
