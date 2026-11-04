@@ -10,14 +10,26 @@
     </div>
   </div>
 
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
-    <button id="full-run-btn" onclick="startFullRun()" style="padding:9px 20px;font-size:13px;font-weight:600;background:var(--primary,#2563EB);color:#fff;border:none;border-radius:8px;cursor:pointer;white-space:nowrap">
-      ▶&nbsp; Gesamtlauf starten
-    </button>
-    <button onclick="toggleFullRunInfo()" title="Was passiert beim Gesamtlauf?" style="width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0">i</button>
-    <div id="full-run-info" style="display:none;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;line-height:1.6;max-width:500px">
-      Startet <strong>Fletcher, Frank, Mats und Lena</strong> gleichzeitig inkl. Folge-Agenten: Fred (nach Fletcher), Finn (nach Frank), Theo + Ida (wenn alle vier fertig sind).<br>
-      <span style="color:var(--faint)">Maja, Nils und Sol laufen nach eigenem Zeitplan und sind nicht betroffen.</span>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button id="full-run-btn" onclick="startFullRun()" style="padding:9px 20px;font-size:13px;font-weight:600;background:var(--primary,#2563EB);color:#fff;border:none;border-radius:8px;cursor:pointer;white-space:nowrap">
+        ▶&nbsp; Gesamtlauf starten
+      </button>
+      <button id="full-run-cancel-btn" onclick="cancelFullRun()" style="display:none;padding:9px 18px;font-size:13px;font-weight:600;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;white-space:nowrap">
+        ✕&nbsp; Abbrechen
+      </button>
+      <button onclick="toggleFullRunInfo()" title="Was passiert beim Gesamtlauf?" style="width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0">i</button>
+      <div id="full-run-info" style="display:none;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;line-height:1.6;max-width:500px">
+        Startet <strong>Fletcher, Frank, Mats und Lena</strong> gleichzeitig inkl. Folge-Agenten: Fred (nach Fletcher), Finn (nach Frank), Theo + Ida (wenn alle vier fertig sind).<br>
+        <span style="color:var(--faint)">Maja, Nils und Sol laufen nach eigenem Zeitplan und sind nicht betroffen.</span>
+      </div>
+    </div>
+    <div id="full-run-progress" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px">
+      <div id="full-run-chips" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+        <div id="full-run-bar" style="height:100%;background:var(--primary,#2563EB);border-radius:2px;width:0%;transition:width .4s ease"></div>
+      </div>
+      <div id="full-run-label" style="font-size:11px;color:var(--muted);margin-top:6px">Wird gestartet…</div>
     </div>
   </div>
 
@@ -408,39 +420,126 @@
   document.addEventListener('DOMContentLoaded', load);
 })();
 
+const AGENT_ORDER = ['Fletcher','Frank','Mats','Lena','Fred','Finn','Theo','Ida'];
+const AGENT_LABEL = {
+  Fletcher:'Fletcher', Frank:'Frank', Mats:'Mats', Lena:'Lena',
+  Fred:'Fred', Finn:'Finn', Theo:'Theo', Ida:'Ida'
+};
+let _fullRunPoll = null;
+let _fullRunCancelled = false;
+
 function toggleFullRunInfo() {
   const el = document.getElementById('full-run-info');
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
+function _renderAgentChips(agents) {
+  const wrap = document.getElementById('full-run-chips');
+  if (!wrap) return;
+  const known = Object.keys(agents);
+  const all = AGENT_ORDER.filter(a => known.includes(a) || agents[a]);
+  if (!all.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = all.map(name => {
+    const st = agents[name] || 'pending';
+    let icon = '○', bg = 'var(--surface2)', color = 'var(--faint)', border = 'var(--border)';
+    if (st === 'running')      { icon = '⟳'; bg = '#eff6ff'; color = '#2563EB'; border = '#93c5fd'; }
+    else if (st === 'done')    { icon = '✓'; bg = '#f0fdf4'; color = '#16a34a'; border = '#86efac'; }
+    else if (st === 'error')   { icon = '✕'; bg = '#fef2f2'; color = '#dc2626'; border = '#fca5a5'; }
+    return `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1px solid ${border};background:${bg};font-size:12px;font-weight:600;color:${color}">
+      <span style="${st==='running'?'display:inline-block;animation:spin 1s linear infinite':''}">${icon}</span>
+      ${AGENT_LABEL[name]||name}
+    </span>`;
+  }).join('');
+}
+
+function _updateBar(agents) {
+  const bar = document.getElementById('full-run-bar');
+  const lbl = document.getElementById('full-run-label');
+  if (!bar || !lbl) return;
+  const vals = Object.values(agents);
+  const done = vals.filter(v => v === 'done' || v === 'error').length;
+  const total = Math.max(vals.length, 1);
+  bar.style.width = Math.round(done / total * 100) + '%';
+  const running = Object.entries(agents).filter(([,v]) => v === 'running').map(([k]) => k);
+  if (_fullRunCancelled) {
+    lbl.textContent = 'Abbruch angefordert — aktueller Schritt wird noch abgeschlossen…';
+  } else if (running.length) {
+    lbl.textContent = running.join(', ') + (running.length > 1 ? ' laufen …' : ' läuft …');
+  } else if (done === total && total > 0) {
+    lbl.textContent = 'Fertig.';
+    bar.style.width = '100%';
+  } else {
+    lbl.textContent = 'Wird gestartet…';
+  }
+}
+
 async function startFullRun() {
-  const btn = document.getElementById('full-run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Läuft…';
+  const btn    = document.getElementById('full-run-btn');
+  const cancel = document.getElementById('full-run-cancel-btn');
+  const prog   = document.getElementById('full-run-progress');
+  _fullRunCancelled = false;
+  btn.disabled = true; btn.style.display = 'none';
+  if (cancel) cancel.style.display = '';
+  if (prog)   prog.style.display = '';
+  _renderAgentChips({});
+  _updateBar({});
   try {
     const d = await fetch('/admin/full-run', {method: 'POST', headers: {'Content-Type': 'application/json'}}).then(r => r.json());
     if (!d.ok) {
-      alert(d.error || 'Fehler beim Starten');
-      btn.disabled = false;
-      btn.textContent = '▶ Gesamtlauf starten';
+      _fullRunReset(d.error || 'Fehler beim Starten');
       return;
     }
-    btn.textContent = '⏳ Läuft (Fletcher, Frank, Mats, Lena …)';
-    const poll = setInterval(async () => {
-      try {
-        const s = await fetch('/admin/full-run/status').then(r => r.json());
-        if (!s.running) {
-          clearInterval(poll);
-          btn.disabled = false;
-          btn.textContent = '✓ Abgeschlossen — erneut starten';
-        }
-      } catch(e) { clearInterval(poll); btn.disabled = false; btn.textContent = '▶ Gesamtlauf starten'; }
-    }, 5000);
+    _pollFullRun();
   } catch(e) {
-    alert('Fehler: ' + e.message);
-    btn.disabled = false;
-    btn.textContent = '▶ Gesamtlauf starten';
+    _fullRunReset('Netzwerkfehler');
   }
+}
+
+async function cancelFullRun() {
+  _fullRunCancelled = true;
+  const cancel = document.getElementById('full-run-cancel-btn');
+  if (cancel) { cancel.disabled = true; cancel.textContent = 'Abbruch…'; }
+  try {
+    await fetch('/admin/full-run/cancel', {method: 'POST', headers: {'Content-Type': 'application/json'}});
+  } catch(e) {}
+}
+
+function _pollFullRun() {
+  if (_fullRunPoll) clearTimeout(_fullRunPoll);
+  _fullRunPoll = setTimeout(async () => {
+    try {
+      const s = await fetch('/admin/full-run/status').then(r => r.json());
+      _renderAgentChips(s.agents || {});
+      _updateBar(s.agents || {});
+      if (s.running) {
+        _pollFullRun();
+      } else {
+        _fullRunDone(s.agents || {});
+      }
+    } catch(e) {
+      _fullRunReset('Statusabfrage fehlgeschlagen');
+    }
+  }, 2000);
+}
+
+function _fullRunDone(agents) {
+  const btn    = document.getElementById('full-run-btn');
+  const cancel = document.getElementById('full-run-cancel-btn');
+  const lbl    = document.getElementById('full-run-label');
+  if (cancel) { cancel.style.display = 'none'; cancel.disabled = false; cancel.textContent = '✕  Abbrechen'; }
+  if (btn)    { btn.disabled = false; btn.style.display = ''; }
+  const errors = Object.values(agents).filter(v => v === 'error').length;
+  if (lbl) lbl.textContent = _fullRunCancelled ? 'Abgebrochen.' : (errors ? `Fertig mit ${errors} Fehler(n).` : 'Erfolgreich abgeschlossen.');
+  if (btn) btn.textContent = '▶  Erneut starten';
+}
+
+function _fullRunReset(msg) {
+  const btn    = document.getElementById('full-run-btn');
+  const cancel = document.getElementById('full-run-cancel-btn');
+  const lbl    = document.getElementById('full-run-label');
+  if (cancel) { cancel.style.display = 'none'; cancel.disabled = false; cancel.textContent = '✕  Abbrechen'; }
+  if (btn)    { btn.disabled = false; btn.style.display = ''; btn.textContent = '▶  Gesamtlauf starten'; }
+  if (lbl && msg) lbl.textContent = 'Fehler: ' + msg;
 }
 </script>
 {% endblock %}

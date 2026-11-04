@@ -3942,15 +3942,38 @@ def _agent_cost(model, in_tok, out_tok):
     return round((in_tok * p_in + out_tok * p_out) / 1_000_000, 4)
 
 import threading as _full_run_threading
-_full_run_lock = _full_run_threading.Lock()
+_full_run_lock   = _full_run_threading.Lock()
 _full_run_active = False
+_full_run_cancel = False
+_full_run_state  = {}   # agent -> "running" | "done" | "error"
+
+def _frs_set(agent, state):
+    """Update a single agent's state in _full_run_state."""
+    global _full_run_state
+    _full_run_state = dict(_full_run_state)
+    _full_run_state[agent] = state
 
 @app.route("/admin/full-run", methods=["POST"])
 @role_required("superadmin", "admin")
 def full_run_start():
-    global _full_run_active
+    global _full_run_active, _full_run_cancel, _full_run_state
     if _full_run_active:
         return jsonify({"ok": False, "error": "Lauf läuft bereits"}), 409
+    _full_run_cancel = False
+    _full_run_state  = {}
+
+    def _wrap(name, fn):
+        """Run fn, tracking state in _full_run_state."""
+        def _inner():
+            _frs_set(name, "running")
+            try:
+                fn()
+                _frs_set(name, "done")
+            except Exception as _e:
+                _frs_set(name, "error")
+                import logging
+                logging.getLogger("full-run").error("%s fehlgeschlagen: %s", name, _e)
+        return _inner
 
     def _do_full_run():
         global _full_run_active
@@ -3961,10 +3984,10 @@ def full_run_start():
         for k in ('fred', 'finn', 'mats', 'lena'):
             _completion_flags.pop(k, None)
         threads = [
-            _full_run_threading.Thread(target=_fletcher_scheduled_job, daemon=True),
-            _full_run_threading.Thread(target=_frank_scheduled_job,    daemon=True),
-            _full_run_threading.Thread(target=_mats_scheduled_job,     daemon=True),
-            _full_run_threading.Thread(target=_lena_scheduled_job,     daemon=True),
+            _full_run_threading.Thread(target=_wrap("Fletcher", _fletcher_scheduled_job), daemon=True),
+            _full_run_threading.Thread(target=_wrap("Frank",    _frank_scheduled_job),    daemon=True),
+            _full_run_threading.Thread(target=_wrap("Mats",     _mats_scheduled_job),     daemon=True),
+            _full_run_threading.Thread(target=_wrap("Lena",     _lena_scheduled_job),     daemon=True),
         ]
         for t in threads:
             t.start()
@@ -3981,10 +4004,25 @@ def full_run_start():
     _full_run_threading.Thread(target=_do_full_run, daemon=True).start()
     return jsonify({"ok": True})
 
+@app.route("/admin/full-run/cancel", methods=["POST"])
+@role_required("superadmin", "admin")
+def full_run_cancel():
+    global _full_run_cancel
+    _full_run_cancel = True
+    return jsonify({"ok": True})
+
 @app.route("/admin/full-run/status", methods=["GET"])
 @role_required("superadmin", "admin")
 def full_run_status():
-    return jsonify({"running": _full_run_active})
+    # Also check whether Theo or Ida are still running (triggered by completion flags)
+    state = dict(_full_run_state)
+    if _theo_running:
+        state.setdefault("Theo", "running")
+    ida_run = globals().get("_ida_running", False)
+    if ida_run:
+        state.setdefault("Ida", "running")
+    still_running = _full_run_active or _theo_running or bool(ida_run)
+    return jsonify({"running": still_running, "agents": state})
 
 @app.route("/admin/theo/run", methods=["POST"])
 @role_required("superadmin")
