@@ -50,10 +50,18 @@
   .detail-field { font-size: 12px; }
   .detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); margin-bottom: 2px; }
   .detail-value { color: var(--text); line-height: 1.5; }
-  .detail-summary { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 10px; border-left: 3px solid var(--border); padding-left: 12px; }
   .detail-sources a { font-size: 12px; color: var(--navy); text-decoration: none; }
   .detail-sources a:hover { text-decoration: underline; }
   .toggle-icon { font-size: 10px; color: var(--faint); float: right; }
+
+  /* Zweispaltiger Textbereich: links Ida-Summary, rechts Sol-Detail */
+  .detail-texts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .detail-text-col { padding: 10px 14px; }
+  .detail-text-col:first-child { border-right: 1px solid var(--border); }
+  .detail-text-col-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); margin-bottom: 6px; }
+  .detail-text-body { font-size: 12px; color: var(--text); line-height: 1.6; max-height: calc(1.6em * 10); overflow-y: auto; white-space: pre-wrap; }
+  .detail-text-body.empty { color: var(--faint); font-style: italic; }
+  @media (max-width: 700px) { .detail-texts { grid-template-columns: 1fr; } .detail-text-col:first-child { border-right: none; border-bottom: 1px solid var(--border); } }
 
   .legend-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; align-items:center; justify-content:center; }
   .legend-overlay.open { display:flex; }
@@ -211,9 +219,22 @@
         </tr>
         <tr class="sig-detail" id="detail-{{ row_id }}">
           <td colspan="9">
-            {% if s.get('summary') %}
-            <div class="detail-summary">{{ s.get('summary','') }}</div>
-            {% endif %}
+            <div class="detail-texts">
+              <div class="detail-text-col">
+                <div class="detail-text-col-label">Ida — Zusammenfassung</div>
+                <div class="detail-text-body {% if not s.get('summary') %}empty{% endif %}">{{ s.get('summary','') or '(leer)' }}</div>
+              </div>
+              <div class="detail-text-col">
+                <div class="detail-text-col-label">Sol — Kachel-Text (Detail)</div>
+                {% if s.get('detail_extended') %}
+                <div class="detail-text-body">{{ s.get('detail_extended','') }}</div>
+                {% elif s.get('detail') %}
+                <div class="detail-text-body">{{ s.get('detail','') }}</div>
+                {% else %}
+                <div class="detail-text-body empty">(noch nicht von Sol befüllt)</div>
+                {% endif %}
+              </div>
+            </div>
             <div class="detail-grid">
               {% if s.get('action') %}
               <div class="detail-field">
