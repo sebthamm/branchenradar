@@ -2,671 +2,207 @@
 {% block title %}Agenten-Reports — Branchenradar{% endblock %}
 {% block head %}
 <style>
-  .main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 60px; }
-  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
+  .main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
   .page-title { font-size: 22px; font-weight: 700; color: var(--text); }
+  .page-sub { font-size: 13px; color: var(--muted); }
 
-  .filter-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  /* Summary strip */
+  .summary-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+  .summary-pill {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12px; display: flex; flex-direction: column; gap: 2px;
+    min-width: 110px;
+  }
+  .summary-pill .sp-name { font-weight: 700; color: var(--text); font-size: 13px; }
+  .summary-pill .sp-role { color: var(--muted); font-size: 11px; }
+  .summary-pill .sp-stats { color: var(--text); margin-top: 4px; }
+  .summary-pill .sp-cost { color: var(--primary); font-weight: 600; }
+  .summary-pill.has-error { border-color: var(--s-action); }
+
+  /* Filter bar */
+  .filter-bar {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 10px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
   .filter-bar label { font-size: 12px; color: var(--muted); }
-  .filter-bar input[type="date"] { padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; background: var(--bg); color: var(--text); outline: none; }
-  .filter-bar input[type="date"]:focus { border-color: var(--navy); }
+  .filter-bar select, .filter-bar input[type="text"] {
+    padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 12px; background: var(--bg); color: var(--text); outline: none; font-family: inherit;
+  }
+  .filter-bar select:focus, .filter-bar input:focus { border-color: var(--navy); }
 
-  .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-  .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .agent-card-head { padding: 12px 16px; background: var(--surface2); border-bottom: 1px solid var(--border); }
-  .agent-card-label { font-size: 13px; font-weight: 600; }
-  .agent-card-body { padding: 10px 0; }
+  /* Runs table */
+  .runs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .runs-table th {
+    text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid var(--border);
+    background: var(--surface2); position: sticky; top: 0; z-index: 2;
+  }
+  .runs-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .runs-table tr:last-child td { border-bottom: none; }
+  .runs-table tr:hover td { background: var(--surface2); }
+  .runs-table .col-agent { font-weight: 600; white-space: nowrap; }
+  .runs-table .col-role { color: var(--muted); font-size: 12px; }
+  .runs-table .col-date { white-space: nowrap; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .runs-table .col-dur  { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; }
+  .runs-table .col-tok  { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); }
+  .runs-table .col-cost { font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; color: var(--primary); }
+  .runs-table .col-out  { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .runs-table .col-note { font-size: 11px; color: var(--muted); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge-error { background: #fef2f2; color: #b91c1c; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600; }
+  .badge-ok    { background: #f0fdf4; color: #15803d; border-radius: 4px; padding: 1px 6px; font-size: 11px; }
 
-  .stat-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 16px; border-bottom: 1px solid var(--border); font-size: 12px; }
-  .stat-row:last-child { border-bottom: none; }
-  .stat-label { display: flex; align-items: center; gap: 8px; }
-  .stat-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-  .dot-high  { background: var(--s-active); }
-  .dot-mid   { background: var(--s-announced); }
-  .dot-low   { background: var(--s-radar); }
-  .dot-zero  { background: var(--faint); }
-  .dot-error { background: var(--s-action); }
-  .stat-count { font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; color: var(--navy); }
-  .stat-count:hover { opacity: .7; }
-  .stat-empty { color: var(--faint); }
+  .agent-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0;
+    vertical-align: middle;
+  }
+  .agent-color-frank    { background: #6366f1; }
+  .agent-color-fletcher { background: #8b5cf6; }
+  .agent-color-fred     { background: #3b82f6; }
+  .agent-color-finn     { background: #0ea5e9; }
+  .agent-color-mats     { background: #06b6d4; }
+  .agent-color-lena     { background: #10b981; }
+  .agent-color-nils     { background: #f59e0b; }
+  .agent-color-theo     { background: #f97316; }
+  .agent-color-ida      { background: #ef4444; }
+  .agent-color-maja     { background: #ec4899; }
+  .agent-color-sol      { background: #84cc16; }
 
-  /* Detail popup */
-  .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 600; align-items: center; justify-content: center; }
-  .detail-overlay.open { display: flex; }
-  .detail-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); width: min(560px, 92vw); max-height: 80vh; display: flex; flex-direction: column; }
-  .detail-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .detail-title { font-size: 14px; font-weight: 600; }
-  .detail-close { background: none; border: none; cursor: pointer; font-size: 20px; color: var(--muted); line-height: 1; padding: 2px 6px; border-radius: 4px; }
-  .detail-close:hover { color: var(--text); }
-  .detail-body { overflow-y: auto; padding: 12px 18px; }
-  .detail-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
-  .detail-item:last-child { border-bottom: none; }
-  .detail-source { font-weight: 600; }
-  .detail-meta { color: var(--muted); margin-top: 2px; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--faint); font-size: 14px; }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
 
-  .empty-state { text-align:center;padding:48px 20px;color:var(--faint);font-size:14px; }
-  #maja-history-table th, #maja-history-table td { white-space: nowrap; }
-  .run-history-table { width:100%;border-collapse:collapse;font-size:12px; }
-  .run-history-table th { padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:left;background:var(--surface2); }
-  .run-history-table th.num { text-align:right; }
-  .run-history-table td { padding:7px 14px; }
-  .run-history-table td.num { text-align:right;font-variant-numeric:tabular-nums; }
-  .run-history-table tr:nth-child(even) { background:var(--surface2); }
-  @media (max-width:700px) { .main { padding:14px 14px 60px; } .agents-grid { grid-template-columns: 1fr; } #maja-report-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) {
+    .main { padding: 16px; }
+    .runs-table .col-role, .runs-table .col-tok { display: none; }
+  }
 </style>
 {% endblock %}
 {% block content %}
 <div class="main">
   <div class="page-head">
     <div class="page-title">Agenten-Reports</div>
-    <a href="{{ url_for('agent_reports_raw') }}" class="btn btn-secondary btn-sm">RAW-Daten →</a>
+    <div class="page-sub">Alle Läufe aller Agenten — chronologisch</div>
   </div>
 
-  <form class="filter-bar" method="get">
-    <label>Von: <input type="date" name="date_from" value="{{ date_from }}"></label>
-    <label>Bis: <input type="date" name="date_to"   value="{{ date_to }}"></label>
-    <button type="submit" class="btn btn-secondary btn-sm">Filtern</button>
-    {% if date_from or date_to %}
-      <a href="{{ url_for('agent_reports') }}" class="btn btn-secondary btn-sm" style="color:var(--s-action)">✕ Filter zurücksetzen</a>
-    {% endif %}
-  </form>
-
-  {# ── Maja Report ── #}
-  <div style="margin-bottom:32px">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
-        <circle cx="22" cy="22" r="22" fill="#C88035"/>
-        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#7A4A1E"/>
-        <rect x="19" y="29" width="6" height="4" rx="2" fill="#F5C9A0"/>
-        <circle cx="22" cy="20" r="10" fill="#F5C9A0"/>
-        <path d="M12 21 C12 8 32 8 32 21 L30 17 Q22 11 14 17 Z" fill="#9C6438"/>
-        <path d="M13 17 Q12 24 13 31" stroke="#9C6438" stroke-width="4" stroke-linecap="round" fill="none"/>
-        <path d="M31 17 Q32 24 31 31" stroke="#9C6438" stroke-width="4" stroke-linecap="round" fill="none"/>
-        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <path d="M18 24 Q22 27.5 26 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div>
-        <div style="font-size:16px;font-weight:600">Maja</div>
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Quellen-Pflege-Agent</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="maja-report-grid">
-
-      {# Qualität #}
-      <div class="agent-card">
-        <div class="agent-card-head"><div class="agent-card-label">Qualität</div></div>
-        <div class="agent-card-body" id="maja-quality-body">
-          <div class="stat-row"><span class="stat-label">Wird geladen…</span></div>
+  {# ── Zusammenfassung je Agent ── #}
+  <div class="summary-strip">
+    {% set agent_order = ['frank','fletcher','fred','finn','mats','lena','nils','theo','ida','maja','sol'] %}
+    {% for key in agent_order %}
+      {% if key in summary %}
+        {% set s = summary[key] %}
+        <div class="summary-pill {% if s.errors > 0 %}has-error{% endif %}">
+          <span class="sp-name">
+            <span class="agent-dot agent-color-{{ key }}"></span>{{ s.agent }}
+          </span>
+          <span class="sp-role">{{ s.role }}</span>
+          <span class="sp-stats">{{ s.runs }} Läufe</span>
+          {% if s.total_cost > 0 %}
+            <span class="sp-cost">{{ "%.2f"|format(s.total_cost) }} $</span>
+          {% endif %}
+          {% if s.errors > 0 %}
+            <span style="color:var(--s-action);font-size:11px">{{ s.errors }}× Fehler</span>
+          {% endif %}
         </div>
-      </div>
-
-      {# Lauf-Performance #}
-      <div class="agent-card" style="grid-column:1/-1">
-        <div class="agent-card-head"><div class="agent-card-label">Lauf-Performance (letzte 10 Läufe)</div></div>
-        <div style="overflow-x:auto">
-          <table id="maja-history-table" style="width:100%;border-collapse:collapse;font-size:12px">
-            <thead>
-              <tr style="background:var(--surface2);text-align:left">
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border)">Datum</th>
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border)">Modell</th>
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:center">Bereich</th>
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Quellen</th>
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Endpunkte ergänzt</th>
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Dauer</th>
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Input-Token</th>
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Output-Token</th>
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:right">Kosten (USD)</th>
-                <th style="padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border);text-align:center">Fehler</th>
-              </tr>
-            </thead>
-            <tbody id="maja-history-body">
-              <tr><td colspan="9" style="padding:20px;text-align:center;color:var(--faint)">Wird geladen…</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {# Lerneffekte #}
-      <div class="agent-card" style="grid-column:1/-1">
-        <div class="agent-card-head" style="display:flex;align-items:center;justify-content:space-between">
-          <div class="agent-card-label">Lerneffekte &amp; Verbesserungsvorschläge</div>
-          <span id="maja-insights-count" style="font-size:11px;color:var(--muted)"></span>
-        </div>
-        <div id="maja-insights-body" style="padding:0">
-          <div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">Wird geladen…</div>
-        </div>
-      </div>
-
-    </div>
+      {% endif %}
+    {% endfor %}
   </div>
 
-  {# ── Macro: stat card rows ── #}
-  {% macro stat_rows(key, s) %}
-  <div class="agent-card-body">
-    <div class="stat-row">
-      <span class="stat-label"><span class="stat-dot dot-high"></span>≥ 5 Signale</span>
-      {% if s.high %}<span class="stat-count" onclick="showDetail('{{ key }}_high')">{{ s.high | length }}</span>
-      {% else %}<span class="stat-empty">0</span>{% endif %}
-    </div>
-    <div class="stat-row">
-      <span class="stat-label"><span class="stat-dot dot-mid"></span>2–4 Signale</span>
-      {% if s.mid %}<span class="stat-count" onclick="showDetail('{{ key }}_mid')">{{ s.mid | length }}</span>
-      {% else %}<span class="stat-empty">0</span>{% endif %}
-    </div>
-    <div class="stat-row">
-      <span class="stat-label"><span class="stat-dot dot-low"></span>1 Signal</span>
-      {% if s.low %}<span class="stat-count" onclick="showDetail('{{ key }}_low')">{{ s.low | length }}</span>
-      {% else %}<span class="stat-empty">0</span>{% endif %}
-    </div>
-    <div class="stat-row">
-      <span class="stat-label"><span class="stat-dot dot-zero"></span>0 Signale</span>
-      {% if s.zero %}<span class="stat-count" onclick="showDetail('{{ key }}_zero')">{{ s.zero | length }}</span>
-      {% else %}<span class="stat-empty">0</span>{% endif %}
-    </div>
-    <div class="stat-row">
-      <span class="stat-label"><span class="stat-dot dot-error"></span>Technischer Fehler</span>
-      {% if s.error %}<span class="stat-count" style="color:var(--s-action)" onclick="showDetail('{{ key }}_error')">{{ s.error | length }}</span>
-      {% else %}<span class="stat-empty">0</span>{% endif %}
-    </div>
+  {# ── Filter ── #}
+  <div class="filter-bar">
+    <label>Agent</label>
+    <select id="filter-agent" onchange="applyFilters()">
+      <option value="">Alle</option>
+      {% for key in agent_order %}{% if key in summary %}
+        <option value="{{ key }}">{{ summary[key].agent }}</option>
+      {% endif %}{% endfor %}
+    </select>
+    <label style="margin-left:8px">Suche</label>
+    <input type="text" id="filter-search" placeholder="Datum, Notiz…" oninput="applyFilters()" style="width:160px">
+    <span id="filter-count" style="font-size:12px;color:var(--muted);margin-left:auto"></span>
   </div>
-  <script>
-  window._detail = window._detail || {};
-  window._detail['{{ key }}_high']  = {{ s.high  | tojson }};
-  window._detail['{{ key }}_mid']   = {{ s.mid   | tojson }};
-  window._detail['{{ key }}_low']   = {{ s.low   | tojson }};
-  window._detail['{{ key }}_zero']  = {{ s.zero  | tojson }};
-  window._detail['{{ key }}_error'] = {{ s.error | tojson }};
-  </script>
-  {% endmacro %}
 
-  {# ── Macro: leere Lauf-History-Tabelle für Suchagenten ── #}
-  {% macro search_history_table() %}
-  <div class="agent-card" style="margin-top:12px">
-    <div class="agent-card-head"><div class="agent-card-label">Lauf-History (letzte 10)</div></div>
-    <div style="overflow-x:auto">
-      <table class="run-history-table">
-        <thead><tr>
-          <th>Datum</th><th>Modell</th>
-          <th class="num">Quellen</th><th class="num">Signale</th>
-          <th class="num">Input-Token</th><th class="num">Output-Token</th>
-          <th class="num">Kosten (USD)</th><th class="num">Fehler</th>
-        </tr></thead>
-        <tbody><tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Noch keine automatisierten Läufe aufgezeichnet</td></tr></tbody>
+  {# ── Tabelle ── #}
+  {% if runs %}
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table class="runs-table" id="runs-table">
+        <thead>
+          <tr>
+            <th>Agent</th>
+            <th class="col-role">Rolle</th>
+            <th>Datum</th>
+            <th class="col-dur">Dauer</th>
+            <th class="col-tok">Token</th>
+            <th>Kosten</th>
+            <th>Output</th>
+            <th>Status / Notiz</th>
+          </tr>
+        </thead>
+        <tbody id="runs-body">
+          {% for r in runs %}
+          <tr data-agent="{{ r.key }}" data-search="{{ r.run_at }} {{ r.note|lower }}">
+            <td class="col-agent">
+              <span class="agent-dot agent-color-{{ r.key }}"></span>{{ r.agent }}
+            </td>
+            <td class="col-role">{{ r.role }}</td>
+            <td class="col-date">{{ r.run_at }}</td>
+            <td class="col-dur">{{ r.duration or '—' }}</td>
+            <td class="col-tok">
+              {% if r.in_tok is not none %}
+                {{ ((r.in_tok + (r.out_tok or 0)) / 1000) | round(1) }} Tsd.
+              {% else %}—{% endif %}
+            </td>
+            <td class="col-cost">
+              {% if r.cost_usd is not none and r.cost_usd > 0 %}
+                {{ "%.3f"|format(r.cost_usd) }} $
+              {% else %}—{% endif %}
+            </td>
+            <td class="col-out">
+              {% if r.output is not none %}{{ r.output }}{% else %}—{% endif %}
+            </td>
+            <td class="col-note">
+              {% if r.error %}
+                <span class="badge-error" title="{{ r.error }}">Fehler</span>
+              {% elif r.note %}
+                {{ r.note }}
+              {% else %}
+                <span class="badge-ok">OK</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
   </div>
-  {% endmacro %}
-
-  {# ── Fred (Feed-Agent) ── #}
-  {% set s = stats['feed'] %}
-  <div style="margin-bottom:32px">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
-        <circle cx="22" cy="22" r="22" fill="#4B8DC6"/>
-        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#1E3C6E"/>
-        <rect x="19" y="29" width="6" height="4" rx="2" fill="#FDDBB4"/>
-        <circle cx="22" cy="20" r="10" fill="#FDDBB4"/>
-        <path d="M12 20 C12 8 32 8 32 20 L30 16 Q22 11 14 16 Z" fill="#E0C845"/>
-        <rect x="11.5" y="14" width="2.5" height="6" rx="1.2" fill="#E0C845"/>
-        <rect x="30" y="14" width="2.5" height="6" rx="1.2" fill="#E0C845"/>
-        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <path d="M18.5 24 Q22 27 25.5 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div>
-        <div style="font-size:16px;font-weight:600">Fred</div>
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Feed-Agent</div>
-      </div>
-    </div>
-    <div class="agent-card">
-      <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
-      {{ stat_rows('feed', s) }}
-    </div>
-    {{ search_history_table() }}
-  </div>
-
-  {# ── Finn (Scrape-Agent) ── #}
-  {% set s = stats['scrape'] %}
-  <div style="margin-bottom:32px">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
-        <circle cx="22" cy="22" r="22" fill="#D86A38"/>
-        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#7A3818"/>
-        <rect x="19" y="29" width="6" height="4" rx="2" fill="#FDDBB4"/>
-        <circle cx="22" cy="20" r="10" fill="#FDDBB4"/>
-        <path d="M12 20 C12 8 32 8 32 20 L30 15 Q22 9 14 15 Z" fill="#3C2010"/>
-        <path d="M19 10 Q22 7 26 10" stroke="#3C2010" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <rect x="11.5" y="14" width="2.5" height="6" rx="1.2" fill="#3C2010"/>
-        <rect x="30" y="14" width="2.5" height="6" rx="1.2" fill="#3C2010"/>
-        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <path d="M18 24 Q22 28 26 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div>
-        <div style="font-size:16px;font-weight:600">Finn</div>
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Scrape-Agent</div>
-      </div>
-    </div>
-    <div class="agent-card">
-      <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
-      {{ stat_rows('scrape', s) }}
-    </div>
-    {{ search_history_table() }}
-  </div>
-
-  {# ── Mats (PDF-Agent) ── #}
-  {% set s = stats['pdf'] %}
-  <div style="margin-bottom:32px">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
-        <circle cx="22" cy="22" r="22" fill="#5A9855"/>
-        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#2C5828"/>
-        <rect x="19" y="29" width="6" height="4" rx="2" fill="#FDDBB4"/>
-        <circle cx="22" cy="20" r="10" fill="#FDDBB4"/>
-        <path d="M13 19 C14 8 30 8 31 19 L29 15 Q22 11 15 15 Z" fill="#7A5430"/>
-        <path d="M17 12 L17 15" stroke="#6A4428" stroke-width="2" stroke-linecap="round"/>
-        <rect x="14" y="18" width="5.5" height="3.5" rx="1.8" fill="none" stroke="#555" stroke-width="1.1"/>
-        <rect x="24.5" y="18" width="5.5" height="3.5" rx="1.8" fill="none" stroke="#555" stroke-width="1.1"/>
-        <line x1="19.5" y1="19.75" x2="24.5" y2="19.75" stroke="#555" stroke-width="1.1"/>
-        <circle cx="18.5" cy="19.75" r="1.1" fill="#2A2A2A"/>
-        <circle cx="27.25" cy="19.75" r="1.1" fill="#2A2A2A"/>
-        <path d="M18.5 24.5 Q22 26.5 25.5 24.5" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div>
-        <div style="font-size:16px;font-weight:600">Mats</div>
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">PDF-Agent</div>
-      </div>
-    </div>
-    <div class="agent-card">
-      <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
-      {{ stat_rows('pdf', s) }}
-    </div>
-    {{ search_history_table() }}
-  </div>
-
-  {# ── Lena (Search-Agent) ── #}
-  {% set s = stats['search'] %}
-  <div style="margin-bottom:32px">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
-        <circle cx="22" cy="22" r="22" fill="#8860B8"/>
-        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#4A2870"/>
-        <rect x="19" y="29" width="6" height="4" rx="2" fill="#FDDBB4"/>
-        <circle cx="22" cy="20" r="10" fill="#FDDBB4"/>
-        <path d="M12 21 C11 8 33 8 32 21" fill="#1E1030"/>
-        <ellipse cx="12.5" cy="21" rx="2.5" ry="5" fill="#1E1030"/>
-        <ellipse cx="31.5" cy="21" rx="2.5" ry="5" fill="#1E1030"/>
-        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <path d="M18.5 24.5 Q22 27.5 25.5 24.5" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div>
-        <div style="font-size:16px;font-weight:600">Lena</div>
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Search-Agent</div>
-      </div>
-    </div>
-    <div class="agent-card">
-      <div class="agent-card-head"><div class="agent-card-label">Signale nach Quellen</div></div>
-      {{ stat_rows('search', s) }}
-    </div>
-    {{ search_history_table() }}
-  </div>
-
-  {# ── Theo Report ── #}
-  <div style="margin-bottom:32px">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
-        <circle cx="22" cy="22" r="22" fill="#2E6E8E"/>
-        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#1A4A62"/>
-        <rect x="19" y="29" width="6" height="4" rx="2" fill="#C8DDE8"/>
-        <circle cx="22" cy="20" r="10" fill="#C8DDE8"/>
-        <path d="M12 19 C12 6 32 6 32 19 L30 15 Q22 9 14 15 Z" fill="#1A4A62"/>
-        <path d="M13 15 Q12 22 13 29" stroke="#1A4A62" stroke-width="4" stroke-linecap="round" fill="none"/>
-        <path d="M31 15 Q32 22 31 29" stroke="#1A4A62" stroke-width="4" stroke-linecap="round" fill="none"/>
-        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <path d="M19 24 Q22 26.5 25 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div>
-        <div style="font-size:16px;font-weight:600">Theo</div>
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Gruppierungs-Agent</div>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:20px" id="theo-report-grid">
-
-      {# Matching-Zustand #}
-      <div class="agent-card">
-        <div class="agent-card-head"><div class="agent-card-label">Matching-Zustand</div></div>
-        <div class="agent-card-body" id="theo-match-body">
-          <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
-        </div>
-      </div>
-
-      {# Lauf-History #}
-      <div class="agent-card">
-        <div class="agent-card-head"><div class="agent-card-label">Lauf-History (letzte 10)</div></div>
-        <div style="overflow-x:auto">
-          <table class="run-history-table">
-            <thead><tr>
-              <th>Datum</th><th>Modell</th>
-              <th class="num">Signale</th><th class="num">Gruppen erstellt</th>
-              <th class="num">Input-Token</th><th class="num">Output-Token</th>
-              <th class="num">Kosten (USD)</th><th class="num">Fehler</th>
-            </tr></thead>
-            <tbody id="theo-history-tbody">
-              <tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Wird geladen…</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  {# ── Ida Report ── #}
-  <div style="margin-bottom:32px">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-      <svg viewBox="0 0 44 44" width="44" height="44" style="border-radius:50%;overflow:hidden;flex-shrink:0;display:block" aria-hidden="true">
-        <circle cx="22" cy="22" r="22" fill="#5E3A8C"/>
-        <ellipse cx="22" cy="46" rx="16" ry="9" fill="#3A1E5E"/>
-        <rect x="19" y="29" width="6" height="4" rx="2" fill="#D8C8EE"/>
-        <circle cx="22" cy="20" r="10" fill="#D8C8EE"/>
-        <path d="M12 20 C12 7 32 7 32 20 L30 16 Q22 10 14 16 Z" fill="#3A1E5E"/>
-        <path d="M13 16 Q12 23 13 30" stroke="#3A1E5E" stroke-width="4" stroke-linecap="round" fill="none"/>
-        <path d="M31 16 Q32 23 31 30" stroke="#3A1E5E" stroke-width="4" stroke-linecap="round" fill="none"/>
-        <circle cx="18.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <circle cx="25.5" cy="20" r="1.4" fill="#2A2A2A"/>
-        <path d="M18 24 Q22 27 26 24" stroke="#666" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div>
-        <div style="font-size:16px;font-weight:600">Ida</div>
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Bewertungs-Agent</div>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:20px" id="ida-report-grid">
-
-      {# Signal-Verteilung #}
-      <div class="agent-card">
-        <div class="agent-card-head"><div class="agent-card-label">Signal-Verteilung (FINAL)</div></div>
-        <div class="agent-card-body" id="ida-dist-body">
-          <div class="stat-row"><span class="stat-label" style="color:var(--faint)">Wird geladen…</span></div>
-        </div>
-      </div>
-
-      {# Lauf-History #}
-      <div class="agent-card">
-        <div class="agent-card-head"><div class="agent-card-label">Lauf-History (letzte 10)</div></div>
-        <div style="overflow-x:auto">
-          <table class="run-history-table">
-            <thead><tr>
-              <th>Datum</th><th>Modell</th>
-              <th class="num">FINAL-Signale</th><th class="num">Gruppen zusammengeführt</th>
-              <th class="num">Input-Token</th><th class="num">Output-Token</th>
-              <th class="num">Kosten (USD)</th><th class="num">Fehler</th>
-            </tr></thead>
-            <tbody id="ida-history-tbody">
-              <tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Wird geladen…</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-</div>
-
-<!-- Detail Overlay -->
-<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
-  <div class="detail-box">
-    <div class="detail-head">
-      <span class="detail-title" id="detail-title">Quellen</span>
-      <button class="detail-close" onclick="closeDetailBtn()">×</button>
-    </div>
-    <div class="detail-body" id="detail-body"></div>
-  </div>
+  {% else %}
+  <div class="empty-state">Noch keine Lauf-Historien vorhanden.</div>
+  {% endif %}
 </div>
 
 <script>
-function showDetail(key) {
-  const data = (window._detail || {})[key] || [];
-  const overlay = document.getElementById('detail-overlay');
-  const body    = document.getElementById('detail-body');
-  const title   = document.getElementById('detail-title');
-  title.textContent = key.replace(/_/g, ' ') + ' (' + data.length + ')';
-  body.innerHTML = data.map(e => {
-    const ts = e.timestamps && e.timestamps.length ? e.timestamps.join(', ') : '—';
-    return '<div class="detail-item">'
-      + '<div class="detail-source">' + e.source + '</div>'
-      + '<div class="detail-meta">'
-      + (e.count !== undefined ? e.count + ' Signal(e)' : '')
-      + (e.issues ? ' · <span style="color:var(--s-action)">' + e.issues + '</span>' : '')
-      + ' · ' + ts
-      + '</div></div>';
-  }).join('') || '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">Keine Einträge</div>';
-  overlay.classList.add('open');
-}
-function closeDetail(e) {
-  if (e.target === document.getElementById('detail-overlay')) closeDetailBtn();
-}
-function closeDetailBtn() {
-  document.getElementById('detail-overlay').classList.remove('open');
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailBtn(); });
-
-// ── Maja Report ───────────────────────────────────────────────────────────────
-(async () => {
-  try {
-    const resp = await fetch('{{ url_for("maja_report") }}');
-    const data = await resp.json();
-
-    // Qualität
-    const q = data.quality || {};
-    const byType = q.by_type || {};
-    document.getElementById('maja-quality-body').innerHTML = [
-      ['Quellen mit Endpoint', `${q.with_ep} / ${q.total} (${q.pct}%)`, q.pct >= 80 ? 'dot-high' : q.pct >= 40 ? 'dot-mid' : 'dot-low'],
-      ['Quellen ohne Endpoint', q.no_ep, q.no_ep === 0 ? 'dot-high' : 'dot-error'],
-      ['Feed-Endpoints',   byType.feed   || 0, 'dot-mid'],
-      ['Scrape-Endpoints', byType.scrape || 0, 'dot-mid'],
-      ['PDF-Endpoints',    byType.pdf    || 0, 'dot-mid'],
-      ['Search-Endpoints', byType.search || 0, 'dot-mid'],
-      ['Sol-validiert (Selektor)', q.validated || 0, q.validated > 0 ? 'dot-high' : 'dot-zero'],
-    ].map(([label, val, dot]) =>
-      `<div class="stat-row">
-        <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
-        <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
-      </div>`
-    ).join('');
-
-    // Lauf-Performance
-    const history = data.history || [];
-    const tbody = document.getElementById('maja-history-body');
-    if (!history.length) {
-      tbody.innerHTML = '<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--faint)">Noch keine Läufe aufgezeichnet</td></tr>';
-      return;
-    }
-    const modelShort = m => m.replace('claude-', '').replace('-20251001', '');
-    const dur = s => s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
-    tbody.innerHTML = history.map((r, i) => {
-      const errCell = r.errors && r.errors.length
-        ? `<span style="color:var(--s-action);font-weight:600">${r.errors.length}</span>`
-        : `<span style="color:var(--faint)">—</span>`;
-      const bg = i % 2 === 1 ? 'background:var(--surface2)' : '';
-      return `<tr style="${bg}">
-        <td style="padding:7px 14px">${r.run_at || '—'}</td>
-        <td style="padding:7px 14px;color:var(--muted)">${modelShort(r.model || '')}</td>
-        <td style="padding:7px 14px;text-align:center;font-variant-numeric:tabular-nums;color:var(--navy);font-weight:600">${r.range || '—'}</td>
-        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums">${r.sources_total ?? '—'}</td>
-        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${r.endpoints_added ?? '—'}</td>
-        <td style="padding:7px 14px;text-align:right;color:var(--muted)">${r.duration_s != null ? dur(r.duration_s) : '—'}</td>
-        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)">${(r.input_tokens ?? 0).toLocaleString('de')}</td>
-        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)">${(r.output_tokens ?? 0).toLocaleString('de')}</td>
-        <td style="padding:7px 14px;text-align:right;font-variant-numeric:tabular-nums">$${(r.cost_usd ?? 0).toFixed(4)}</td>
-        <td style="padding:7px 14px;text-align:center">${errCell}</td>
-      </tr>`;
-    }).join('');
-  } catch (e) {
-    document.getElementById('maja-quality-body').innerHTML =
-      '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
-  }
-})();
-
-// ── Maja Insights ─────────────────────────────────────────────────────────────
-const STATUS_LABELS = { neu: 'Neu', geprüft: 'Geprüft', abgelehnt: 'Abgelehnt' };
-const STATUS_COLORS = { neu: '#2563EB', geprüft: 'var(--s-active)', abgelehnt: 'var(--faint)' };
-
-async function setInsightStatus(id, status) {
-  await fetch(`/admin/maja/insights/${id}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status }),
+function applyFilters() {
+  const agent  = document.getElementById('filter-agent').value;
+  const search = document.getElementById('filter-search').value.toLowerCase();
+  const rows   = document.querySelectorAll('#runs-body tr');
+  let visible  = 0;
+  rows.forEach(row => {
+    const matchAgent  = !agent  || row.dataset.agent === agent;
+    const matchSearch = !search || row.dataset.search.includes(search);
+    const show = matchAgent && matchSearch;
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
   });
-  loadInsights();
-}
-
-async function loadInsights() {
-  const body = document.getElementById('maja-insights-body');
-  const count = document.getElementById('maja-insights-count');
-  try {
-    const resp = await fetch('{{ url_for("maja_insights") }}');
-    const data = await resp.json();
-    if (!data.length) {
-      body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">Noch keine Vorschläge — wird nach dem nächsten Maja-Lauf befüllt.</div>';
-      count.textContent = '';
-      return;
-    }
-    const neu = data.filter(d => d.status === 'neu').length;
-    count.textContent = `${neu} offen · ${data.length} gesamt`;
-    body.innerHTML = data.map(item => {
-      const sc = STATUS_COLORS[item.status] || 'var(--muted)';
-      const sl = STATUS_LABELS[item.status] || item.status;
-      const catColor = item.category === 'Datenpflege' ? '#7C3AED' :
-                       item.category === 'Prompt'      ? '#C88035' :
-                       item.category === 'Prozess'     ? '#2E6E8E' : 'var(--muted)';
-      const isOpen = item.status !== 'abgelehnt';
-      return `<div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start">
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">
-            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${catColor};background:${catColor}18;padding:2px 7px;border-radius:99px">${item.category}</span>
-            <span style="font-size:11px;font-weight:700;color:${sc}">${sl}</span>
-            <span style="font-size:11px;color:var(--faint)">${item.run_at}</span>
-          </div>
-          <div style="font-weight:600;font-size:13px;margin-bottom:4px">${item.title}</div>
-          <div style="font-size:12px;color:var(--muted);line-height:1.6">${item.description}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
-          <button onclick="setInsightStatus('${item.id}','abgelehnt')" style="padding:4px 10px;font-size:11px;border:1px solid var(--border);color:var(--muted);background:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap">Archivieren</button>
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">Fehler beim Laden</div>';
+  const total = rows.length;
+  const el = document.getElementById('filter-count');
+  if (agent || search) {
+    el.textContent = visible + ' von ' + total + ' Läufen';
+  } else {
+    el.textContent = total + ' Läufe gesamt';
   }
 }
-loadInsights();
-
-// ── Theo Report ───────────────────────────────────────────────────────────────
-(async () => {
-  const matchBody = document.getElementById('theo-match-body');
-  try {
-    const resp = await fetch('/admin/theo/report');
-    const data = await resp.json();
-    const m = data.match_state || {};
-    const r = data.last_run   || {};
-
-    matchBody.innerHTML = [
-      ['Einträge in MATCH gesamt', m.entries_total ?? '—', 'dot-mid'],
-      ['Davon Gruppen (≥ 2 Signale)', m.groups_total ?? '—', m.groups_total > 0 ? 'dot-high' : 'dot-zero'],
-      ['Einzelsignale (kein Match)', m.singles_total ?? '—', 'dot-low'],
-      ['Ø Signale pro Gruppe', m.avg_group_size ?? '—', 'dot-mid'],
-      ['Größte Gruppe', m.max_group_size ?? '—', 'dot-mid'],
-    ].map(([label, val, dot]) =>
-      `<div class="stat-row">
-        <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
-        <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
-      </div>`
-    ).join('');
-
-    // Theo history table
-    const theoTbody = document.getElementById('theo-history-tbody');
-    const hist = data.history || [];
-    if (!hist.length) {
-      theoTbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Noch keine Läufe aufgezeichnet</td></tr>';
-    } else {
-      const ms = m => (m || '').replace('claude-', '').replace('-20251001', '');
-      theoTbody.innerHTML = hist.map((r, i) => {
-        const err = r.error ? `<span style="color:var(--s-action);font-weight:600">1</span>` : `<span style="color:var(--faint)">—</span>`;
-        const bg = i % 2 === 1 ? 'background:var(--surface2)' : '';
-        return `<tr style="${bg}">
-          <td style="padding:7px 14px">${r.run_at || '—'}</td>
-          <td style="padding:7px 14px;color:var(--muted)">${ms(r.model)}</td>
-          <td class="num" style="padding:7px 14px">${r.signals_processed ?? '—'}</td>
-          <td class="num" style="padding:7px 14px;font-weight:600">${r.groups_added ?? '—'}</td>
-          <td class="num" style="padding:7px 14px;color:var(--muted)">${(r.input_tokens ?? 0).toLocaleString('de')}</td>
-          <td class="num" style="padding:7px 14px;color:var(--muted)">${(r.output_tokens ?? 0).toLocaleString('de')}</td>
-          <td class="num" style="padding:7px 14px">${r.cost_usd != null ? '$'+r.cost_usd.toFixed(4) : '—'}</td>
-          <td class="num" style="padding:7px 14px">${err}</td>
-        </tr>`;
-      }).join('');
-    }
-  } catch(e) {
-    matchBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
-  }
-})();
-
-// ── Ida Report ────────────────────────────────────────────────────────────────
-(async () => {
-  const distBody = document.getElementById('ida-dist-body');
-  try {
-    const resp = await fetch('/admin/ida/report');
-    const data = await resp.json();
-    const s = data.signal_state || {};
-    const r = data.last_run     || {};
-    const p = s.priority        || {};
-    const rs = s.rep_status     || {};
-
-    distBody.innerHTML = [
-      ['FINAL-Signale gesamt', s.total ?? '—', 'dot-mid'],
-      ['Priorität MUSS',  p['MUSS']  ?? 0, p['MUSS']  > 0 ? 'dot-error' : 'dot-zero'],
-      ['Priorität SOLLTE', p['SOLLTE'] ?? 0, p['SOLLTE'] > 0 ? 'dot-mid' : 'dot-zero'],
-      ['Priorität KANN',  p['KANN']  ?? 0, 'dot-low'],
-      ['Status NEU',        rs['NEU']        ?? 0, rs['NEU']   > 0 ? 'dot-high' : 'dot-zero'],
-      ['Status UPDATE',     rs['UPDATE']     ?? 0, rs['UPDATE'] > 0 ? 'dot-mid' : 'dot-zero'],
-      ['Unverändert',       rs['unverändert'] ?? 0, 'dot-zero'],
-      ['Zur Prüfung markiert', s.review_needed ?? 0, s.review_needed > 0 ? 'dot-error' : 'dot-high'],
-    ].map(([label, val, dot]) =>
-      `<div class="stat-row">
-        <span class="stat-label"><span class="stat-dot ${dot}"></span>${label}</span>
-        <span style="font-weight:700;font-size:13px;font-variant-numeric:tabular-nums">${val}</span>
-      </div>`
-    ).join('');
-
-    // Ida history table
-    const idaTbody = document.getElementById('ida-history-tbody');
-    const idaHist = data.history || [];
-    if (!idaHist.length) {
-      idaTbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--faint)">Noch keine Läufe aufgezeichnet</td></tr>';
-    } else {
-      const ms = m => (m || '').replace('claude-', '').replace('-20251001', '');
-      idaTbody.innerHTML = idaHist.map((r, i) => {
-        const err = r.error ? `<span style="color:var(--s-action);font-weight:600">1</span>` : `<span style="color:var(--faint)">—</span>`;
-        const bg = i % 2 === 1 ? 'background:var(--surface2)' : '';
-        return `<tr style="${bg}">
-          <td style="padding:7px 14px">${r.run_at || '—'}</td>
-          <td style="padding:7px 14px;color:var(--muted)">${ms(r.model)}</td>
-          <td class="num" style="padding:7px 14px;font-weight:600">${r.finals_written ?? '—'}</td>
-          <td class="num" style="padding:7px 14px">${r.groups_merged ?? '—'}</td>
-          <td class="num" style="padding:7px 14px;color:var(--muted)">${(r.input_tokens ?? 0).toLocaleString('de')}</td>
-          <td class="num" style="padding:7px 14px;color:var(--muted)">${(r.output_tokens ?? 0).toLocaleString('de')}</td>
-          <td class="num" style="padding:7px 14px">${r.cost_usd != null ? '$'+r.cost_usd.toFixed(4) : '—'}</td>
-          <td class="num" style="padding:7px 14px">${err}</td>
-        </tr>`;
-      }).join('');
-    }
-  } catch(e) {
-    distBody.innerHTML = '<div class="stat-row"><span style="color:var(--faint);font-size:12px">Fehler beim Laden</span></div>';
-  }
-})();
+document.addEventListener('DOMContentLoaded', applyFilters);
 </script>
 {% endblock %}

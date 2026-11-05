@@ -5104,79 +5104,71 @@ def agent_reports_raw():
 @app.route("/admin/agent-reports")
 @role_required("admin", "superadmin")
 def agent_reports():
-    reports = load_agent_reports()
-    date_from = request.args.get("date_from", "")
-    date_to   = request.args.get("date_to", "")
-    # Filter by timestamp (JJMMDD prefix comparison)
-    def ts_to_date(ts):
-        if len(ts) >= 6:
-            try:
-                return datetime.strptime("20" + ts[:6], "%Y%m%d").date()
-            except ValueError:
-                pass
+    # Alle History-Dateien zusammenführen
+    AGENT_SOURCES = [
+        ("Frank",    "frank",    FRANK_HISTORY_FILE,    "Scrape-Fetcher"),
+        ("Fletcher", "fletcher", FLETCHER_HISTORY_FILE, "Feed-Fetcher"),
+        ("Fred",     "fred",     FRED_HISTORY_FILE,     "Feed-KI-Analyst"),
+        ("Finn",     "finn",     FINN_HISTORY_FILE,     "Scrape-KI-Analyst"),
+        ("Mats",     "mats",     MATS_HISTORY_FILE,     "PDF-KI-Analyst"),
+        ("Lena",     "lena",     LENA_HISTORY_FILE,     "Such-KI-Analyst"),
+        ("Nils",     "nils",     NILS_HISTORY_FILE,     "Quellenrecherche"),
+        ("Theo",     "theo",     THEO_HISTORY_FILE,     "Gruppierung"),
+        ("Ida",      "ida",      IDA_HISTORY_FILE,      "Finalbewertung"),
+        ("Maya",     "maja",     MAJA_HISTORY_FILE,     "Quellenpflege"),
+        ("Sol",      "sol",      SOL_HISTORY_FILE,      "Selektor-Finder"),
+    ]
+
+    def _output(e, key):
+        for f in ("signals_new", "new_entries", "entries_new", "finals_written", "groups_added", "endpoints_added"):
+            v = e.get(f)
+            if v is not None:
+                return int(v)
         return None
-    if date_from or date_to:
-        try:
-            df = datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else None
-        except ValueError:
-            df = None
-        try:
-            dt = datetime.strptime(date_to, "%Y-%m-%d").date() if date_to else None
-        except ValueError:
-            dt = None
-        filtered = []
-        for r in reports:
-            rd = ts_to_date(r.get("timestamp", ""))
-            if rd is None:
-                filtered.append(r)
+
+    def _fmt_dur(s):
+        if s is None:
+            return None
+        sec = round(float(s))
+        return f"{sec // 60:02d}:{sec % 60:02d}"
+
+    runs = []
+    for name, key, path, role in AGENT_SOURCES:
+        hist = _load_history(path, dedup=True) if os.path.exists(path) else []
+        for e in hist:
+            run_at = (e.get("run_at") or "")[:16]
+            if not run_at:
                 continue
-            if df and rd < df:
-                continue
-            if dt and rd > dt:
-                continue
-            filtered.append(r)
-        reports = filtered
-    # Build stats per agent
-    SEARCH_AGENTS = [("feed", "Feed-Agent"), ("scrape", "Scrape-Agent"),
-                     ("pdf", "PDF-Agent"), ("search", "Search-Agent")]
-    stats = {}
-    for key, label in SEARCH_AGENTS:
-        agent_rows = [r for r in reports if r.get("agent_name") == key]
-        by_source = {}
-        for r in agent_rows:
-            sn = r["source_name"]
-            if sn not in by_source:
-                by_source[sn] = {"count": 0, "issues": [], "timestamps": []}
-            by_source[sn]["count"] += r.get("signal_count", 0)
-            if r.get("issues"):
-                by_source[sn]["issues"].append(r["issues"])
-            by_source[sn]["timestamps"].append(r.get("timestamp", ""))
-        high, mid, low, zero, error = [], [], [], [], []
-        for sn, data in by_source.items():
-            entry = {"source": sn, "count": data["count"],
-                     "issues": "; ".join(set(data["issues"])),
-                     "timestamps": data["timestamps"]}
-            if data["issues"]:
-                error.append(entry)
-            elif data["count"] >= 5:
-                high.append(entry)
-            elif data["count"] >= 2:
-                mid.append(entry)
-            elif data["count"] == 1:
-                low.append(entry)
-            else:
-                zero.append(entry)
-        stats[key] = {
-            "label": label,
-            "high": sorted(high, key=lambda x: -x["count"]),
-            "mid":  sorted(mid,  key=lambda x: -x["count"]),
-            "low":  low,
-            "zero": zero,
-            "error": error,
-        }
-    return render_template("admin_agent_reports.html",
-        stats=stats, date_from=date_from, date_to=date_to,
-        search_agents=SEARCH_AGENTS)
+            runs.append({
+                "agent":     name,
+                "key":       key,
+                "role":      role,
+                "run_at":    run_at,
+                "duration":  _fmt_dur(e.get("duration_s")),
+                "in_tok":    e.get("input_tokens"),
+                "out_tok":   e.get("output_tokens"),
+                "cost_usd":  e.get("cost_usd"),
+                "output":    _output(e, key),
+                "error":     e.get("error"),
+                "note":      e.get("note", ""),
+            })
+
+    runs.sort(key=lambda r: r["run_at"], reverse=True)
+
+    # Für die Zusammenfassungszeile je Agent
+    summary = {}
+    for r in runs:
+        k = r["key"]
+        if k not in summary:
+            summary[k] = {"agent": r["agent"], "role": r["role"], "runs": 0,
+                          "last_run": r["run_at"], "total_cost": 0.0, "errors": 0}
+        summary[k]["runs"] += 1
+        if r["cost_usd"]:
+            summary[k]["total_cost"] += float(r["cost_usd"])
+        if r["error"]:
+            summary[k]["errors"] += 1
+
+    return render_template("admin_agent_reports.html", runs=runs, summary=summary)
 
 
 # ── Agents ────────────────────────────────────────────────────────────────────
