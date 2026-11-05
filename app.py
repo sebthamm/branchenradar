@@ -4077,6 +4077,11 @@ def theo_run():
 
     _THEO_MAX_COST = 1.0  # USD
     _theo_running = True  # vor Thread-Start setzen
+    # Status-Datei sofort schreiben, damit andere Gunicorn-Worker sie sehen
+    try:
+        _save(THEO_STATUS_FILE, {"running": True, "step": "Theo wird gestartet…", "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+    except Exception:
+        pass
 
     def _run():
         global _theo_running, _theo_cancel
@@ -4258,6 +4263,11 @@ def ida_run():
             pass
 
     _ida_running = True  # vor Thread-Start setzen, damit Status sofort korrekt ist
+    # Status-Datei sofort schreiben, damit andere Gunicorn-Worker sie sehen
+    try:
+        _save(IDA_STATUS_FILE, {"running": True, "step": "Ida wird gestartet…", "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+    except Exception:
+        pass
 
     def _run():
         global _ida_running, _ida_cancel
