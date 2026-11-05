@@ -239,7 +239,7 @@
   .chevron { font-size: 9px; color: var(--faint); transition: transform .2s; opacity: .5; }
   .card.open .chevron { transform: rotate(180deg); }
   /* Multifunktions-Button oben rechts */
-  .card-actions-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 26px; border-radius: 4px; font-size: 14px; letter-spacing: .05em; white-space: nowrap; flex-shrink: 0; background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-family: inherit; transition: all .15s; }
+  .card-actions-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 100%; min-height: 26px; border-radius: 4px; font-size: 13px; white-space: nowrap; flex-shrink: 0; background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-family: inherit; transition: all .15s; align-self: stretch; }
   .card-actions-btn:hover { border-color: var(--navy); color: var(--navy); }
   .card-actions-btn.has-todo { border-color: var(--navy); color: var(--navy); }
   .todo-count-circle { position: absolute; top: -5px; right: -5px; background: var(--navy); color: #fff; border-radius: 50%; font-size: 8px; font-weight: 700; min-width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; padding: 0 2px; letter-spacing: 0; }
@@ -406,7 +406,6 @@
       <div class="card-header">
         <div class="card-eyebrow">{{ categories.get(s.category, s.category) }}</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:4px">
-          <div style="display:flex;flex-direction:column;align-items:stretch;gap:3px">
           <div style="display:flex;align-items:center;gap:4px">
             {% if s.get('reporting_status') == 'NEU' %}
             <span class="reporting-badge neu">Neu</span>
@@ -431,11 +430,10 @@
             {% else %}
             <span class="prio-badge {{ prio }}">{{ prio_labels_map.get(prio, prio) }}{% if s.get('_prio_overridden') %}<span class="prio-override-marker" title="Prio individuell angepasst">✎</span>{% endif %}</span>
             {% endif %}
-          </div>
           {% if session.get('role') in ('admin', 'superadmin') %}
           {% set _tc = signal_ids_with_todos.get(s.id, 0) %}
           <div class="card-actions-btn {% if _tc > 0 %}has-todo{% endif %}" onclick="event.stopPropagation();toggleCardActions(this)" title="Kartenaktionen">
-            ⋯{% if _tc > 0 %}<span class="todo-count-circle">{{ _tc }}</span>{% endif %}
+            ⚡{% if _tc > 0 %}<span class="todo-count-circle">{{ _tc }}</span>{% endif %}
             <div class="card-actions-menu" onclick="event.stopPropagation()">
               <button class="card-actions-item" onclick="openTodoFromCard(this.closest('.card-actions-btn'))">Todo anlegen{% if _tc > 0 %} <span style="color:var(--muted);font-size:10px">({{ _tc }})</span>{% endif %}</button>
               <div class="card-actions-sep"></div>
@@ -528,7 +526,7 @@
               <div class="history-row"><span class="history-label">Signal-ID</span><span class="history-val" style="font-size:9px;font-family:monospace">{{ s.id }}</span></div>
             </div>
           </div>
-          <span class="card-date">{{ s.date }}</span>
+          <span class="card-date">{% set _dp = s.date.split('-') if s.date else [] %}{{ _dp[2]+'.'+_dp[1]+'.'+_dp[0] if _dp|length == 3 else s.date }}</span>
           <span class="chevron">▼</span>
         </div>
       </div>
