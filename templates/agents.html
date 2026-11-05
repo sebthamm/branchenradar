@@ -457,6 +457,7 @@
               <span>&#9654; Jetzt ausf&#252;hren</span>
             </button>
             <span id="nils-manual-run-msg" style="font-size:12px;color:var(--muted);display:block"></span>
+            <div id="progress-nils" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div>
           </div>
         </div>
       </div>
@@ -2560,28 +2561,38 @@ async function saveMayaModel(model) {
   }
 }
 async function mayaRunNow(btn) {
-  btn.disabled = true;
-  btn.querySelector('span').textContent = 'Läuft…';
-  const msg = document.getElementById('maya-sched-save-msg');
-  msg.textContent = 'Maya läuft — kann einige Minuten dauern…';
-  msg.style.color = 'var(--muted)';
+  btn.disabled = true; btn.style.opacity = '0.5';
+  _progressShow('maja', 'Maya läuft — kann einige Minuten dauern…');
   try {
     const resp = await fetch('/admin/maja/run-now', {method:'POST'});
     const d = await resp.json();
     if (d.ok) {
-      msg.textContent = '✓ Lauf gestartet';
-      msg.style.color = 'var(--primary)';
-      _majaPoller = setInterval(_pollMajaStatus, 10000);
+      if (_majaPoller) clearInterval(_majaPoller);
+      _majaPoller = setInterval(async () => {
+        try {
+          const s = await fetch('/admin/maja/status').then(r => r.json());
+          if (s.running) {
+            _progressShow('maja', s.step || 'Maya läuft…');
+          } else {
+            clearInterval(_majaPoller);
+            btn.disabled = false; btn.style.opacity = '';
+            if (s.error) {
+              _progressHide('maja', 'Fehler: ' + s.error, true);
+            } else {
+              _progressHide('maja', '✓ Lauf abgeschlossen', false);
+            }
+            loadMajaStatus();
+          }
+        } catch(e) {}
+      }, 5000);
     } else {
-      msg.textContent = 'Fehler: ' + (d.error || 'unbekannt');
-      msg.style.color = 'red';
+      _progressHide('maja', 'Fehler: ' + (d.error || 'unbekannt'), true);
+      btn.disabled = false; btn.style.opacity = '';
     }
   } catch(e) {
-    msg.textContent = 'Verbindungsfehler';
-    msg.style.color = 'red';
+    _progressHide('maja', 'Verbindungsfehler', true);
+    btn.disabled = false; btn.style.opacity = '';
   }
-  btn.querySelector('span').textContent = '▶ Jetzt ausführen';
-  btn.disabled = false;
 }
 function toggleMayaLimits() {
   document.getElementById('maya-limits-panel').classList.toggle('open');
@@ -3103,56 +3114,36 @@ async function saveNilsSched() {
 }
 let _nilsRunPoll = null;
 async function nilsRunNow(btn) {
-  btn.disabled = true;
-  btn.querySelector('span').textContent = '⏳ Läuft…';
-  const msg = document.getElementById('nils-manual-run-msg');
-  msg.style.color = 'var(--muted)';
-  msg.textContent = '';
-
-  // Animated dots while waiting
-  let dots = 0;
-  const dotAnim = setInterval(() => {
-    dots = (dots + 1) % 4;
-    const st = document.getElementById('nils-run-stage') || msg;
-    const base = st.dataset.base || 'Nils läuft';
-    st.textContent = base + '.'.repeat(dots);
-  }, 500);
-
+  btn.disabled = true; btn.style.opacity = '0.5';
+  _progressShow('nils', 'Nils läuft…');
   try {
     const resp = await fetch('/admin/nils/run-now', {method:'POST', headers:{'Content-Type':'application/json'}});
     if (!resp.ok) {
-      clearInterval(dotAnim);
-      msg.textContent = '⚠ Fehler beim Starten'; msg.style.color = 'red';
-      btn.querySelector('span').textContent = '▶ Jetzt ausführen'; btn.disabled = false;
+      _progressHide('nils', 'Fehler beim Starten', true);
+      btn.disabled = false; btn.style.opacity = '';
       return;
     }
-    // Start polling
-    msg.innerHTML = '<span id="nils-run-stage" data-base="Nils läuft">Nils läuft.</span>';
     if (_nilsRunPoll) clearInterval(_nilsRunPoll);
     _nilsRunPoll = setInterval(async () => {
       try {
         const s = await fetch('/admin/nils/run-status').then(r => r.json());
-        const el = document.getElementById('nils-run-stage');
         if (s.status === 'running') {
-          if (el) { el.dataset.base = s.message || 'Nils läuft'; }
+          _progressShow('nils', s.message || 'Nils läuft…');
         } else if (s.status === 'done') {
-          clearInterval(_nilsRunPoll); clearInterval(dotAnim);
-          msg.innerHTML = '';
-          msg.textContent = '✓ ' + s.message;
-          msg.style.color = 'var(--primary)';
-          btn.querySelector('span').textContent = '▶ Jetzt ausführen'; btn.disabled = false;
+          clearInterval(_nilsRunPoll);
+          _progressHide('nils', '✓ ' + s.message, false);
+          btn.disabled = false; btn.style.opacity = '';
+          _refreshPerf('nils');
         } else if (s.status === 'error') {
-          clearInterval(_nilsRunPoll); clearInterval(dotAnim);
-          msg.innerHTML = '';
-          msg.textContent = '⚠ ' + s.message; msg.style.color = 'red';
-          btn.querySelector('span').textContent = '▶ Jetzt ausführen'; btn.disabled = false;
+          clearInterval(_nilsRunPoll);
+          _progressHide('nils', 'Fehler: ' + (s.message || 'unbekannt'), true);
+          btn.disabled = false; btn.style.opacity = '';
         }
       } catch(e) {}
-    }, 2000);
+    }, 3000);
   } catch(e) {
-    clearInterval(dotAnim);
-    msg.textContent = '⚠ Netzwerkfehler'; msg.style.color = 'red';
-    btn.querySelector('span').textContent = '▶ Jetzt ausführen'; btn.disabled = false;
+    _progressHide('nils', 'Verbindungsfehler', true);
+    btn.disabled = false; btn.style.opacity = '';
   }
 }
 function toggleNilsPerf() {

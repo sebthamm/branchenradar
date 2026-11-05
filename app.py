@@ -3411,10 +3411,11 @@ def maja_run():
         global _maja_running
         _maja_running = True
         try:
+            _save(MAJA_STATUS_FILE, {"running": True, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
             maja_runner.run(maja_cfg, api_key, model=model, from_idx=from_idx, to_idx=to_idx)
         except Exception as e:
             import traceback, json as _json
-            err = {"run_at": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            err = {"running": False, "run_at": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                    "error": str(e), "traceback": traceback.format_exc()}
             with open(MAJA_STATUS_FILE, "w", encoding="utf-8") as f:
                 _json.dump(err, f, ensure_ascii=False, indent=2)
@@ -3446,12 +3447,19 @@ def maja_test():
 def maja_status():
     job = _scheduler.get_job("maja_scheduled")
     next_run = job.next_run_time.strftime("%Y-%m-%d %H:%M") if job and job.next_run_time else None
-    if _maja_running:
-        return jsonify({"exists": False, "running": True, "next_run": next_run})
-    if not os.path.exists(MAJA_STATUS_FILE):
+    file_running = False
+    data = {}
+    if os.path.exists(MAJA_STATUS_FILE):
+        try:
+            with open(MAJA_STATUS_FILE, encoding="utf-8") as f:
+                data = json.load(f)
+            file_running = bool(data.get("running"))
+        except Exception:
+            pass
+    if _maja_running or file_running:
+        return jsonify({"exists": False, "running": True, "step": data.get("step", ""), "next_run": next_run})
+    if not data:
         return jsonify({"exists": False, "running": False, "next_run": next_run})
-    with open(MAJA_STATUS_FILE, encoding="utf-8") as f:
-        data = json.load(f)
     return jsonify({
         "exists":          True,
         "running":         False,
@@ -3485,11 +3493,13 @@ def maja_run_now():
         global _maja_running
         _maja_running = True
         try:
+            _save(MAJA_STATUS_FILE, {"running": True, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
             import maja_runner
             maja_runner.run(maja_cfg, api_key, model=model,
                             from_idx=from_idx, to_idx=to_idx)
             log.info("Maya run-now completed")
         except Exception as e:
+            _save(MAJA_STATUS_FILE, {"running": False, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)})
             log.error("Maya run-now failed: %s", e)
         finally:
             _maja_running = False
@@ -3890,7 +3900,7 @@ def ida_report():
 @app.route("/admin/fred/report")
 @role_required("superadmin")
 def fred_report():
-    history = _load_history(FRED_HISTORY_FILE)
+    history = _load_history(FRED_HISTORY_FILE, dedup=True)
     last_run = {}
     if os.path.exists(FETCHER_FEED_OUTPUT):
         with open(FETCHER_FEED_OUTPUT, encoding="utf-8") as f:
@@ -3900,7 +3910,7 @@ def fred_report():
 @app.route("/admin/finn/report")
 @role_required("superadmin")
 def finn_report():
-    history = _load_history(FINN_HISTORY_FILE)
+    history = _load_history(FINN_HISTORY_FILE, dedup=True)
     last_run = {}
     if os.path.exists(FETCHER_SCRAPE_OUTPUT):
         with open(FETCHER_SCRAPE_OUTPUT, encoding="utf-8") as f:
@@ -4061,7 +4071,7 @@ def theo_run():
 
     def _write_step(step):
         try:
-            _save(THEO_STATUS_FILE, {"step": step, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+            _save(THEO_STATUS_FILE, {"running": True, "step": step, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
         except Exception:
             pass
 
@@ -4156,6 +4166,7 @@ def theo_run():
                 added += 1
             save_signal_matches(existing)
             status = {
+                "running":           False,
                 "run_at":            _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "model":             model,
                 "groups_added":      added,
@@ -4171,7 +4182,7 @@ def theo_run():
             tb = traceback.format_exc()
             app.logger.error("Theo thread error: %s", tb)
             try:
-                err = {"run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)}
+                err = {"running": False, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e)}
                 _save(THEO_STATUS_FILE, err)
                 _append_agent_history(THEO_HISTORY_FILE, err)
             except Exception:
@@ -4185,20 +4196,20 @@ def theo_run():
 @app.route("/admin/theo/status")
 @role_required("superadmin")
 def theo_status():
-    if _theo_running:
-        step = ""
-        if os.path.exists(THEO_STATUS_FILE):
-            try:
-                with open(THEO_STATUS_FILE, encoding="utf-8") as f:
-                    step = json.load(f).get("step", "")
-            except Exception:
-                pass
-        return jsonify({"running": True, "step": step})
-    if not os.path.exists(THEO_STATUS_FILE):
+    file_running = False
+    file_data = {}
+    if os.path.exists(THEO_STATUS_FILE):
+        try:
+            with open(THEO_STATUS_FILE, encoding="utf-8") as f:
+                file_data = json.load(f)
+            file_running = bool(file_data.get("running"))
+        except Exception:
+            pass
+    if _theo_running or file_running:
+        return jsonify({"running": True, "step": file_data.get("step", "")})
+    if not file_data:
         return jsonify({"running": False, "exists": False})
-    with open(THEO_STATUS_FILE, encoding="utf-8") as f:
-        data = json.load(f)
-    return jsonify({"running": False, "exists": True, **data})
+    return jsonify({"running": False, "exists": True, **file_data})
 
 @app.route("/admin/theo/cancel", methods=["POST"])
 @role_required("superadmin")

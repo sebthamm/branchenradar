@@ -400,6 +400,7 @@ def run(agent_cfg, api_key, model="claude-haiku-4-5-20251001", from_idx=None, to
     cost_usd = (input_tokens * in_price + output_tokens * out_price) / 1_000_000
 
     status = {
+        "running":          False,
         "run_at":           run_at,
         "duration_s":       duration_s,
         "model":            model,
