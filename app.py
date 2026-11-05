@@ -4325,6 +4325,14 @@ def ida_run():
                         merged["raw_synced_at"] = _dt.now().strftime("%Y-%m-%dT%H:%M:%S")
                         if not merged.get("id"):
                             merged["id"] = "FIN-" + _dt.now().strftime("%Y%m%d") + "-" + str(__import__("uuid").uuid4())[:8]
+                        # Normalize field names to what the UI expects
+                        if "action_timing" in merged and "handlungszeitpunkt" not in merged:
+                            merged["handlungszeitpunkt"] = merged.pop("action_timing")
+                        if "development_stage" in merged and "entwicklungsstand" not in merged:
+                            merged["entwicklungsstand"] = merged.pop("development_stage")
+                        if "priority" in merged:
+                            merged["priority"] = merged["priority"].lower()
+                        merged.setdefault("created_at", _dt.now().strftime("%Y-%m-%d"))
                         final_signals.append(merged)
                     except Exception:
                         pass
@@ -4336,6 +4344,10 @@ def ida_run():
                     fin["raw_ids"] = [s["id"]]
                     fin["review_needed"] = False
                     fin["raw_synced_at"] = _dt.now().strftime("%Y-%m-%dT%H:%M:%S")
+                    fin.setdefault("priority", "")
+                    fin.setdefault("handlungszeitpunkt", "")
+                    fin.setdefault("entwicklungsstand", "")
+                    fin.setdefault("created_at", _dt.now().strftime("%Y-%m-%d"))
                     final_signals.append(fin)
 
             ts = _dt.now().strftime("%y%m%d%H%M")
@@ -4714,8 +4726,9 @@ def signal_final():
             flash("Signal gelöscht.", "success")
         return redirect(url_for("signal_final"))
     data = load_signal_final()
+    sigs = sorted(data["signals"], key=lambda s: s.get("created_at") or s.get("date") or "", reverse=True)
     return render_template("admin_signal_final.html",
-        signals=data["signals"], timestamp=data["timestamp"],
+        signals=sigs, timestamp=data["timestamp"],
         categories=CATEGORIES, priority_labels=SIGNAL_PRIORITY_LABELS,
         entwicklungsstand_labels=ENTWICKLUNGSSTAND_LABELS)
 

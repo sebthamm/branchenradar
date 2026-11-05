@@ -40,6 +40,21 @@
   .empty-state { text-align:center;padding:48px 20px;color:var(--faint);font-size:14px; }
   @media (max-width:700px) { .main { padding:14px 14px 60px; } }
 
+  /* Expandable rows */
+  tr.sig-row { cursor: pointer; }
+  tr.sig-row:hover td { background: var(--surface2); }
+  tr.sig-detail { display: none; }
+  tr.sig-detail.open { display: table-row; }
+  tr.sig-detail td { background: var(--surface2); border-top: none; padding: 12px 18px 16px; }
+  .detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px 24px; margin-bottom: 10px; }
+  .detail-field { font-size: 12px; }
+  .detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); margin-bottom: 2px; }
+  .detail-value { color: var(--text); line-height: 1.5; }
+  .detail-summary { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 10px; border-left: 3px solid var(--border); padding-left: 12px; }
+  .detail-sources a { font-size: 12px; color: var(--navy); text-decoration: none; }
+  .detail-sources a:hover { text-decoration: underline; }
+  .toggle-icon { font-size: 10px; color: var(--faint); float: right; }
+
   .legend-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; align-items:center; justify-content:center; }
   .legend-overlay.open { display:flex; }
   .legend-modal { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:28px 32px; max-width:620px; width:90%; max-height:85vh; overflow-y:auto; position:relative; }
@@ -159,16 +174,20 @@
       </thead>
       <tbody>
         {% for s in signals %}
-        <tr>
-          <td style="font-family:monospace;font-size:11px;color:var(--faint)">{{ s.get('id','') }}</td>
+        {% set row_id = loop.index %}
+        <tr class="sig-row" onclick="toggleDetail({{ row_id }})">
+          <td style="font-family:monospace;font-size:11px;color:var(--faint)">
+            {{ s.get('id','')[:20] }}…
+            <span class="toggle-icon" id="icon-{{ row_id }}">▶</span>
+          </td>
           <td>
-            {% set rs = s.get('reporting_status','') %}
+            {% set rs = s.get('status','') | upper %}
             {% if rs == 'NEU' %}<span class="rs-neu">NEU</span>
             {% elif rs == 'UPDATE' %}<span class="rs-update">UPDATE</span>
             {% endif %}
           </td>
           <td>
-            {% set prio = s.get('priority','') %}
+            {% set prio = s.get('priority','') | lower %}
             {% if prio == 'muss' %}<span class="prio-muss">MUSS</span>
             {% elif prio == 'sollte' %}<span class="prio-sollte">SOLLTE</span>
             {% elif prio == 'kann' %}<span class="prio-kann">KANN</span>
@@ -181,13 +200,69 @@
           <td>{{ categories.get(s.get('category',''), s.get('category','')) }}</td>
           <td>{{ entwicklungsstand_labels.get(s.get('entwicklungsstand',''), s.get('entwicklungsstand','')) }}</td>
           <td style="font-size:11px">{{ s.get('handlungszeitpunkt','') }}</td>
-          <td style="font-size:11px;white-space:nowrap">{{ s.get('date','') }}</td>
-          <td>
+          <td style="font-size:11px;white-space:nowrap">{{ s.get('created_at', s.get('date','')) }}</td>
+          <td onclick="event.stopPropagation()">
             <form method="post" action="{{ url_for('signal_final') }}" style="display:inline">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="sig_id" value="{{ s.get('id','') }}">
               <button type="submit" class="btn-del" onclick="return confirm('Signal löschen?')">×</button>
             </form>
+          </td>
+        </tr>
+        <tr class="sig-detail" id="detail-{{ row_id }}">
+          <td colspan="9">
+            {% if s.get('summary') %}
+            <div class="detail-summary">{{ s.get('summary','') }}</div>
+            {% endif %}
+            <div class="detail-grid">
+              {% if s.get('action') %}
+              <div class="detail-field">
+                <div class="detail-label">Handlungsschritt</div>
+                <div class="detail-value">{{ s.get('action','') }}</div>
+              </div>
+              {% endif %}
+              {% if s.get('action_time') %}
+              <div class="detail-field">
+                <div class="detail-label">Zeitaufwand</div>
+                <div class="detail-value">{{ s.get('action_time','') }}</div>
+              </div>
+              {% endif %}
+              {% if s.get('roles') %}
+              <div class="detail-field">
+                <div class="detail-label">Rollen</div>
+                <div class="detail-value">{{ s.get('roles', []) | join(', ') }}</div>
+              </div>
+              {% endif %}
+              {% if s.get('tags') %}
+              <div class="detail-field">
+                <div class="detail-label">Tags</div>
+                <div class="detail-value">{{ s.get('tags', []) | join(', ') }}</div>
+              </div>
+              {% endif %}
+              <div class="detail-field">
+                <div class="detail-label">Veröffentlicht</div>
+                <div class="detail-value">{{ s.get('date','—') }}</div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-label">Erfasst am</div>
+                <div class="detail-value">{{ s.get('created_at','—') }}</div>
+              </div>
+              {% if s.get('raw_ids') %}
+              <div class="detail-field">
+                <div class="detail-label">RAW-Signale</div>
+                <div class="detail-value">{{ s.get('raw_ids', []) | length }} Signal(e)</div>
+              </div>
+              {% endif %}
+            </div>
+            {% if s.get('sources') %}
+            <div class="detail-sources">
+              {% for src in s.get('sources', []) %}
+                {% if src.get('url') %}<a href="{{ src.get('url','') }}" target="_blank" rel="noopener">{{ src.get('name', src.get('url','')) }}</a>{% if not loop.last %} · {% endif %}{% endif %}
+              {% endfor %}
+            </div>
+            {% elif s.get('source') %}
+            <div class="detail-sources" style="font-size:12px;color:var(--muted)">Quelle: {{ s.get('source','') }}</div>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
@@ -208,5 +283,12 @@ function toggleImport() {
 function openLegend()  { document.getElementById('legend-overlay').classList.add('open'); }
 function closeLegend() { document.getElementById('legend-overlay').classList.remove('open'); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLegend(); });
+
+function toggleDetail(id) {
+  const row  = document.getElementById('detail-' + id);
+  const icon = document.getElementById('icon-' + id);
+  const open = row.classList.toggle('open');
+  if (icon) icon.textContent = open ? '▼' : '▶';
+}
 </script>
 {% endblock %}
