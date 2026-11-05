@@ -238,9 +238,19 @@
   .card.open .todo-btn-wrap { display: block; }
   .chevron { font-size: 9px; color: var(--faint); transition: transform .2s; opacity: .5; }
   .card.open .chevron { transform: rotate(180deg); }
-  .todo-prio-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 52px; padding: 3px 9px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-family: inherit; transition: all .15s; }
-  .todo-prio-btn:hover { border-color: var(--navy); color: var(--navy); }
+  /* Multifunktions-Button oben rechts */
+  .card-actions-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 26px; border-radius: 4px; font-size: 14px; letter-spacing: .05em; white-space: nowrap; flex-shrink: 0; background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-family: inherit; transition: all .15s; }
+  .card-actions-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .card-actions-btn.has-todo { border-color: var(--navy); color: var(--navy); }
   .todo-count-circle { position: absolute; top: -5px; right: -5px; background: var(--navy); color: #fff; border-radius: 50%; font-size: 8px; font-weight: 700; min-width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; padding: 0 2px; letter-spacing: 0; }
+  .card-actions-menu { display: none; position: absolute; top: calc(100% + 4px); right: 0; z-index: 400; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; box-shadow: 0 4px 16px rgba(0,0,0,.13); min-width: 160px; overflow: hidden; }
+  .card-actions-btn.open .card-actions-menu { display: block; }
+  .card-actions-item { display: block; width: 100%; text-align: left; padding: 9px 14px; font-size: 12px; color: var(--text); background: none; border: none; cursor: pointer; font-family: inherit; transition: background .1s; white-space: nowrap; }
+  .card-actions-item:hover { background: var(--surface2); }
+  .card-actions-item.danger { color: var(--s-action); }
+  .card-actions-sep { height: 1px; background: var(--border); margin: 2px 0; }
+  /* Alte todo-prio-btn nicht mehr genutzt, aber für Rückwärtskompatibilität erhalten */
+  .todo-prio-btn { display: none; }
 
   .entwicklungsstand-tag { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 3px; font-size: 10px; font-weight: 600; background: var(--surface2); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
 
@@ -424,9 +434,32 @@
           </div>
           {% if session.get('role') in ('admin', 'superadmin') %}
           {% set _tc = signal_ids_with_todos.get(s.id, 0) %}
-          <button class="todo-prio-btn" onclick="event.stopPropagation();openTodoFromCard(this)" title="{% if _tc > 0 %}ToDo ansehen / neues anlegen{% else %}ToDo anlegen{% endif %}" style="width:100%">
-            ToDo{% if _tc > 0 %}<span class="todo-count-circle">{{ _tc }}</span>{% endif %}
-          </button>
+          <div class="card-actions-btn {% if _tc > 0 %}has-todo{% endif %}" onclick="event.stopPropagation();toggleCardActions(this)" title="Kartenaktionen">
+            ⋯{% if _tc > 0 %}<span class="todo-count-circle">{{ _tc }}</span>{% endif %}
+            <div class="card-actions-menu" onclick="event.stopPropagation()">
+              <button class="card-actions-item" onclick="openTodoFromCard(this.closest('.card-actions-btn'))">Todo anlegen{% if _tc > 0 %} <span style="color:var(--muted);font-size:10px">({{ _tc }})</span>{% endif %}</button>
+              <div class="card-actions-sep"></div>
+              {% if session.get('role') == 'superadmin' %}
+              <form method="post" action="{{ url_for('signal_toggle_hidden', sig_id=s.id) }}" style="display:contents" onclick="event.stopPropagation()">
+                <input type="hidden" name="next" value="{{ request.url }}">
+                {% if s.id in (hidden_signal_ids or []) %}
+                <button type="submit" class="card-actions-item danger">Wieder einblenden</button>
+                {% else %}
+                <button type="submit" class="card-actions-item danger">Ausblenden</button>
+                {% endif %}
+              </form>
+              {% elif session.get('role') == 'admin' %}
+              <form method="post" action="{{ url_for('signal_entity_toggle_hidden', sig_id=s.id) }}" style="display:contents" onclick="event.stopPropagation()">
+                <input type="hidden" name="next" value="{{ request.url }}">
+                {% if entity_hidden_ids and s.id in entity_hidden_ids %}
+                <button type="submit" class="card-actions-item danger">Wieder anzeigen</button>
+                {% else %}
+                <button type="submit" class="card-actions-item danger">Ausblenden</button>
+                {% endif %}
+              </form>
+              {% endif %}
+            </div>
+          </div>
           {% endif %}
           </div>
         </div>
@@ -483,33 +516,9 @@
 
         <div class="card-foot-right">
           {% if session.get('role') in ('admin', 'superadmin') %}
-          {% if session.get('role') == 'superadmin' %}
-          <span class="todo-btn-wrap" style="display:inline-flex">
-            <form method="post" action="{{ url_for('signal_toggle_hidden', sig_id=s.id) }}" style="display:inline" onclick="event.stopPropagation()">
-              <input type="hidden" name="next" value="{{ request.url }}">
-              {% if s.id in (hidden_signal_ids or []) %}
-              <button class="todo-btn" style="border-color:#B03060;color:#B03060" title="Wieder einblenden">&#9679; Verborgen</button>
-              {% else %}
-              <button class="todo-btn" title="Signal ausblenden">Ausblenden</button>
-              {% endif %}
-            </form>
-          </span>
-          {% elif session.get('role') == 'admin' %}
-          <span class="todo-btn-wrap" style="display:inline-flex">
-            <form method="post" action="{{ url_for('signal_entity_toggle_hidden', sig_id=s.id) }}" style="display:inline" onclick="event.stopPropagation()">
-              <input type="hidden" name="next" value="{{ request.url }}">
-              {% if entity_hidden_ids and s.id in entity_hidden_ids %}
-              <button class="todo-btn" style="border-color:#B03060;color:#B03060" title="Wieder anzeigen">&#9679; Verborgen</button>
-              {% else %}
-              <button class="todo-btn" title="Signal ausblenden">Ausblenden</button>
-              {% endif %}
-            </form>
-          </span>
+          {% if s.id in (hidden_signal_ids or []) or (entity_hidden_ids and s.id in entity_hidden_ids) %}
+          <span style="font-size:10px;color:#B03060;font-weight:600">&#9679; Verborgen</span>
           {% endif %}
-          <span class="todo-btn-wrap">
-            <button class="todo-btn" onclick="event.stopPropagation();openTodoModal('{{ s.id }}','{{ s.title | replace("'","\\'")|replace('"','\\"') }}',window.location.href,{% if _var %}this.closest('.card').dataset.varianten{% else %}null{% endif %})"
-                    title="Als Aufgabe übernehmen">+ Aufgabe</button>
-          </span>
           {% endif %}
           <button class="history-btn" onclick="event.stopPropagation();toggleHistoryPopover(this)" title="Kartenhistorie">ℹ</button>
           <div class="history-popover">
@@ -582,6 +591,17 @@ function togglePrioDropdown(btn) {
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.prio-badge-wrap')) {
     document.querySelectorAll('.prio-badge-wrap.open').forEach(function(w){ w.classList.remove('open'); });
+  }
+});
+
+function toggleCardActions(btn) {
+  var isOpen = btn.classList.contains('open');
+  document.querySelectorAll('.card-actions-btn.open').forEach(function(b){ b.classList.remove('open'); });
+  if (!isOpen) btn.classList.add('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.card-actions-btn')) {
+    document.querySelectorAll('.card-actions-btn.open').forEach(function(b){ b.classList.remove('open'); });
   }
 });
 
