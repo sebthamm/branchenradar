@@ -4232,7 +4232,7 @@ def ida_run():
 
     def _write_ida_step(step):
         try:
-            _save(IDA_STATUS_FILE, {"step": step, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+            _save(IDA_STATUS_FILE, {"running": True, "step": step, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
         except Exception:
             pass
 
@@ -4331,6 +4331,7 @@ def ida_run():
             archive_signal_final()
             save_signal_final(final_signals, ts)
             status = {
+                "running":        False,
                 "run_at":         _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "model":          model,
                 "finals_written": len(final_signals),
@@ -4346,7 +4347,7 @@ def ida_run():
             tb = traceback.format_exc()
             app.logger.error("Ida thread error: %s", tb)
             try:
-                err = {"run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e), "traceback": tb[:500]}
+                err = {"running": False, "run_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "error": str(e), "traceback": tb[:500]}
                 _save(IDA_STATUS_FILE, err)
                 _append_agent_history(IDA_HISTORY_FILE, err)
             except Exception:
@@ -4360,20 +4361,21 @@ def ida_run():
 @app.route("/admin/ida/status")
 @role_required("superadmin")
 def ida_status():
-    if _ida_running:
-        step = ""
-        if os.path.exists(IDA_STATUS_FILE):
-            try:
-                with open(IDA_STATUS_FILE, encoding="utf-8") as f:
-                    step = json.load(f).get("step", "")
-            except Exception:
-                pass
-        return jsonify({"running": True, "step": step})
-    if not os.path.exists(IDA_STATUS_FILE):
+    # Prüfe zuerst die Status-Datei (funktioniert auch bei mehreren Gunicorn-Workern)
+    file_running = False
+    file_data = {}
+    if os.path.exists(IDA_STATUS_FILE):
+        try:
+            with open(IDA_STATUS_FILE, encoding="utf-8") as f:
+                file_data = json.load(f)
+            file_running = bool(file_data.get("running"))
+        except Exception:
+            pass
+    if _ida_running or file_running:
+        return jsonify({"running": True, "step": file_data.get("step", "")})
+    if not file_data:
         return jsonify({"running": False, "exists": False})
-    with open(IDA_STATUS_FILE, encoding="utf-8") as f:
-        data = json.load(f)
-    return jsonify({"running": False, "exists": True, **data})
+    return jsonify({"running": False, "exists": True, **file_data})
 
 @app.route("/superadmin/backup/download")
 @role_required("superadmin")
