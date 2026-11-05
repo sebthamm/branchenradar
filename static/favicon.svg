@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="5" fill="#1a1612"/>
+  <text x="16" y="13" font-family="Georgia, 'Times New Roman', serif" font-size="8.5" font-weight="700" fill="#f5f0eb" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.3">O</text>
+  <text x="16" y="21" font-family="Georgia, 'Times New Roman', serif" font-size="7" font-weight="700" fill="#B83030" text-anchor="middle" dominant-baseline="middle">&amp;</text>
+  <text x="16" y="29" font-family="Georgia, 'Times New Roman', serif" font-size="8.5" font-weight="700" fill="#f5f0eb" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.3">J</text>
+</svg>
