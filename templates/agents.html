@@ -19,7 +19,8 @@
   /* Einheitlicher Fortschrittsbalken für alle manuellen Agent-Runs */
   .agent-progress { display:none; margin-top:10px; }
   .agent-progress.visible { display:block; }
-  .agent-progress-bar-wrap { height:4px; background:var(--border); border-radius:2px; overflow:hidden; margin-bottom:6px; }
+  .agent-progress-top { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+  .agent-progress-bar-wrap { flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
   .agent-progress-bar { height:100%; width:30%; background:var(--primary,#2563EB); border-radius:2px;
     animation: progress-indeterminate 1.4s ease-in-out infinite; }
   @keyframes progress-indeterminate {
@@ -27,6 +28,7 @@
     50%  { transform: translateX(130%);  width:60%; }
     100% { transform: translateX(200%);  width:40%; }
   }
+  .agent-progress-timer { font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; min-width:28px; text-align:right; }
   .agent-progress-label { font-size:12px; color:var(--muted); }
 
   /* Ingestion blocks (Feed / Scrape / PDF / Search) */
@@ -457,7 +459,7 @@
               <span>&#9654; Jetzt ausf&#252;hren</span>
             </button>
             <span id="nils-manual-run-msg" style="font-size:12px;color:var(--muted);display:block"></span>
-            <div id="progress-nils" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div>
+            <div id="progress-nils" class="agent-progress"><div class="agent-progress-top"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><span class="agent-progress-timer">0s</span></div><div class="agent-progress-label"></div></div>
           </div>
         </div>
       </div>
@@ -714,7 +716,7 @@
               <span>&#9654; Jetzt ausf&#252;hren</span>
             </button>
             <span id="maya-manual-run-msg" style="font-size:12px;color:var(--muted);display:block;margin-top:8px"></span>
-            <div id="progress-maja" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div>
+            <div id="progress-maja" class="agent-progress"><div class="agent-progress-top"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><span class="agent-progress-timer">0s</span></div><div class="agent-progress-label"></div></div>
           </div>
         </div>
       </div>
@@ -783,7 +785,7 @@
           <button class="btn btn-primary btn-sm" id="sol-run-btn" onclick="runSol()">&#9654; Starten</button>
           {% endif %}
         </div>
-        <div style="padding:0 24px 8px"><div id="progress-sol" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
+        <div style="padding:0 24px 8px"><div id="progress-sol" class="agent-progress"><div class="agent-progress-top"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><span class="agent-progress-timer">0s</span></div><div class="agent-progress-label"></div></div></div>
       </div>
       {# Configurable runtime parameters (superadmin only) #}
       <div class="nils-props-toggle" onclick="toggleSolSkills()">
@@ -954,7 +956,7 @@
             <button id="fletcher-cancel-btn" class="btn btn-sm" onclick="cancelFetcher('fletcher')" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">&#10005; Abbrechen</button>
             <a href="{{ url_for('fetcher_feed_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Fred</a>
           </div>
-          <div style="padding:0 0 8px"><div id="progress-fletcher" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
+          <div style="padding:0 0 8px"><div id="progress-fletcher" class="agent-progress"><div class="agent-progress-top"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><span class="agent-progress-timer">0s</span></div><div class="agent-progress-label"></div></div></div>
         </div>
         <div class="nils-props-toggle" onclick="toggleFletcherSkills()">
           <span>Fletchers Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
@@ -1237,7 +1239,7 @@
             <button id="frank-cancel-btn" class="btn btn-sm" onclick="cancelFetcher('frank')" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">&#10005; Abbrechen</button>
             <a href="{{ url_for('fetcher_scrape_export') }}" class="btn btn-secondary btn-sm">&#8595; Export f&#252;r Finn</a>
           </div>
-          <div style="padding:0 0 8px"><div id="progress-frank" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
+          <div style="padding:0 0 8px"><div id="progress-frank" class="agent-progress"><div class="agent-progress-top"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><span class="agent-progress-timer">0s</span></div><div class="agent-progress-label"></div></div></div>
         </div>
         <div class="nils-props-toggle" onclick="toggleFrankSkills()">
           <span>Franks Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
@@ -1811,7 +1813,7 @@
           <button id="theo-run-btn" class="btn btn-primary btn-sm" onclick="runTheo()">&#9654; Theo starten</button>
           <button id="theo-cancel-btn" class="btn btn-sm" onclick="cancelTheo()" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">&#10005; Abbrechen</button>
         </div>
-        <div style="padding:0 24px 8px"><div id="progress-theo" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
+        <div style="padding:0 24px 8px"><div id="progress-theo" class="agent-progress"><div class="agent-progress-top"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><span class="agent-progress-timer">0s</span></div><div class="agent-progress-label"></div></div></div>
       </div>
       <div class="nils-props-toggle" onclick="toggleTheoSkills()">
         <span>Theos Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
@@ -1962,7 +1964,7 @@
           <button id="ida-run-btn" class="btn btn-primary btn-sm" onclick="runIda()">&#9654; Ida starten</button>
           <button id="ida-cancel-btn" class="btn btn-sm" onclick="cancelIda()" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">&#10005; Abbrechen</button>
         </div>
-        <div style="padding:0 24px 8px"><div id="progress-ida" class="agent-progress"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><div class="agent-progress-label"></div></div></div>
+        <div style="padding:0 24px 8px"><div id="progress-ida" class="agent-progress"><div class="agent-progress-top"><div class="agent-progress-bar-wrap"><div class="agent-progress-bar"></div></div><span class="agent-progress-timer">0s</span></div><div class="agent-progress-label"></div></div></div>
       </div>
       <div class="nils-props-toggle" onclick="toggleIdaSkills()">
         <span>Idas Skills <span style="font-weight:400;color:var(--faint)">(Funktionen)</span></span>
@@ -2947,13 +2949,21 @@ async function cancelTheo() {
   } catch(e) {}
 }
 
+let _theoPollCount = 0;
 function _pollTheo() {
+  _theoPollCount++;
   fetch('/admin/theo/status').then(r=>r.json()).then(d => {
     if (d.running) {
+      _theoPollCount = 0;
       _progressShow('theo', d.step || 'Theo läuft…');
       setTimeout(_pollTheo, 2000);
       return;
     }
+    if (!d.exists && !d.error && _theoPollCount <= 3) {
+      setTimeout(_pollTheo, 1000);
+      return;
+    }
+    _theoPollCount = 0;
     const btn    = document.getElementById('theo-run-btn');
     const cancel = document.getElementById('theo-cancel-btn');
     btn.disabled = false; btn.style.display = '';
@@ -3028,21 +3038,35 @@ async function runIda() {
   }
 }
 
-function cancelIda() {
+async function cancelIda() {
   const btn    = document.getElementById('ida-run-btn');
   const cancel = document.getElementById('ida-cancel-btn');
-  _progressHide('ida', 'Abgebrochen (Server läuft ggf. weiter)', true);
+  if (cancel) { cancel.disabled = true; cancel.textContent = 'Abbruch…'; }
+  _progressShow('ida', 'Abbruch angefordert…');
+  try {
+    await fetch('/admin/ida/cancel', {method:'POST', headers:{'Content-Type':'application/json'}});
+  } catch(e) {}
   if (btn)    { btn.disabled = false; btn.style.display = ''; }
-  if (cancel) { cancel.style.display = 'none'; }
+  if (cancel) { cancel.style.display = 'none'; cancel.disabled = false; cancel.textContent = '✕ Abbrechen'; }
+  _progressHide('ida', 'Abgebrochen', true);
 }
 
+let _idaPollCount = 0;
 function _pollIda() {
+  _idaPollCount++;
   fetch('/admin/ida/status').then(r=>r.json()).then(d => {
     if (d.running) {
+      _idaPollCount = 0;
       _progressShow('ida', d.step || 'Ida bewertet und finalisiert Signale…');
       setTimeout(_pollIda, 3000);
       return;
     }
+    // Race-Condition: ersten 3 Polls ignorieren falls noch kein Status vorhanden
+    if (!d.exists && !d.error && _idaPollCount <= 3) {
+      setTimeout(_pollIda, 1000);
+      return;
+    }
+    _idaPollCount = 0;
     const btn    = document.getElementById('ida-run-btn');
     const cancel = document.getElementById('ida-cancel-btn');
     btn.disabled = false; btn.style.display = '';
@@ -3980,29 +4004,57 @@ async function _loadAgentPerf(name) {
   }
 }
 
-// ── Einheitlicher Fortschrittsbalken ─────────────────────────────────────────
+// ── Einheitlicher Fortschrittsbalken mit Timer ───────────────────────────────
+const _progressTimers = {};
+
 function _progressShow(id, label) {
   const el = document.getElementById('progress-' + id);
   if (!el) return;
   el.querySelector('.agent-progress-label').textContent = label || 'Läuft…';
+  // bar-wrap ggf. zurücksetzen (nach _progressHide inline-hidden)
+  const barWrap = el.querySelector('.agent-progress-bar-wrap');
+  if (barWrap) barWrap.style.display = '';
+  const timerEl = el.querySelector('.agent-progress-timer');
+  if (timerEl) timerEl.style.display = '';
   el.classList.add('visible');
+  // Timer starten (nur wenn noch keiner läuft)
+  if (!_progressTimers[id]) {
+    const start = Date.now();
+    _progressTimers[id] = { start, interval: setInterval(() => {
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      const t = document.querySelector('#progress-' + id + ' .agent-progress-timer');
+      if (t) t.textContent = elapsed + 's';
+    }, 1000) };
+  }
 }
+
 function _progressHide(id, label, isError) {
+  // Timer stoppen und Laufzeit merken
+  let elapsed = null;
+  if (_progressTimers[id]) {
+    elapsed = Math.floor((Date.now() - _progressTimers[id].start) / 1000);
+    clearInterval(_progressTimers[id].interval);
+    delete _progressTimers[id];
+  }
   const el = document.getElementById('progress-' + id);
   if (!el) return;
   el.classList.remove('visible');
-  // Ergebnis kurz im Label anzeigen, dann ausblenden
+  // Ergebnis kurz anzeigen, dann ausblenden
   if (label) {
     const lbl = el.querySelector('.agent-progress-label');
-    lbl.textContent = label;
+    const timerEl = el.querySelector('.agent-progress-timer');
+    const durationText = elapsed !== null ? ` (${elapsed}s)` : '';
+    lbl.textContent = label + durationText;
     lbl.style.color = isError ? 'var(--s-action)' : 'var(--s-force)';
     el.querySelector('.agent-progress-bar-wrap').style.display = 'none';
+    if (timerEl) timerEl.style.display = 'none';
     el.classList.add('visible');
     setTimeout(() => {
       el.classList.remove('visible');
       el.querySelector('.agent-progress-bar-wrap').style.display = '';
+      if (timerEl) { timerEl.style.display = ''; timerEl.textContent = '0s'; }
       lbl.style.color = '';
-    }, 4000);
+    }, 5000);
   }
 }
 

@@ -4076,10 +4076,10 @@ def theo_run():
             pass
 
     _THEO_MAX_COST = 1.0  # USD
+    _theo_running = True  # vor Thread-Start setzen
 
     def _run():
         global _theo_running, _theo_cancel
-        _theo_running = True
         try:
             import anthropic, re as _re
             from datetime import datetime as _dt
@@ -4189,6 +4189,7 @@ def theo_run():
                 pass
         finally:
             _theo_running = False
+            _theo_cancel  = False
 
     threading.Thread(target=_run, daemon=True).start()
     return jsonify({"ok": True, "started": True})
@@ -4221,13 +4222,21 @@ def theo_cancel():
 # ── Ida (bewertung/final agent) ────────────────────────────────────────────────
 
 _ida_running = False
+_ida_cancel  = False
 
 IDA_STATUS_FILE = os.path.join(DATA_DIR, "ida_status.json")
+
+@app.route("/admin/ida/cancel", methods=["POST"])
+@role_required("superadmin")
+def ida_cancel():
+    global _ida_cancel
+    _ida_cancel = True
+    return jsonify({"ok": True})
 
 @app.route("/admin/ida/run", methods=["POST"])
 @role_required("superadmin")
 def ida_run():
-    global _ida_running
+    global _ida_running, _ida_cancel
     if _ida_running:
         return jsonify({"ok": False, "error": "Ida läuft bereits."})
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -4240,6 +4249,7 @@ def ida_run():
     import threading
 
     _IDA_MAX_COST = 1.0  # USD
+    _ida_cancel = False
 
     def _write_ida_step(step):
         try:
@@ -4247,9 +4257,10 @@ def ida_run():
         except Exception:
             pass
 
+    _ida_running = True  # vor Thread-Start setzen, damit Status sofort korrekt ist
+
     def _run():
-        global _ida_running
-        _ida_running = True
+        global _ida_running, _ida_cancel
         try:
             import anthropic
             from datetime import datetime as _dt
@@ -4300,6 +4311,10 @@ def ida_run():
                     f'{_auto_fmt}\n\n'
                     f'## Zu aggregierende Signale\n{grp_text}'
                 )
+                if _ida_cancel:
+                    _write_ida_step(f"Abgebrochen nach {idx}/{len(matches)} Gruppen")
+                    break
+
                 if cost_so_far >= _IDA_MAX_COST:
                     _write_ida_step(f"Kostenlimit ${_IDA_MAX_COST:.2f} erreicht — {idx}/{len(matches)} Gruppen verarbeitet, Rest wird 1:1 übernommen")
                     break
@@ -4377,6 +4392,7 @@ def ida_run():
                 pass
         finally:
             _ida_running = False
+            _ida_cancel  = False
 
     threading.Thread(target=_run, daemon=True).start()
     return jsonify({"ok": True, "started": True})
