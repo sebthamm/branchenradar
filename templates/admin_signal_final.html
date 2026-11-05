@@ -238,8 +238,14 @@
             <div class="detail-grid">
               {% if s.get('action') %}
               <div class="detail-field">
-                <div class="detail-label">Handlungsschritt</div>
+                <div class="detail-label">Handlungsschritt{% if s.get('action_extended') %} — Standardweg{% endif %}</div>
                 <div class="detail-value">{{ s.get('action','') }}</div>
+              </div>
+              {% endif %}
+              {% if s.get('action_extended') %}
+              <div class="detail-field">
+                <div class="detail-label">Handlungsschritt — Erweiterter Weg</div>
+                <div class="detail-value">{{ s.get('action_extended','') }}</div>
               </div>
               {% endif %}
               {% if s.get('action_time') %}
