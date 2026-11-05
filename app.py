@@ -4270,6 +4270,16 @@ def ida_run():
             sig_map = {s["id"]: s for s in signals}
             matches = load_signal_matches()
 
+            # Alter detail_extended-Cache laden bevor archiviert wird
+            _old_ext_cache = {}
+            try:
+                _old_final = _load(SIGNAL_FINAL_FILE)
+                for _os in (_old_final.get("signals", []) if isinstance(_old_final, dict) else []):
+                    if _os.get("detail_extended"):
+                        _old_ext_cache[_os["id"]] = _os["detail_extended"]
+            except Exception:
+                pass
+
             final_signals = []
             processed_ids = set()
             total_in_tok  = 0
@@ -4366,18 +4376,70 @@ def ida_run():
                     fin.setdefault("created_at", _dt.now().strftime("%Y-%m-%d"))
                     final_signals.append(fin)
 
+            # Phase 2: detail_extended für alle FINAL-Signale erzeugen
+            # Aus Cache übernehmen wo vorhanden, Rest via Haiku generieren
+            for _fs in final_signals:
+                if not _fs.get("detail_extended") and _fs["id"] in _old_ext_cache:
+                    _fs["detail_extended"] = _old_ext_cache[_fs["id"]]
+
+            _haiku_model = "claude-haiku-5-5"
+            _haiku_client = anthropic.Anthropic(api_key=api_key)
+            _ext_in_tok  = 0
+            _ext_out_tok = 0
+            _need_ext = [_fs for _fs in final_signals if not _fs.get("detail_extended")]
+            for _ei, _fs in enumerate(_need_ext):
+                if _ida_cancel:
+                    break
+                _write_ida_step(f"Phase 2: {_ei}/{len(_need_ext)} Detail-Texte generiert…")
+                _src_lines = "".join(
+                    f"- {_src.get('name','')}" + (f" ({_src['url']})" if _src.get('url') else "") + "\n"
+                    for _src in _fs.get("sources", []) if _src.get("name")
+                ) or "(keine angegeben)"
+                _ext_prompt = (
+                    "Du bist Assistent für inhabergeführte Zahnarztpraxen in Deutschland. "
+                    "Eine Praxisinhaberin mit 6–10 Mitarbeitern hat keine Zeit, Originaldokumente zu lesen. "
+                    "Erkläre ihr das folgende Signal in einer erweiterten, praxisnahen Zusammenfassung.\n\n"
+                    f"SIGNAL:\nTitel: {_fs.get('title','')}\n"
+                    f"Kurzbeschreibung: {_fs.get('summary','')}\n"
+                    f"Detailtext: {_fs.get('detail','')}\n"
+                    f"Quellen: {_src_lines}\n\n"
+                    "Beantworte folgende fünf Punkte kompakt und direkt, ohne Einleitung:\n\n"
+                    "**Was ändert sich konkret?**\n(Die operative Konsequenz, nicht die politische Ankündigung)\n\n"
+                    "**Wen betrifft es wirklich?**\n(Alle Praxen? Bestimmte Größen, Rechtsformen, Fachrichtungen?)\n\n"
+                    "**Welcher Handlungsspielraum besteht?**\n(Ausnahmen, Übergangsfristen, Alternativen)\n\n"
+                    "**Was passiert bei Nichtstun?**\n(Konkrete Konsequenz, nicht abstrakt)\n\n"
+                    "**Hintergrund in einem Satz**\n(Warum wurde das beschlossen, was war der Auslöser?)\n\n"
+                    "Schreibe klar, direkt und ohne Fachjargon. Maximal 300 Wörter gesamt."
+                )
+                try:
+                    _ext_msg = _haiku_client.messages.create(
+                        model=_haiku_model, max_tokens=600,
+                        messages=[{"role": "user", "content": _ext_prompt}]
+                    )
+                    _fs["detail_extended"] = _ext_msg.content[0].text
+                    _ext_in_tok  += _ext_msg.usage.input_tokens  if _ext_msg.usage else 0
+                    _ext_out_tok += _ext_msg.usage.output_tokens if _ext_msg.usage else 0
+                except Exception:
+                    pass
+
+            _ext_cost = _agent_cost(_haiku_model, _ext_in_tok, _ext_out_tok)
+
             ts = _dt.now().strftime("%y%m%d%H%M")
             archive_signal_final()
             save_signal_final(final_signals, ts)
             status = {
-                "running":        False,
-                "run_at":         _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "model":          model,
-                "finals_written": len(final_signals),
-                "groups_merged":  len(matches),
-                "input_tokens":   total_in_tok,
-                "output_tokens":  total_out_tok,
-                "cost_usd":       _agent_cost(model, total_in_tok, total_out_tok),
+                "running":          False,
+                "run_at":           _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "model":            model,
+                "finals_written":   len(final_signals),
+                "groups_merged":    len(matches),
+                "input_tokens":     total_in_tok,
+                "output_tokens":    total_out_tok,
+                "cost_usd":         _agent_cost(model, total_in_tok, total_out_tok),
+                "ext_generated":    len(_need_ext),
+                "ext_cached":       len(_old_ext_cache),
+                "ext_cost_usd":     _ext_cost,
+                "total_cost_usd":   _agent_cost(model, total_in_tok, total_out_tok) + _ext_cost,
             }
             _save(IDA_STATUS_FILE, status)
             _append_agent_history(IDA_HISTORY_FILE, status)

@@ -225,13 +225,11 @@
                 <div class="detail-text-body {% if not s.get('summary') %}empty{% endif %}">{{ s.get('summary','') or '(leer)' }}</div>
               </div>
               <div class="detail-text-col">
-                <div class="detail-text-col-label">Sol — Kachel-Text (Detail)</div>
+                <div class="detail-text-col-label">Vertiefungstext (Mehr dazu →)</div>
                 {% if s.get('detail_extended') %}
                 <div class="detail-text-body">{{ s.get('detail_extended','') }}</div>
-                {% elif s.get('detail') %}
-                <div class="detail-text-body">{{ s.get('detail','') }}</div>
                 {% else %}
-                <div class="detail-text-body empty">(noch nicht von Sol befüllt)</div>
+                <div class="detail-text-body empty">(wird beim nächsten Ida-Lauf generiert)</div>
                 {% endif %}
               </div>
             </div>
