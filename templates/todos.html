@@ -76,6 +76,19 @@
     .pill { padding: 5px 10px; font-size: 11px; }
   }
 
+  /* Signal-Kontext aufklappbar */
+  .sig-ctx-toggle { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--navy); padding: 3px 0 0; display: inline-flex; align-items: center; gap: 4px; font-family: inherit; transition: color .15s; }
+  .sig-ctx-toggle:hover { color: var(--text); }
+  .sig-ctx-toggle .arrow { font-size: 9px; transition: transform .2s; }
+  .sig-ctx-toggle.open .arrow { transform: rotate(90deg); }
+  .sig-ctx-box { display: none; margin-top: 8px; padding: 10px 12px; background: var(--surface2); border-radius: 6px; border-left: 2px solid var(--navy); }
+  .sig-ctx-box.open { display: block; }
+  .sig-ctx-row { font-size: 12px; color: var(--muted); margin-bottom: 5px; line-height: 1.55; }
+  .sig-ctx-row:last-child { margin-bottom: 0; }
+  .sig-ctx-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); margin-bottom: 2px; }
+  .sig-ctx-sources { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+  .sig-ctx-src { font-size: 11px; background: var(--border); border-radius: 3px; padding: 2px 6px; color: var(--muted); }
+
   /* Done-with-comment modal */
   .done-modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:600; align-items:center; justify-content:center; }
   .done-modal-backdrop.open { display:flex; }
@@ -88,6 +101,45 @@
   .done-modal-actions { display:flex; gap:8px; margin-top:16px; }
 </style>
 {% endblock %}
+{% macro signal_ctx(t, sig) %}
+{% set s = sig or {} %}
+{% set has_summary  = s.get('summary')  or t.get('signal_summary') %}
+{% set has_action   = s.get('action')   or t.get('signal_action') %}
+{% set has_sources  = s.get('sources')  or t.get('signal_sources') %}
+{% set has_prio     = s.get('priority') or t.get('signal_priority') %}
+{% set has_date     = s.get('date')     or t.get('signal_date') %}
+{% if has_summary or has_action or has_sources %}
+<button type="button" class="sig-ctx-toggle" onclick="toggleCtx(this)">
+  <span class="arrow">▶</span> Signal-Kontext
+</button>
+<div class="sig-ctx-box">
+  {% if has_prio or has_date %}
+  <div class="sig-ctx-row" style="display:flex;gap:12px;margin-bottom:7px">
+    {% if has_prio %}<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">{{ has_prio }}</span>{% endif %}
+    {% if has_date %}
+    {% set dp = has_date.split('-') if has_date else [] %}
+    <span style="font-size:10px;color:var(--faint)">{{ dp[2]+'.'+dp[1]+'.'+dp[0] if dp|length==3 else has_date }}</span>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if has_summary %}
+  <div class="sig-ctx-lbl">Zusammenfassung</div>
+  <div class="sig-ctx-row">{{ has_summary }}</div>
+  {% endif %}
+  {% if has_action %}
+  <div class="sig-ctx-lbl" style="margin-top:6px">Handlungsempfehlung</div>
+  <div class="sig-ctx-row">{{ has_action }}</div>
+  {% endif %}
+  {% if has_sources %}
+  <div class="sig-ctx-lbl" style="margin-top:6px">Quellen</div>
+  <div class="sig-ctx-sources">
+    {% for src in has_sources %}<span class="sig-ctx-src">{{ src.get('name', src) if src is mapping else src }}</span>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
 {% block content %}
 <div class="main">
   <div class="page-head">
@@ -155,6 +207,7 @@
         <div class="todo-cat">{{ t.category or 'ToDo' }}</div>
         {% if sig %}<div class="todo-signal">{{ sig.title }}</div>
         {% elif t.signal_title %}<div class="todo-signal">{{ t.signal_title }}</div>{% endif %}
+        {{ signal_ctx(t, sig) }}
         <div class="todo-meta">
           {% if t.deadline %}
           <span class="deadline-tag {% if overdue %}overdue{% else %}ok{% endif %}">
@@ -204,6 +257,7 @@
         <div class="todo-cat">{{ t.category or 'ToDo' }}</div>
         {% if sig %}<div class="todo-signal">{{ sig.title }}</div>
         {% elif t.signal_title %}<div class="todo-signal">{{ t.signal_title }}</div>{% endif %}
+        {{ signal_ctx(t, sig) }}
         {% if t.comment %}<div class="todo-comment">{{ t.comment }}</div>{% endif %}
         {% if t.done_comment %}<div class="done-comment">Kommentar: {{ t.done_comment }}</div>{% endif %}
       </div>
@@ -237,6 +291,7 @@
         <div class="todo-cat">{{ t.category or 'ToDo' }}</div>
         {% if sig %}<div class="todo-signal">{{ sig.title }}</div>
         {% elif t.signal_title %}<div class="todo-signal">{{ t.signal_title }}</div>{% endif %}
+        {{ signal_ctx(t, sig) }}
         <div class="todo-meta">
           {% if t.deadline %}<span class="deadline-tag ok">{{ t.deadline }}</span>{% endif %}
           {% if assignee %}<span class="assign-tag done-by">→ {{ assignee.name or assignee.username }}</span>{% endif %}
@@ -345,5 +400,10 @@ function closeDoneModal(e) {
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDoneModal(); });
+
+function toggleCtx(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
 </script>
 {% endblock %}

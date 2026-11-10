@@ -1859,9 +1859,23 @@ def todo_new():
     uid = session.get("user_id")
     eid = session.get("entity_id")
     assigned_to = request.form.get("assigned_to", "").strip() or None
+    # Signal-Snapshot: Kontext zum Erstellungszeitpunkt einfrieren
+    sig_id = request.form.get("signal_id", "")
+    sig_snapshot = {}
+    if sig_id:
+        sig_obj = next((s for s in load_signal_final().get("signals", []) if s["id"] == sig_id), None)
+        if sig_obj:
+            sig_snapshot = {
+                "signal_summary":  sig_obj.get("summary", ""),
+                "signal_action":   sig_obj.get("action", ""),
+                "signal_sources":  sig_obj.get("sources", []),
+                "signal_date":     sig_obj.get("date", ""),
+                "signal_category": sig_obj.get("category", ""),
+                "signal_priority": sig_obj.get("priority", ""),
+            }
     todo = {
         "id":              str(uuid.uuid4()),
-        "signal_id":       request.form.get("signal_id", ""),
+        "signal_id":       sig_id,
         "signal_title":    request.form.get("signal_title", ""),
         "entity_id":       eid,
         "category":        request.form.get("category", ""),
@@ -1884,6 +1898,7 @@ def todo_new():
         "recipients":      request.form.get("recipients", "all"),
         "read_by":         [],
         "comments":        [],
+        **sig_snapshot,
     }
     todos = load_todos()
     todos.append(todo)
