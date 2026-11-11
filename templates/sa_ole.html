@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}Ole — Systemprüfung{% endblock %}
+{% block head %}
+<style>
+  .sa-subnav { background: var(--surface); border-bottom: 1px solid var(--border); }
+  .sa-subnav-inner { max-width: 1000px; margin: 0 auto; padding: 0 32px; display: flex; }
+  .sa-tab { display: inline-block; padding: 12px 18px; font-size: 13px; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; transition: all .15s; }
+  .sa-tab:hover { color: var(--text); }
+  .sa-tab.active { color: var(--navy); border-bottom-color: var(--navy); font-weight: 500; }
+
+  .main { max-width: 960px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+  .page-title { font-family: Georgia, serif; font-size: 24px; font-weight: normal; }
+  .page-sub { font-size: 12px; color: var(--faint); margin-bottom: 28px; }
+
+  /* Stats bar */
+  .stats-bar { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 32px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .stat-value { font-family: Georgia, serif; font-size: 28px; font-weight: normal; color: var(--text); line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .06em; }
+  .stat-card.warn .stat-value { color: var(--s-announced); }
+  .stat-card.ok   .stat-value { color: var(--s-active); }
+
+  /* Section */
+  .section { margin-bottom: 36px; }
+  .section-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .section-icon { font-size: 16px; }
+
+  /* Prio bars */
+  .prio-grid { display: flex; flex-direction: column; gap: 8px; }
+  .prio-row { display: flex; align-items: center; gap: 10px; }
+  .prio-lbl { font-size: 12px; font-weight: 600; width: 90px; flex-shrink: 0; }
+  .prio-bar-wrap { flex: 1; background: var(--surface2); border-radius: 4px; height: 14px; overflow: hidden; }
+  .prio-bar { height: 100%; border-radius: 4px; transition: width .3s; }
+  .prio-bar.muss    { background: var(--s-action); }
+  .prio-bar.soll    { background: var(--s-announced); }
+  .prio-bar.kann    { background: var(--s-active); }
+  .prio-bar.ohne    { background: var(--border); }
+  .prio-count { font-size: 12px; color: var(--muted); width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* Category distribution */
+  .cat-grid { display: flex; flex-direction: column; gap: 7px; }
+  .cat-row { display: flex; align-items: center; gap: 10px; }
+  .cat-lbl { font-size: 12px; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cat-bar-wrap { width: 180px; flex-shrink: 0; background: var(--surface2); border-radius: 4px; height: 10px; overflow: hidden; }
+  .cat-bar { height: 100%; border-radius: 4px; background: var(--navy); opacity: .5; }
+  .cat-count { font-size: 11px; color: var(--muted); width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* Suggestions */
+  .suggestion { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start; }
+  .suggestion.warn { border-left: 3px solid var(--s-announced); }
+  .suggestion.info { border-left: 3px solid var(--s-radar); }
+  .suggestion.ok   { border-left: 3px solid var(--s-active); }
+  .sug-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .suggestion.warn .sug-dot { background: var(--s-announced); }
+  .suggestion.info .sug-dot { background: var(--s-radar); }
+  .suggestion.ok   .sug-dot { background: var(--s-active); }
+  .sug-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .sug-text  { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+  /* Signal list */
+  .sig-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .sig-list-row { display: flex; align-items: baseline; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .sig-list-row:last-child { border-bottom: none; }
+  .sig-id { font-size: 10px; color: var(--faint); flex-shrink: 0; font-family: monospace; }
+  .sig-title { color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sig-meta { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+  .more-hint { font-size: 11px; color: var(--faint); padding: 8px 14px; }
+
+  .ok-state { text-align: center; padding: 24px; color: var(--s-active); font-size: 13px; background: color-mix(in srgb, var(--s-active) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--s-active) 20%, var(--border)); border-radius: var(--radius); }
+
+  @media (max-width: 700px) { .main { padding: 14px 14px 60px; } .stats-bar { grid-template-columns: 1fr 1fr; } .cat-bar-wrap { width: 100px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <div class="page-title">Ole — Systemprüfung</div>
+  </div>
+  <div class="page-sub">Automatische Qualitätsprüfung der Signal-Datenbank &nbsp;·&nbsp; Generiert: {{ generated_at }}</div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-value">{{ total }}</div>
+      <div class="stat-label">Finale Signale</div>
+    </div>
+    <div class="stat-card {% if review_count > 0 %}warn{% else %}ok{% endif %}">
+      <div class="stat-value">{{ review_count }}</div>
+      <div class="stat-label">Zur Nachprüfung</div>
+    </div>
+    <div class="stat-card {% if no_cat_count > 0 %}warn{% else %}ok{% endif %}">
+      <div class="stat-value">{{ no_cat_count }}</div>
+      <div class="stat-label">Ohne Kategorie</div>
+    </div>
+    <div class="stat-card {% if old_count > 5 %}warn{% else %}ok{% endif %}">
+      <div class="stat-value">{{ old_count }}</div>
+      <div class="stat-label">Älter 12 Monate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ prio_dist.get('Ohne Prio', 0) }}</div>
+      <div class="stat-label">Ohne Priorität</div>
+    </div>
+  </div>
+
+  <!-- Optimierungsvorschläge -->
+  <div class="section">
+    <div class="section-title"><span class="section-icon">💡</span> Optimierungsvorschläge</div>
+    {% if suggestions %}
+      {% for s in suggestions %}
+      <div class="suggestion {{ s.level }}">
+        <div class="sug-dot"></div>
+        <div>
+          <div class="sug-title">{{ s.title }}</div>
+          <div class="sug-text">{{ s.text }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="ok-state">✓ Keine Auffälligkeiten gefunden</div>
+    {% endif %}
+  </div>
+
+  <!-- Prioritäts-Verteilung -->
+  <div class="section">
+    <div class="section-title"><span class="section-icon">📊</span> Prioritäts-Verteilung</div>
+    {% if total %}
+    <div class="prio-grid">
+      {% set pmap = [('MUSS','muss'),('SOLL','soll'),('KANN','kann'),('Ohne Prio','ohne')] %}
+      {% for label, cls in pmap %}
+      {% set cnt = prio_dist.get(label, 0) %}
+      <div class="prio-row">
+        <div class="prio-lbl">{{ label }}</div>
+        <div class="prio-bar-wrap">
+          <div class="prio-bar {{ cls }}" style="width:{{ (cnt / total * 100) | int }}%"></div>
+        </div>
+        <div class="prio-count">{{ cnt }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Kategorie-Verteilung -->
+  <div class="section">
+    <div class="section-title"><span class="section-icon">🗂</span> Kategorie-Verteilung</div>
+    {% if cat_dist %}
+    {% set max_cat = cat_dist.values() | max %}
+    <div class="cat-grid">
+      {% for cat, cnt in cat_dist.items() %}
+      <div class="cat-row">
+        <div class="cat-lbl">{{ cat }}</div>
+        <div class="cat-bar-wrap">
+          <div class="cat-bar" style="width:{{ (cnt / max_cat * 100) | int }}%"></div>
+        </div>
+        <div class="cat-count">{{ cnt }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Signale zur Nachprüfung -->
+  {% if review_items %}
+  <div class="section">
+    <div class="section-title"><span class="section-icon">🔍</span> Signale zur Nachprüfung (review_needed)</div>
+    <div class="sig-list">
+      {% for s in review_items %}
+      <div class="sig-list-row">
+        <span class="sig-id">{{ s.id }}</span>
+        <span class="sig-title">{{ s.title }}</span>
+        <span class="sig-meta">{{ s.category or '—' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% if review_count > review_items|length %}
+    <div class="more-hint">... und {{ review_count - review_items|length }} weitere</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Signale ohne Kategorie -->
+  {% if no_cat_items %}
+  <div class="section">
+    <div class="section-title"><span class="section-icon">🏷</span> Signale ohne Kategorie</div>
+    <div class="sig-list">
+      {% for s in no_cat_items %}
+      <div class="sig-list-row">
+        <span class="sig-id">{{ s.id }}</span>
+        <span class="sig-title">{{ s.title }}</span>
+        <span class="sig-meta">{{ s.priority or '—' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% if no_cat_count > no_cat_items|length %}
+    <div class="more-hint">... und {{ no_cat_count - no_cat_items|length }} weitere</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Alte Signale -->
+  {% if old_items %}
+  <div class="section">
+    <div class="section-title"><span class="section-icon">⏳</span> Aktive Signale älter als 12 Monate</div>
+    <div class="sig-list">
+      {% for s in old_items %}
+      <div class="sig-list-row">
+        <span class="sig-id">{{ s.id }}</span>
+        <span class="sig-title">{{ s.title }}</span>
+        <span class="sig-meta">{{ s.date or '—' }} &nbsp;·&nbsp; {{ s.status or '—' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% if old_count > old_items|length %}
+    <div class="more-hint">... und {{ old_count - old_items|length }} weitere</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -44,6 +44,19 @@
 
     <div class="entry">
       <div class="entry-date">11. November 2026</div>
+      <div class="entry-title">Ole — System-Agent V1 <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>Neuer Steuerungs-Agent „Ole" unter System im Superadmin-Menü</li>
+        <li>Signal-Qualitätsprüfung: Prioritäts-Verteilung, review_needed-Signale, Signale ohne Kategorie, veraltete Signale (&gt; 12 Monate aktiv)</li>
+        <li>Kategorie-Verteilung als Balkendiagramm — erkennt unterrepräsentierte Kategorien</li>
+        <li>Optimierungsvorschläge: regelbasiert, kein LLM-Aufruf, kein Kostenrisiko</li>
+        <li>Ampel-Zähler oben für Schnellüberblick (Zur Nachprüfung, Ohne Kategorie, Älter 12 Monate, Ohne Priorität)</li>
+        <li>Seite lädt immer live aus signal_final.json — kein gespeicherter Report, immer aktuell</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">11. November 2026</div>
       <div class="entry-title">Freie ToDos, Wiederholung &amp; Menü-Verbesserungen <span class="tag tag-new">Neu</span></div>
       <ul class="entry-items">
         <li>Freie ToDos: Admins können ToDos ohne Signal-Bezug direkt aus der ToDo-Liste anlegen (Button „+ Neues ToDo" oben rechts)</li>

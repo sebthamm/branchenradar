@@ -2076,6 +2076,94 @@ def sa_functions():
 def sa_logbook():
     return render_template("sa_logbook.html")
 
+@app.route("/superadmin/ole")
+@role_required("superadmin")
+def sa_ole():
+    from collections import Counter
+    signals = load_signal_final().get("signals", [])
+    total = len(signals)
+
+    # Prioritäts-Verteilung
+    prio_order = ["MUSS", "SOLL", "KANN"]
+    prio_raw = Counter((s.get("priority") or "").strip().upper() for s in signals)
+    prio_dist = {p: prio_raw.get(p, 0) for p in prio_order}
+    prio_dist["Ohne Prio"] = sum(v for k, v in prio_raw.items() if k not in prio_order)
+
+    # Signale mit review_needed
+    review_items = [s for s in signals if s.get("review_needed")]
+
+    # Signale ohne Kategorie
+    no_cat_items = [s for s in signals if not (s.get("category") or "").strip()]
+
+    # Kategorie-Verteilung
+    cat_dist = dict(Counter((s.get("category") or "Ohne Kategorie").strip() for s in signals).most_common())
+
+    # Signale mit sehr altem Datum (> 12 Monate) und nicht abgeschlossen
+    cutoff = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+    closed_stati = {"Verfügbar / In Kraft"}
+    old_items = [s for s in signals
+                 if (s.get("date") or "") < cutoff
+                 and (s.get("status") or "") not in closed_stati]
+
+    # Status-Verteilung
+    status_dist = dict(Counter((s.get("status") or "Ohne Status").strip() for s in signals).most_common())
+
+    # Kategorie-Balance: Durchschnitt und Ausreißer
+    if cat_dist and total:
+        avg_per_cat = total / len(cat_dist)
+        cat_issues = {k: v for k, v in cat_dist.items() if v < avg_per_cat * 0.4 or v > avg_per_cat * 2.5}
+    else:
+        cat_issues = {}
+
+    # Optimierungsvorschläge zusammenstellen
+    suggestions = []
+    if prio_dist["Ohne Prio"] > total * 0.3:
+        suggestions.append({
+            "level": "warn",
+            "title": "Viele Signale ohne Priorität",
+            "text": f"{prio_dist['Ohne Prio']} von {total} Signalen ({prio_dist['Ohne Prio']*100//total} %) haben keine Priorität. Ein Ida-Lauf mit Fokus auf diese Signale könnte helfen.",
+        })
+    if review_items:
+        suggestions.append({
+            "level": "warn",
+            "title": f"{len(review_items)} Signal{'e' if len(review_items)!=1 else ''} zur Nachprüfung markiert",
+            "text": "Ida hat diese Signale mit review_needed=true markiert — sie sollten manuell geprüft oder neu verarbeitet werden.",
+        })
+    if no_cat_items:
+        suggestions.append({
+            "level": "info",
+            "title": f"{len(no_cat_items)} Signal{'e' if len(no_cat_items)!=1 else ''} ohne Kategorie",
+            "text": "Signale ohne Kategorie erscheinen im Dashboard unter keinem Filter. Kategorie manuell ergänzen oder Ida-Lauf starten.",
+        })
+    if old_items:
+        suggestions.append({
+            "level": "info",
+            "title": f"{len(old_items)} Signal{'e' if len(old_items)!=1 else ''} älter als 12 Monate (noch aktiv)",
+            "text": "Diese Signale stammen aus dem Vorjahr und sind noch nicht als abgeschlossen markiert. Prüfen ob sie noch relevant sind.",
+        })
+    for k, v in cat_issues.items():
+        if v < (avg_per_cat * 0.4 if cat_dist and total else 0):
+            suggestions.append({
+                "level": "info",
+                "title": f"Kategorie schwach besetzt: {k}",
+                "text": f"Nur {v} Signale in dieser Kategorie (Durchschnitt: {avg_per_cat:.0f}). Neue Quellen oder ein gezielter Ida-Lauf könnten die Abdeckung verbessern.",
+            })
+
+    return render_template("sa_ole.html",
+        total=total,
+        prio_dist=prio_dist,
+        review_items=review_items[:15],
+        review_count=len(review_items),
+        no_cat_items=no_cat_items[:10],
+        no_cat_count=len(no_cat_items),
+        cat_dist=cat_dist,
+        old_items=old_items[:10],
+        old_count=len(old_items),
+        status_dist=status_dist,
+        suggestions=suggestions,
+        generated_at=datetime.now().strftime("%d.%m.%Y, %H:%M"),
+    )
+
 @app.route("/sa/default-setup", methods=["GET", "POST"])
 @role_required("superadmin")
 def sa_default_setup():
