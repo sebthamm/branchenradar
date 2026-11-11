@@ -279,7 +279,7 @@
   <nav class="sa-nav">
     <a href="{{ url_for('sa_home') }}" class="sa-nav-item">Home</a>
     <div>
-      <button class="sa-nav-group-btn open" onclick="toggleSaGroup(this)">
+      <button class="sa-nav-group-btn open" data-group="users" onclick="toggleSaGroup(this)">
         Nutzerverwaltung <span class="chevron">▼</span>
       </button>
       <div class="sa-nav-sub open">
@@ -288,7 +288,7 @@
       </div>
     </div>
     <div>
-      <button class="sa-nav-group-btn" onclick="toggleSaGroup(this)">
+      <button class="sa-nav-group-btn" data-group="viewas" onclick="toggleSaGroup(this)">
         User-Ansicht <span class="chevron">▼</span>
       </button>
       <div class="sa-nav-sub">
@@ -322,7 +322,7 @@
     <div class="sa-nav-sep"></div>
     <a href="{{ url_for('sources') }}" class="sa-nav-item">Quellen</a>
     <div>
-      <button class="sa-nav-group-btn open" onclick="toggleSaGroup(this)">
+      <button class="sa-nav-group-btn open" data-group="agents" onclick="toggleSaGroup(this)">
         Agenten <span class="chevron">▼</span>
       </button>
       <div class="sa-nav-sub open">
@@ -332,7 +332,7 @@
       </div>
     </div>
     <div>
-      <button class="sa-nav-group-btn open" onclick="toggleSaGroup(this)">
+      <button class="sa-nav-group-btn open" data-group="signals" onclick="toggleSaGroup(this)">
         Signale <span class="chevron">▼</span>
       </button>
       <div class="sa-nav-sub open">
@@ -344,7 +344,7 @@
     </div>
     <div class="sa-nav-sep"></div>
     <div>
-      <button class="sa-nav-group-btn" onclick="toggleSaGroup(this)">
+      <button class="sa-nav-group-btn" data-group="system" onclick="toggleSaGroup(this)">
         System <span class="chevron">▼</span>
       </button>
       <div class="sa-nav-sub">
@@ -539,6 +539,14 @@ function toggleSaGroup(btn) {
   btn.classList.toggle('open');
   var sub = btn.nextElementSibling;
   if (sub) sub.classList.toggle('open');
+  var key = btn.dataset.group;
+  if (key) {
+    try {
+      var state = JSON.parse(localStorage.getItem('sa_nav') || '{}');
+      state[key] = btn.classList.contains('open');
+      localStorage.setItem('sa_nav', JSON.stringify(state));
+    } catch(e) {}
+  }
 }
 function toggleImpersonate() {
   var p = document.getElementById('impersonate-panel');
@@ -592,15 +600,45 @@ document.addEventListener('click', function(e) {
     if (p) p.classList.remove('open');
   }
 });
-// Highlight active SA nav link
+// Highlight active SA nav link + restore saved menu state
 (function() {
+  // 1. Restore localStorage state first
+  try {
+    var state = JSON.parse(localStorage.getItem('sa_nav') || '{}');
+    document.querySelectorAll('.sa-nav-group-btn[data-group]').forEach(function(btn) {
+      var key = btn.dataset.group;
+      if (key in state) {
+        var sub = btn.nextElementSibling;
+        if (state[key]) {
+          btn.classList.add('open');
+          if (sub) sub.classList.add('open');
+        } else {
+          btn.classList.remove('open');
+          if (sub) sub.classList.remove('open');
+        }
+      }
+    });
+  } catch(e) {}
+  // 2. Always open parent of active link (overrides saved state)
   var path = window.location.pathname;
   document.querySelectorAll('.sa-nav-item, .sa-nav-sub a').forEach(function(a) {
     if (a.getAttribute('href') && path === a.getAttribute('href')) {
       a.classList.add('active');
-      // Open parent group if in sub
       var sub = a.closest('.sa-nav-sub');
-      if (sub) { sub.classList.add('open'); var btn = sub.previousElementSibling; if (btn) btn.classList.add('open'); }
+      if (sub) {
+        sub.classList.add('open');
+        var btn = sub.previousElementSibling;
+        if (btn) {
+          btn.classList.add('open');
+          if (btn.dataset.group) {
+            try {
+              var saved = JSON.parse(localStorage.getItem('sa_nav') || '{}');
+              saved[btn.dataset.group] = true;
+              localStorage.setItem('sa_nav', JSON.stringify(saved));
+            } catch(e) {}
+          }
+        }
+      }
     }
   });
 })();
@@ -671,6 +709,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
       <input type="hidden" name="signal_title" id="todo-signal-title">
       <input type="hidden" name="next"         id="todo-next">
       <input type="hidden" name="variante"     id="todo-variante">
+      <div id="todo-title-row" style="display:none">
+        <label for="todo-title">Titel / Aufgabe</label>
+        <input type="text" name="title" id="todo-title" placeholder="Was ist zu tun?" style="width:100%;padding:8px 11px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);outline:none;font-family:inherit;margin-bottom:0">
+      </div>
       <div id="todo-varianten-wrap" style="display:none;margin-bottom:4px">
         <span class="modal-var-label">Handlungsvorschläge — als Basis übernehmen oder frei formulieren</span>
         <div class="varianten-grid" id="todo-varianten-grid"></div>
@@ -701,6 +743,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
       <textarea name="comment" id="todo-comment" placeholder="Was genau ist zu tun?"></textarea>
       <label for="todo-notes">Notiz</label>
       <textarea name="notes" id="todo-notes" placeholder="Interne Anmerkung, Kontext oder Erinnerung…" style="min-height:60px"></textarea>
+      <label for="todo-recurring">Wiederholung</label>
+      <select name="recurring" id="todo-recurring">
+        <option value="none">Einmalig</option>
+        <option value="weekly">Wöchentlich</option>
+        <option value="monthly">Monatlich</option>
+        <option value="quarterly">Vierteljährlich</option>
+      </select>
       <div class="modal-actions">
         <button type="submit" class="btn btn-primary">ToDo anlegen</button>
         <button type="button" class="btn btn-secondary" onclick="closeTodoModal()">Abbrechen</button>
@@ -718,6 +767,9 @@ function openTodoModal(signalId, signalTitle, nextUrl, variantenJson) {
   document.getElementById('todo-comment').value    = '';
   document.getElementById('todo-notes').value      = '';
   document.getElementById('todo-variante').value   = '';
+  document.getElementById('todo-recurring').value  = 'none';
+  document.getElementById('todo-title-row').style.display = 'none';
+  document.querySelector('#todo-modal .modal-title').textContent = 'ToDo ableiten';
   setTodoType('task');
   _populateFyiRecipients();
 
@@ -749,6 +801,25 @@ function openTodoModal(signalId, signalTitle, nextUrl, variantenJson) {
     wrap.style.display = 'none';
   }
 
+  document.getElementById('todo-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function openFreeTodoModal() {
+  document.getElementById('todo-signal-id').value    = '';
+  document.getElementById('todo-signal-title').value = '';
+  document.getElementById('todo-modal-signal').textContent = '';
+  document.getElementById('todo-next').value = window.location.href;
+  document.getElementById('todo-deadline').value   = '';
+  document.getElementById('todo-comment').value    = '';
+  document.getElementById('todo-notes').value      = '';
+  document.getElementById('todo-variante').value   = '';
+  document.getElementById('todo-recurring').value  = 'none';
+  document.getElementById('todo-title').value      = '';
+  document.getElementById('todo-title-row').style.display = '';
+  document.getElementById('todo-varianten-wrap').style.display = 'none';
+  document.querySelector('#todo-modal .modal-title').textContent = 'Freies ToDo';
+  setTodoType('task');
+  _populateFyiRecipients();
   document.getElementById('todo-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }

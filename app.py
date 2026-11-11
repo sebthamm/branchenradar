@@ -1859,6 +1859,8 @@ def todo_new():
     uid = session.get("user_id")
     eid = session.get("entity_id")
     assigned_to = request.form.get("assigned_to", "").strip() or None
+    # Titel für freie Todos (kein Signal)
+    free_title = request.form.get("title", "").strip()
     # Signal-Snapshot: Kontext zum Erstellungszeitpunkt einfrieren
     sig_id = request.form.get("signal_id", "")
     sig_snapshot = {}
@@ -1876,7 +1878,7 @@ def todo_new():
     todo = {
         "id":              str(uuid.uuid4()),
         "signal_id":       sig_id,
-        "signal_title":    request.form.get("signal_title", ""),
+        "signal_title":    free_title if (not sig_id and free_title) else request.form.get("signal_title", ""),
         "entity_id":       eid,
         "category":        request.form.get("category", ""),
         "deadline":        request.form.get("deadline", ""),
@@ -1896,6 +1898,7 @@ def todo_new():
         "created_at":      datetime.now().isoformat(),
         "todo_type":       request.form.get("todo_type", "task"),
         "recipients":      request.form.get("recipients", "all"),
+        "recurring":       request.form.get("recurring", "none"),
         "read_by":         [],
         "comments":        [],
         **sig_snapshot,
@@ -1927,6 +1930,7 @@ def todo_assign(todo_id):
 def todo_complete(todo_id):
     uid = session.get("user_id")
     todos = load_todos()
+    completed = None
     for t in todos:
         if t["id"] == todo_id:
             t["done"]          = True
@@ -1934,8 +1938,42 @@ def todo_complete(todo_id):
             t["done_comment"]  = request.form.get("done_comment", "").strip()
             t["status"]        = "erledigt"
             t["done_by"]       = uid
-            t["admin_read_at"] = None  # admin gets notified
+            t["admin_read_at"] = None
+            completed = t
             break
+    # Wiederholung: neues Todo anlegen
+    if completed and completed.get("recurring", "none") != "none":
+        import copy
+        new_todo = copy.deepcopy(completed)
+        new_todo["id"]             = str(uuid.uuid4())
+        new_todo["done"]           = False
+        new_todo["done_at"]        = None
+        new_todo["done_comment"]   = ""
+        new_todo["done_by"]        = None
+        new_todo["status"]         = "offen"
+        new_todo["admin_read_at"]  = None
+        new_todo["assignee_read_at"] = None
+        new_todo["created_at"]     = datetime.now().isoformat()
+        # Frist berechnen ohne externe Bibliothek
+        dl_str = completed.get("deadline", "")
+        if dl_str:
+            try:
+                dl = datetime.strptime(dl_str, "%Y-%m-%d")
+                recur = completed["recurring"]
+                if recur == "weekly":
+                    dl = dl + timedelta(weeks=1)
+                elif recur in ("monthly", "quarterly"):
+                    months = 1 if recur == "monthly" else 3
+                    m = dl.month - 1 + months
+                    year = dl.year + m // 12
+                    month = m % 12 + 1
+                    import calendar
+                    day = min(dl.day, calendar.monthrange(year, month)[1])
+                    dl = dl.replace(year=year, month=month, day=day)
+                new_todo["deadline"] = dl.strftime("%Y-%m-%d")
+            except Exception:
+                pass
+        todos.append(new_todo)
     save_todos(todos)
     return redirect(url_for("todos"))
 

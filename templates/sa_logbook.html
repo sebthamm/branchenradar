@@ -43,6 +43,31 @@
   <div class="timeline">
 
     <div class="entry">
+      <div class="entry-date">11. November 2026</div>
+      <div class="entry-title">Freie ToDos, Wiederholung &amp; Menü-Verbesserungen <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>Freie ToDos: Admins können ToDos ohne Signal-Bezug direkt aus der ToDo-Liste anlegen (Button „+ Neues ToDo" oben rechts)</li>
+        <li>Titel-Feld im ToDo-Modal für freie ToDos; bei Signal-basierten ToDos wird weiterhin der Signal-Titel übernommen</li>
+        <li>Wiederholende ToDos: bei jedem ToDo optional Wiederholungsintervall wählbar (Einmalig / Wöchentlich / Monatlich / Vierteljährlich)</li>
+        <li>Wird ein wiederholendes ToDo erledigt, legt das System automatisch ein neues Todo mit der berechneten nächsten Frist an</li>
+        <li>Wiederholungs-Badge auf Todo-Karten zeigt den Rhythmus an (↻ Wöchentl. / Monatl. / Quartalsw.)</li>
+        <li>Menü-Bug behoben: Superadmin-Seitenleiste merkt sich ein- und ausgeklappte Gruppen über localStorage — Navigationen zwischen Seiten setzen die Zustände nicht mehr zurück</li>
+        <li>System-Gruppe klappt beim Öffnen von Funktionen oder Log-Buch automatisch auf, bleibt aber beim Navigieren zu anderen Seiten im zuletzt gespeicherten Zustand</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">5. November 2026</div>
+      <div class="entry-title">Signal-Kontext in ToDos <span class="tag tag-new">Neu</span></div>
+      <ul class="entry-items">
+        <li>ToDos speichern beim Erstellen einen Snapshot der Signal-Infos (Zusammenfassung, Handlungsempfehlung, Quellen, Datum, Kategorie, Priorität)</li>
+        <li>In der ToDo-Ansicht aufklappbarer Bereich „Signal-Kontext" — liefert den Hintergrund zum Signal direkt aus dem ToDo heraus</li>
+        <li>Snapshot bleibt erhalten, auch wenn das Signal später aktualisiert oder durch Ida neu verarbeitet wird</li>
+        <li>Fallback auf Live-Signal-Daten, wenn kein Snapshot vorhanden (ältere ToDos)</li>
+      </ul>
+    </div>
+
+    <div class="entry">
       <div class="entry-date">8. August 2026</div>
       <div class="entry-title">Agenten-Reports, Crawl-Reports &amp; Zeitraum-Filter <span class="tag tag-new">Neu</span></div>
       <ul class="entry-items">

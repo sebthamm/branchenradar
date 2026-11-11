@@ -147,6 +147,9 @@
       <a href="{{ url_for('dashboard') }}" class="back-btn" title="Zurück zum Dashboard" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:99px;padding:4px 10px;background:var(--surface);transition:color .15s,border-color .15s">← Dashboard</a>
       <div class="page-title">ToDos</div>
     </div>
+    {% if role in ('admin', 'superadmin') %}
+    <button onclick="openFreeTodoModal()" class="btn btn-primary btn-sm">+ Neues ToDo</button>
+    {% endif %}
   </div>
 
   {% set role = session.get('role') %}
@@ -216,6 +219,7 @@
           {% endif %}
           {% if assignee %}<span class="assign-tag">→ {{ assignee.name or assignee.username }}</span>{% endif %}
           {% if assigner and role != 'admin' %}<span class="assign-tag">von {{ assigner.name or assigner.username }}</span>{% endif %}
+          {% if t.recurring and t.recurring != 'none' %}<span style="font-size:10px;font-weight:600;color:var(--muted);background:var(--surface2);border-radius:3px;padding:2px 6px;text-transform:uppercase;letter-spacing:.04em">↻ {% if t.recurring == 'weekly' %}Wöchentl.{% elif t.recurring == 'monthly' %}Monatl.{% elif t.recurring == 'quarterly' %}Quartalsw.{% endif %}</span>{% endif %}
         </div>
         {% if t.comment %}<div class="todo-comment">{{ t.comment }}</div>{% endif %}
       </div>
