@@ -262,6 +262,38 @@
       .view-as-banner { background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.3); color:#FDE68A; }
       .view-as-banner a { color:#FDE68A; }
     }
+
+    /* ── User-Menü (Initialen + Dropdown) ───────────────────────── */
+    .user-menu-wrap { position:relative; }
+    .user-menu-btn {
+      width:34px; height:34px; border-radius:50%; background:var(--navy); color:#fff;
+      font-size:12px; font-weight:700; border:none; cursor:pointer; font-family:inherit;
+      display:flex; align-items:center; justify-content:center; letter-spacing:.02em;
+      transition:opacity .15s; position:relative; flex-shrink:0;
+    }
+    .user-menu-btn:hover { opacity:.85; }
+    .user-menu-badge {
+      position:absolute; top:-4px; right:-4px;
+      background:#B03060; color:#fff; font-size:9px; font-weight:700;
+      border-radius:99px; padding:1px 4px; min-width:14px; text-align:center;
+      pointer-events:none; line-height:1.4;
+    }
+    .user-menu-panel {
+      display:none; position:absolute; right:0; top:calc(100% + 8px);
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:0 8px 32px rgba(0,0,0,.14); min-width:180px; z-index:400; padding:4px 0;
+    }
+    .user-menu-panel.open { display:block; }
+    .user-menu-username {
+      padding:10px 16px 8px; font-size:12px; font-weight:600; color:var(--muted);
+      border-bottom:1px solid var(--border); margin-bottom:4px;
+    }
+    .user-menu-link {
+      display:block; padding:8px 16px; font-size:13px; color:var(--text);
+      text-decoration:none; transition:background .1s;
+    }
+    .user-menu-link:hover { background:var(--surface2); }
+    .user-menu-sep { height:1px; background:var(--border); margin:4px 0; }
   </style>
   {% block head %}{% endblock %}
 </head>
@@ -307,11 +339,17 @@
               <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Nutzer</div>
               <select name="user_id" id="imp-user" required style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;font-size:12px;color:var(--text);outline:none;font-family:inherit">
                 <option value="">— bitte wählen —</option>
+                <optgroup label="Demo">
+                  <option value="__demo_admin__" data-entity="">Demo-Admin-Ansicht</option>
+                  <option value="__demo_user__" data-entity="">Demo-User-Ansicht</option>
+                </optgroup>
+                <optgroup label="Echte Nutzer">
                 {% for u in all_impersonate_users | sort(attribute='name') %}
                 <option value="{{ u.id }}" data-entity="{{ u.entity_id }}">
                   {{ u.name }} ({{ 'Admin' if u.role == 'admin' else 'Nutzer' }})
                 </option>
                 {% endfor %}
+                </optgroup>
               </select>
             </div>
             <button type="submit" style="width:100%;padding:6px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Ansicht öffnen →</button>
@@ -356,14 +394,10 @@
     </div>
   </nav>
   <div class="sa-sidebar-foot">
-    <div>
+    <div style="display:flex;align-items:center;gap:10px">
       {% set initials = (session.name or 'SA')[:2].upper() %}
-      <span class="initials-btn" style="cursor:default" title="{{ session.name or 'Superadmin' }}">{{ initials }}</span>
-    </div>
-    <div style="display:flex;align-items:center">
-      {% if session.role == "superadmin" %}
-      <div class="sa-notif-bell-wrap">
-        <button class="sa-notif-bell" onclick="toggleNotifPanel()" title="Benachrichtigungen" id="notif-bell-btn">&#128276;</button>
+      <div class="sa-notif-bell-wrap" style="margin-right:0">
+        <button class="initials-btn" onclick="toggleNotifPanel()" id="notif-bell-btn" title="Benachrichtigungen" style="width:34px;height:34px;font-size:12px">{{ initials }}</button>
         <span class="sa-notif-badge{% if not sa_unread_notifications %} hidden{% endif %}" id="notif-badge">{{ sa_unread_notifications or '' }}</span>
       </div>
       <div class="sa-notif-panel" id="sa-notif-panel">
@@ -375,7 +409,6 @@
           <div class="sa-notif-empty">Wird geladen&#x2026;</div>
         </div>
       </div>
-      {% endif %}
       <div class="sa-foot-name">{{ session.name }}<br><a href="{{ url_for('logout') }}">Abmelden</a></div>
     </div>
   </div>
@@ -475,17 +508,26 @@ function syncMobIframe(f) {
             ToDos{% if pending_todos %}<span style="position:absolute;top:-5px;right:-8px;background:#B03060;color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 4px;min-width:14px;text-align:center">{{ pending_todos }}</span>{% endif %}
           </a>
         {% endif %}
-        {% if _eff_role == 'superadmin' %}
-          {# SA nav is in the left sidebar #}
-        {% elif _eff_role == 'admin' %}
-          <span style="width:1px;height:14px;background:var(--border);display:inline-block;margin:0 4px"></span>
-          <a href="{{ url_for('admin_dashboard') }}" class="header-link">Nutzerverwaltung</a>
-          <a href="{{ url_for('dashboard') }}?tutorial=1" class="header-link">Tutorial</a>
-          <a href="{{ url_for('settings') }}" class="header-link">Einstellungen</a>
+        {% if _eff_role != 'superadmin' %}
+        {% set _uname = session.get('view_as_name') or session.name or '?' %}
+        {% set _uinitials = _uname[:2].upper() %}
+        <div class="user-menu-wrap">
+          <button class="user-menu-btn" onclick="toggleUserMenu()" id="user-menu-btn">
+            {{ _uinitials }}
+            {% if pending_todos %}<span class="user-menu-badge">{{ pending_todos }}</span>{% endif %}
+          </button>
+          <div class="user-menu-panel" id="user-menu-panel">
+            <div class="user-menu-username">{{ _uname }}</div>
+            {% if _eff_role == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="user-menu-link">Nutzerverwaltung</a>
+            <a href="{{ url_for('dashboard') }}?tutorial=1" class="user-menu-link">Tutorial</a>
+            <a href="{{ url_for('settings') }}" class="user-menu-link">Einstellungen</a>
+            <div class="user-menu-sep"></div>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="user-menu-link">Abmelden</a>
+          </div>
+        </div>
         {% endif %}
-        <span style="width:1px;height:14px;background:var(--border);display:inline-block"></span>
-        <span style="font-size:12px;color:var(--muted)">{{ session.name }}</span>
-        <a href="{{ url_for('logout') }}" class="header-link">Abmelden</a>
       {% else %}
         <a href="{{ url_for('login') }}" class="header-link">Login</a>
       {% endif %}
@@ -527,6 +569,8 @@ function syncMobIframe(f) {
         <a href="{{ url_for('admin_dashboard') }}" onclick="closeDrawer()">Nutzerverwaltung</a>
         <a href="{{ url_for('dashboard') }}?tutorial=1" onclick="closeDrawer()">Tutorial</a>
         <a href="{{ url_for('settings') }}" onclick="closeDrawer()">Einstellungen</a>
+      {% elif _eff_role == 'user' %}
+        {# user: nur Abmelden #}
       {% endif %}
       <div class="nav-drawer-sep"></div>
       <a href="{{ url_for('logout') }}">Abmelden</a>
@@ -645,7 +689,23 @@ document.addEventListener('click', function(e) {
 })();
 function openDrawer()  { document.getElementById('nav-drawer').classList.add('open'); document.body.style.overflow='hidden'; }
 function closeDrawer() { document.getElementById('nav-drawer').classList.remove('open'); document.body.style.overflow=''; }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); closeUserMenu(); } });
+function toggleUserMenu() {
+  var panel = document.getElementById('user-menu-panel');
+  if (!panel) return;
+  panel.classList.toggle('open');
+}
+function closeUserMenu() {
+  var panel = document.getElementById('user-menu-panel');
+  if (panel) panel.classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  var btn = document.getElementById('user-menu-btn');
+  var panel = document.getElementById('user-menu-panel');
+  if (panel && panel.classList.contains('open') && btn && !btn.contains(e.target) && !panel.contains(e.target)) {
+    panel.classList.remove('open');
+  }
+});
 </script>
 {% endif %}
 

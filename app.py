@@ -1178,12 +1178,30 @@ def signal_entity_toggle_hidden(sig_id):
 def view_as():
     uid = request.form.get("user_id", "").strip()
     users = load_users()
+
+    # Demo-Modus: ersten passenden Nutzer der ersten Entity verwenden
+    if uid in ("__demo_admin__", "__demo_user__"):
+        target_role = "admin" if uid == "__demo_admin__" else "user"
+        demo_users  = [u for u in users if u.get("role") == target_role]
+        if not demo_users:
+            # Fallback: irgendeinen Nicht-SA-Nutzer nehmen
+            demo_users = [u for u in users if u.get("role") != "superadmin"]
+        if not demo_users:
+            abort(400)
+        target = demo_users[0]
+        session["view_as_entity_id"] = target.get("entity_id")
+        session["view_as_role"]      = target.get("role", target_role)
+        session["view_as_user_id"]   = target.get("id")
+        session["view_as_name"]      = f"Demo ({target.get('role','user').capitalize()})"
+        return redirect(url_for("dashboard"))
+
     target = next((u for u in users if u["id"] == uid), None)
     if not target or target.get("role") == "superadmin":
         abort(400)
     session["view_as_entity_id"] = target.get("entity_id")
     session["view_as_role"]      = target.get("role", "user")
     session["view_as_user_id"]   = uid
+    session["view_as_name"]      = target.get("name") or target.get("username", "")
     return redirect(url_for("dashboard"))
 
 @app.route("/view-as/exit")
@@ -1192,6 +1210,7 @@ def view_as_exit():
     session.pop("view_as_entity_id", None)
     session.pop("view_as_role",      None)
     session.pop("view_as_user_id",   None)
+    session.pop("view_as_name",      None)
     return redirect(url_for("sa_dashboard"))
 
 @app.route("/")
@@ -1494,10 +1513,11 @@ def sa_user_edit(uid):
 @app.route("/admin")
 @role_required("admin", "superadmin")
 def admin_dashboard():
-    # Superadmin → redirect to sa_dashboard
-    if session["role"] == "superadmin":
+    # Superadmin ohne Impersonierung → zur SA-Übersicht
+    _eff_role = session.get("view_as_role") or session.get("role")
+    if _eff_role == "superadmin":
         return redirect(url_for("sa_dashboard"))
-    entity_id = session["entity_id"]
+    entity_id = session.get("view_as_entity_id") or session.get("entity_id")
     entity = get_entity(entity_id)
     users = [u for u in load_users() if u.get("entity_id") == entity_id]
     return render_template("admin_users.html",
@@ -2006,7 +2026,7 @@ def todo_delete(todo_id):
 @app.route("/settings", methods=["GET", "POST"])
 @role_required("admin", "superadmin")
 def settings():
-    eid = session.get("entity_id")
+    eid = session.get("view_as_entity_id") or session.get("entity_id")
     entities = load_entities()
     entity = next((e for e in entities if e["id"] == eid), None)
     if not entity:
