@@ -499,7 +499,7 @@
                     <select name="agent_hint_2_agent" style="margin-bottom:6px">
                       <option value="">— Agent wählen —</option>
                       {% for key, label, _ in source_ingestion_methods %}
-                      <option value="{{ key }}" {{ 'selected' if src.get('agent_hints', [{},{}])[1].get('agent','') == key else '' }}>{{ label }}</option>
+                      <option value="{{ key }}" {{ 'selected' if src.get('agent_hints') and src.get('agent_hints')|length > 1 and src.get('agent_hints')[1].get('agent','') == key else '' }}>{{ label }}</option>
                       {% endfor %}
                     </select>
                     <textarea name="agent_hint_2_text" placeholder="Hinweis nur für diesen Agenten…">{{ src.get('agent_hints', [{},{}])[1].get('text','') if src.get('agent_hints') and src.get('agent_hints')|length > 1 else '' }}</textarea>

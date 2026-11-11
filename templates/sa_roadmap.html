@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Roadmap — Branchenradar{% endblock %}
+{% block head %}
+<style>
+  .main { max-width: 1000px; margin: 0 auto; padding: 28px 32px 60px; }
+  .page-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 8px; }
+  .page-title { font-family: Georgia, serif; font-size: 24px; font-weight: normal; }
+
+  .module { margin-bottom: 40px; }
+  .module-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .module-icon { font-size: 16px; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .feature-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .feature-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+  .feature-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .role-tag { display: inline-flex; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-left: 6px; vertical-align: middle; }
+  .tag-sa  { background: rgba(107,68,168,.15); color: #7B44C8; }
+  .tag-adm { background: rgba(46,123,170,.15); color: #1A6898; }
+  .tag-all { background: var(--surface2); color: var(--muted); }
+  @media (prefers-color-scheme: dark) {
+    .tag-sa  { background: rgba(107,68,168,.3); color: #c8a0ff; }
+    .tag-adm { background: rgba(46,123,170,.3); color: #80b8ff; }
+  }
+
+  /* Status Badges */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .status-idee       { background: var(--surface2); color: var(--muted); }
+  .status-konzeption { background: rgba(234,179,8,.15); color: #9a6e00; }
+  .status-bereit     { background: rgba(59,130,246,.15); color: #1d4ed8; }
+  .status-umgesetzt  { background: rgba(34,197,94,.15); color: #15803d; }
+  @media (prefers-color-scheme: dark) {
+    .status-konzeption { background: rgba(234,179,8,.25); color: #fcd34d; }
+    .status-bereit     { background: rgba(59,130,246,.25); color: #93c5fd; }
+    .status-umgesetzt  { background: rgba(34,197,94,.25); color: #86efac; }
+  }
+
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+  /* Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-head">
+    <h1 class="page-title">Roadmap — Zukünftige Funktionen</h1>
+  </div>
+
+  <div class="legend">
+    <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+    <span class="status-badge status-konzeption"><span class="status-dot"></span> Konzeption fertig</span>
+    <span class="status-badge status-bereit"><span class="status-dot"></span> Bereit zur Umsetzung</span>
+    <span class="status-badge status-umgesetzt"><span class="status-dot"></span> Umgesetzt</span>
+  </div>
+
+  <div class="module">
+    <div class="module-title"><span class="module-icon">✓</span> ToDo-System — Erweiterungen</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <div class="feature-name">ToDo-Vorlagen <span class="role-tag tag-adm">Admin</span></div>
+          <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+        </div>
+        <div class="feature-desc">Wiederverwendbare Aufgaben-Checklisten als Vorlage speichern — z.B. „Neue Mitarbeiterin einarbeiten" mit 5 vordefinierten Schritten. Mit einem Klick als vollständige ToDo-Liste anlegen. Besonders wertvoll für wiederkehrende Praxis-Abläufe.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <div class="feature-name">Prioritätsstufen <span class="role-tag tag-all">Alle</span></div>
+          <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+        </div>
+        <div class="feature-desc">Eigene Priorität unabhängig vom Signal: Dringend / Normal / Irgendwann. ToDo-Liste sortierbar und filterbar nach Priorität. Ermöglicht Fokus ohne dass jedes Todo als gleich wichtig erscheint — sinnvoll sobald die Todo-Liste wächst.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <div class="feature-name">Dashboard-Widget <span class="role-tag tag-adm">Admin</span></div>
+          <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+        </div>
+        <div class="feature-desc">Kompakter Widget auf der Startseite des Dashboards: zeigt Anzahl offener ToDos, davon überfällig, und optional die nächste Frist. Direktlink zur ToDo-Liste. Gibt Admins beim Öffnen des Dashboards sofort einen Überblick über den Aufgabenstand.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="module">
+    <div class="module-title"><span class="module-icon">📡</span> Signal-Erlebnis — Erweiterungen</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <div class="feature-name">Signalfilter nach Rolle <span class="role-tag tag-all">Alle</span></div>
+          <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+        </div>
+        <div class="feature-desc">Nutzer kann den Radar auf die eigene Rolle filtern und sieht nur Signale, bei denen seine Funktion als „Betroffene Rolle" hinterlegt ist. Reduziert Rauschen für Spezialisten und macht den Radar für größere Teams relevanter.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <div class="feature-name">NEU / AKTUALISIERT je Praxis <span class="role-tag tag-all">Alle</span></div>
+          <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+        </div>
+        <div class="feature-desc">Ein Signal zeigt dem Nutzer beim ersten Besuch ein „NEU"-Badge. Nach einer inhaltlichen Änderung erscheint „AKTUALISIERT". Status ist praxis- und nutzerspezifisch — nicht globales Redaktionsmerkmal. Hält den Radar frisch ohne Informationsflut.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <div class="feature-name">Aktualitätsstand / Prüfdatum <span class="role-tag tag-adm">Admin</span></div>
+          <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+        </div>
+        <div class="feature-desc">Jedes Signal erhält ein „Zuletzt geprüft"-Datum. Ole markiert Signale, die länger als X Monate nicht geprüft wurden, als Review-Kandidaten. Stellt redaktionelle Pflegequalität sicher.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <div class="feature-name">Admin-Bearbeitung von Signalen im UI <span class="role-tag tag-adm">Admin</span></div>
+          <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+        </div>
+        <div class="feature-desc">Admins können FINAL-Signale direkt im Radar bearbeiten — Titel, Zusammenfassung, Status und weitere Felder ändern, ohne in die JSON-Ebene zu gehen. Redaktionelle Korrekturen werden schneller möglich.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="module">
+    <div class="module-title"><span class="module-icon">📬</span> Kommunikation &amp; Regionen</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <div class="feature-name">Wöchentliches E-Mail-Briefing <span class="role-tag tag-all">Alle</span></div>
+          <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+        </div>
+        <div class="feature-desc">Automatisch versendete Zusammenfassung neuer und aktualisierter Signale der Woche. Optional pro Nutzer konfigurierbar. Hält das Team auf dem Laufenden ohne dass sie aktiv in die App gehen müssen.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <div class="feature-name">Region / Bundesland <span class="role-tag tag-all">Alle</span></div>
+          <span class="status-badge status-idee"><span class="status-dot"></span> Idee</span>
+        </div>
+        <div class="feature-desc">Signale erhalten eine Bundesland- oder Regionszuordnung. Praxen werden mit einem Bundesland verknüpft und sehen nur die für sie geltenden Signale. Für Themen, die stark regional variieren (z.B. KV-Abkommen, Landesrecht).</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

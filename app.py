@@ -2091,6 +2091,11 @@ def sa_functions():
     return render_template("sa_functions.html",
         now=datetime.now().strftime("%d. %B %Y"))
 
+@app.route("/superadmin/roadmap")
+@role_required("superadmin")
+def sa_roadmap():
+    return render_template("sa_roadmap.html")
+
 @app.route("/superadmin/logbook")
 @role_required("superadmin")
 def sa_logbook():
