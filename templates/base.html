@@ -339,21 +339,28 @@
               <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Nutzer</div>
               <select name="user_id" id="imp-user" required style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;font-size:12px;color:var(--text);outline:none;font-family:inherit">
                 <option value="">— bitte wählen —</option>
-                <optgroup label="Demo">
-                  <option value="__demo_admin__" data-entity="">Demo-Admin-Ansicht</option>
-                  <option value="__demo_user__" data-entity="">Demo-User-Ansicht</option>
-                </optgroup>
-                <optgroup label="Echte Nutzer">
                 {% for u in all_impersonate_users | sort(attribute='name') %}
                 <option value="{{ u.id }}" data-entity="{{ u.entity_id }}">
                   {{ u.name }} ({{ 'Admin' if u.role == 'admin' else 'Nutzer' }})
                 </option>
                 {% endfor %}
-                </optgroup>
               </select>
             </div>
             <button type="submit" style="width:100%;padding:6px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Ansicht öffnen →</button>
           </form>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Demo</div>
+            <div style="display:flex;gap:6px">
+              <form method="post" action="{{ url_for('view_as') }}" target="_blank" style="flex:1">
+                <input type="hidden" name="user_id" value="__demo_admin__">
+                <button type="submit" style="width:100%;padding:5px 4px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Admin</button>
+              </form>
+              <form method="post" action="{{ url_for('view_as') }}" target="_blank" style="flex:1">
+                <input type="hidden" name="user_id" value="__demo_user__">
+                <button type="submit" style="width:100%;padding:5px 4px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Nutzer</button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>
